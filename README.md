@@ -1,6 +1,3 @@
-# [Project Title]
-A Single-Cell Map of Hypertension
-
 ## Description
 This repository contains the code used for the analysis in the manuscript titled *[A Single-Cell Map of Hypertension]*.
 
