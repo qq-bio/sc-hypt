@@ -1,0 +1,47 @@
+2024-03-31 14:09:12.336 I main: /opt/saw_v6.1.0_software/pipeline/count/bin/Bam2Gem inputBamFiles: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/01.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/02.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/03.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/04.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/05.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/06.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/07.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/08.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/09.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/10.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/11.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/12.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/13.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/14.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/15.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/16.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam geneAnnotationFile: /xdisk/mliang1/qqiu/reference/SAW/mm10/genes/genes.gtf outputBamFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam outputExpFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.raw.gef outputMetricsFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat outputSatFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4_raw_barcode_gene_exp.txt saveLowQualReads: true saveDupReads: true umiPara.enable: true umiPara.minUmiNum: 5 umiPara.mismatch: 1 umiPara.len: 10 coreNum: 16 mapQualThre: 10 memoryGB: 128 sn: SS200000849BL_A4 multiMap: false
+2024-03-31 14:09:12.336 D process: assign threads, read bam: 4 write bam: 6 annotation: 2 umi correction: 2
+2024-03-31 14:09:14.131 D process: Bam contigs num:66
+2024-03-31 14:09:14.131 D process: reads buffer size: 287500000 buffer memory(GB): 115
+2024-03-31 14:09:28.453 I gtf: read     100000 valid GTF records. Last read position: chr1:178070529
+2024-03-31 14:09:29.877 I gtf: read     200000 valid GTF records. Last read position: chr2:118400535
+2024-03-31 14:09:31.304 I gtf: read     300000 valid GTF records. Last read position: chr3:94497544
+2024-03-31 14:09:32.755 I gtf: read     400000 valid GTF records. Last read position: chr4:123391051
+2024-03-31 14:09:34.225 I gtf: read     500000 valid GTF records. Last read position: chr5:100786984
+2024-03-31 14:09:35.692 I gtf: read     600000 valid GTF records. Last read position: chr6:80015879
+2024-03-31 14:09:37.136 I gtf: read     700000 valid GTF records. Last read position: chr7:42927805
+2024-03-31 14:09:38.580 I gtf: read     800000 valid GTF records. Last read position: chr8:3159453
+2024-03-31 14:09:40.009 I gtf: read     900000 valid GTF records. Last read position: chr9:31402056
+2024-03-31 14:09:41.436 I gtf: read    1000000 valid GTF records. Last read position: chr10:26772584
+2024-03-31 14:09:42.869 I gtf: read    1100000 valid GTF records. Last read position: chr11:54687544
+2024-03-31 14:09:44.298 I gtf: read    1200000 valid GTF records. Last read position: chr12:5209932
+2024-03-31 14:09:45.720 I gtf: read    1300000 valid GTF records. Last read position: chr13:77254123
+2024-03-31 14:09:47.134 I gtf: read    1400000 valid GTF records. Last read position: chr15:38549343
+2024-03-31 14:09:48.580 I gtf: read    1500000 valid GTF records. Last read position: chr16:59328590
+2024-03-31 14:09:50.039 I gtf: read    1600000 valid GTF records. Last read position: chr17:78961111
+2024-03-31 14:09:51.489 I gtf: read    1700000 valid GTF records. Last read position: chr19:46272175
+2024-03-31 14:09:52.664 I process: loadGTFFile time(s):25
+2024-03-31 14:09:52.768 W process: Strand disagreement for gene Ighv5-8 -- skipping
+2024-03-31 14:09:53.151 W process: Strand disagreement for gene Ighv1-13 -- skipping
+2024-03-31 14:09:53.802 I process: makeOverlapDetector time(s):1
+2024-03-31 14:09:53.802 I process: Gene count:32253
+2024-03-31 14:09:54.016 I process: Using threads num:16
+2024-03-31 14:09:54.126 D process: SamWriter init
+2024-03-31 14:09:54.127 D process: start anno thread: 1
+2024-03-31 14:09:54.127 D process: start anno thread: 0
+2024-03-31 14:13:44.155 D process: find blocked. pointer IO 1887623 1887623
+2024-03-31 14:13:44.155 D process: unblock chr1_Col19a1 read status 2
+2024-03-31 14:13:44.156 D process: gene chr1_Col19a1 store correction data in memory
+2024-03-31 14:13:44.260 D process: find blocked. pointer IO 1910518 1910518
+2024-03-31 14:13:44.260 D process: unblock chr1_Lmbrd1 read status 2
+2024-03-31 14:13:44.260 D process: gene chr1_Lmbrd1 store correction data in memory
+2024-03-31 14:22:06.444 D process: find blocked. pointer IO 41172228 41172228
+2024-03-31 14:22:06.444 D process: unblock chr1_Lmbrd1 read status 2
+2024-03-31 14:22:06.444 D process: gene chr1_Lmbrd1 retrieve correction data
+2024-03-31 14:22:06.444 D process: gene chr1_Lmbrd1 store correction data in memory
+2024-03-31 14:24:21.961 D process: gene chr1_Col19a1 retrieve correction data
+2024-03-31 14:24:22.039 D process: gene chr1_Lmbrd1 retrieve correction data
+2024-03-31 14:26:09.084 D process: read contig: chr1 total reads: 767157915 line number: 833637464 time(s): 975
+2024-03-31 14:27:37.792 D process: read contig: chr10 total reads: 822715195 line number: 897963732 time(s): 88
+2024-03-31 14:31:00.694 D process: read contig: chr11 total reads: 951459200 line number: 1044985390 time(s): 202
+2024-03-31 14:31:52.085 D process: read contig: chr12 total reads: 981420063 line number: 1088324267 time(s): 51
+2024-03-31 14:32:54.956 D process: read contig: chr13 total reads: 1020375372 line number: 1135594217 time(s): 62

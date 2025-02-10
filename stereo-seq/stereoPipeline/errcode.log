@@ -1,0 +1,14 @@
+[2023-10-3 14:12:8] SAW-A10100: seqLen != qualLen, id-0
+ nameC-CACACCGGAATCGCACTAGGTTCCCAT
+
+[2023-10-3 16:37:55] SAW-A10100: seqLen != qualLen, id-0
+ nameC-TGGTAGCCG
+
+[2023-10-4 9:24:22] SAW-A10100: seqLen != qualLen, id-0
+ nameC-:DB=7D?BCCCBDBC
+
+[2023-10-5 14:56:21] SAW-A10100: seqLen != qualLen, id-0
+ nameC-C:CCCCCC@?B
+
+[2024-3-27 10:41:3]	SAW-A00002: cannot access /xdisk/mliang1/qqiu/data/multiomics-hypertension/STO011/954BR_F4/00.Rawdata/reads/SS200000954BR_F4.barcodeToPos.h5
+[2024-03-31 14:33:35] SAW-A20003: fail to write bam recode

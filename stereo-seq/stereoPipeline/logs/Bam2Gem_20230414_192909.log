@@ -1,0 +1,275 @@
+2023-04-14 19:29:09.807 I main: /opt/saw_v5.4.0_software/pipeline/count/Bam2Gem inputBamFiles: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/01.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/02.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/03.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/04.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/05.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/06.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/07.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/08.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/09.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/10.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/11.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/12.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/13.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/14.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/15.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/00.mapping/16.SS200000954BR_F4.Q4_SE.Aligned.sortedByCoord.out.bam geneAnnotationFile: /scratch/u/qqiu/refdata/SAW/rn7/genes/genes.gtf outputBamFile: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/02.count/SS200000954BR_F4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam outputExpFile: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/02.count/SS200000954BR_F4.raw.gef outputMetricsFile: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/02.count/SS200000954BR_F4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat outputSatFile: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/02.count/SS200000954BR_F4_raw_barcode_gene_exp.txt saveLowQualReads: true saveDupReads: true umiPara.enable: true umiPara.minUmiNum: 5 umiPara.mismatch: 1 umiPara.len: 10 coreNum: 16 mapQualThre: 10 memoryGB: 128 sn: SS200000954BR_F4 multiMap: false
+2023-04-14 19:29:09.807 D process: assign threads, read bam: 4 write bam: 6 annotation: 2 umi correction: 2
+2023-04-14 19:29:11.366 D process: Bam contigs num:176
+2023-04-14 19:29:11.366 D process: reads buffer size: 287500000 buffer memory(GB): 115
+2023-04-14 19:29:30.034 I gtf: read     100000 valid GTF records. Last read position: 1:205665006
+2023-04-14 19:29:30.974 I gtf: read     200000 valid GTF records. Last read position: 2:108257824
+2023-04-14 19:29:31.899 I gtf: read     300000 valid GTF records. Last read position: 3:116824046
+2023-04-14 19:29:32.805 I gtf: read     400000 valid GTF records. Last read position: 5:129643571
+2023-04-14 19:29:33.798 I gtf: read     500000 valid GTF records. Last read position: 6:72624718
+2023-04-14 19:29:34.692 I gtf: read     600000 valid GTF records. Last read position: 7:818222
+2023-04-14 19:29:35.586 I gtf: read     700000 valid GTF records. Last read position: 9:23677147
+2023-04-14 19:29:36.488 I gtf: read     800000 valid GTF records. Last read position: 10:47083740
+2023-04-14 19:29:37.413 I gtf: read     900000 valid GTF records. Last read position: 14:16468459
+2023-04-14 19:29:38.316 I gtf: read    1000000 valid GTF records. Last read position: 11:71479333
+2023-04-14 19:29:39.213 I gtf: read    1100000 valid GTF records. Last read position: 19:27952090
+2023-04-14 19:29:39.896 I process: loadGTFFile time(s):10
+2023-04-14 19:29:39.903 W process: Strand disagreement for gene Mafk -- skipping
+2023-04-14 19:29:39.908 W process: Strand disagreement for gene Sry3 -- skipping
+2023-04-14 19:29:39.912 W process: Strand disagreement for gene Tspyl1 -- skipping
+2023-04-14 19:29:39.912 W process: Strand disagreement for gene Olr1730 -- skipping
+2023-04-14 19:29:39.918 W process: Strand disagreement for gene Cesl1 -- skipping
+2023-04-14 19:29:39.940 W process: Strand disagreement for gene Defb12 -- skipping
+2023-04-14 19:29:39.941 W process: Strand disagreement for gene RGD1562641 -- skipping
+2023-04-14 19:29:39.956 W process: Strand disagreement for gene Hist1h2bq -- skipping
+2023-04-14 19:29:39.988 W process: Strand disagreement for gene MGC105649 -- skipping
+2023-04-14 19:29:40.035 W process: Strand disagreement for gene Lcn1 -- skipping
+2023-04-14 19:29:40.042 W process: Strand disagreement for gene Zfp951 -- skipping
+2023-04-14 19:29:40.045 W process: Strand disagreement for gene Sumo3 -- skipping
+2023-04-14 19:29:40.055 W process: Strand disagreement for gene Tuba3b -- skipping
+2023-04-14 19:29:40.064 W process: Strand disagreement for gene Selenow -- skipping
+2023-04-14 19:29:40.091 W process: Strand disagreement for gene Sub1 -- skipping
+2023-04-14 19:29:40.092 W process: Strand disagreement for gene Vom2r8 -- skipping
+2023-04-14 19:29:40.094 W process: Strand disagreement for gene RGD1560718 -- skipping
+2023-04-14 19:29:40.102 W process: Strand disagreement for gene Vom2r31 -- skipping
+2023-04-14 19:29:40.107 W process: Strand disagreement for gene Tcte1 -- skipping
+2023-04-14 19:29:40.107 W process: Strand disagreement for gene Sdhaf1 -- skipping
+2023-04-14 19:29:40.109 W process: Strand disagreement for gene Vom2r80 -- skipping
+2023-04-14 19:29:40.124 W process: Strand disagreement for gene Pcdh7 -- skipping
+2023-04-14 19:29:40.136 W process: Strand disagreement for gene Smptb -- skipping
+2023-04-14 19:29:40.137 W process: Strand disagreement for gene Vom2r33 -- skipping
+2023-04-14 19:29:40.138 W process: Strand disagreement for gene Vom2r26 -- skipping
+2023-04-14 19:29:40.139 W process: Strand disagreement for gene Tmem125 -- skipping
+2023-04-14 19:29:40.147 W process: Strand disagreement for gene Gbp6 -- skipping
+2023-04-14 19:29:40.153 W process: Strand disagreement for gene Olr1542 -- skipping
+2023-04-14 19:29:40.160 W process: Strand disagreement for gene Rps6 -- skipping
+2023-04-14 19:29:40.171 W process: Strand disagreement for gene Fam181b -- skipping
+2023-04-14 19:29:40.187 W process: Strand disagreement for gene Vom2r11 -- skipping
+2023-04-14 19:29:40.195 W process: Strand disagreement for gene Tmem14a -- skipping
+2023-04-14 19:29:40.199 W process: Strand disagreement for gene Prp15 -- skipping
+2023-04-14 19:29:40.209 W process: Strand disagreement for gene Klk15 -- skipping
+2023-04-14 19:29:40.237 W process: Strand disagreement for gene Oog1 -- skipping
+2023-04-14 19:29:40.240 W process: Strand disagreement for gene Fpr-rs4 -- skipping
+2023-04-14 19:29:40.242 W process: Strand disagreement for gene Smim10l1 -- skipping
+2023-04-14 19:29:40.246 W process: Strand disagreement for gene Ufm1 -- skipping
+2023-04-14 19:29:40.263 W process: Strand disagreement for gene Hist2h3c2 -- skipping
+2023-04-14 19:29:40.269 W process: Strand disagreement for gene Necab1 -- skipping
+2023-04-14 19:29:40.273 W process: Strand disagreement for gene Pdrg1 -- skipping
+2023-04-14 19:29:40.311 W process: Strand disagreement for gene Urm1 -- skipping
+2023-04-14 19:29:40.355 W process: Strand disagreement for gene Ube2i -- skipping
+2023-04-14 19:29:40.367 W process: Strand disagreement for gene RGD1560860 -- skipping
+2023-04-14 19:29:40.369 W process: Strand disagreement for gene Rhox9 -- skipping
+2023-04-14 19:29:40.372 W process: Strand disagreement for gene Atp5mc1 -- skipping
+2023-04-14 19:29:40.382 W process: Strand disagreement for gene Sslp1 -- skipping
+2023-04-14 19:29:40.386 W process: Strand disagreement for gene Olr1326 -- skipping
+2023-04-14 19:29:40.387 W process: Strand disagreement for gene Arpp19 -- skipping
+2023-04-14 19:29:40.393 W process: Strand disagreement for gene Olr1142 -- skipping
+2023-04-14 19:29:40.417 W process: Strand disagreement for gene Cdc45 -- skipping
+2023-04-14 19:29:40.435 W process: Strand disagreement for gene Olr190 -- skipping
+2023-04-14 19:29:40.461 W process: Strand disagreement for gene Tceal3 -- skipping
+2023-04-14 19:29:40.493 W process: Strand disagreement for gene Ces2g -- skipping
+2023-04-14 19:29:40.495 W process: Strand disagreement for gene Gnrh1 -- skipping
+2023-04-14 19:29:40.495 W process: Strand disagreement for gene Samd8 -- skipping
+2023-04-14 19:29:40.499 I process: makeOverlapDetector time(s):0
+2023-04-14 19:29:40.499 I process: Gene count:19340
+2023-04-14 19:29:40.605 I process: Using threads num:16
+2023-04-14 19:29:40.711 D process: start anno thread: 1
+2023-04-14 19:29:40.711 D process: start anno thread: 0
+2023-04-14 19:29:40.713 D process: SamWriter init
+2023-04-14 19:30:56.104 D process: read contig: 1 total reads: 126663514 line number: 144131688 time(s): 75
+2023-04-14 19:31:33.716 D process: read contig: 2 total reads: 184966552 line number: 213403112 time(s): 37
+2023-04-14 19:34:54.430 D process: find blocked. pointer IO 185084957 185084957
+2023-04-14 19:34:54.432 D process: unblock 3_AABR07053236.1 read status 2
+2023-04-14 19:34:54.432 D process: gene 3_AABR07053236.1 store correction data in memory
+2023-04-14 19:53:03.785 D process: gene 3_AABR07053236.1 retrieve correction data
+2023-04-14 19:53:33.905 D process: read contig: 3 total reads: 1093678992 line number: 1742601258 time(s): 1320
+2023-04-14 19:54:01.605 D process: read contig: 4 total reads: 1153896278 line number: 1811599982 time(s): 27
+2023-04-14 19:54:40.222 D process: read contig: 5 total reads: 1228546526 line number: 1907542873 time(s): 38
+2023-04-14 19:54:58.326 D process: read contig: 6 total reads: 1267624960 line number: 1953988076 time(s): 18
+2023-04-14 19:56:27.026 D process: read contig: 7 total reads: 1338263959 line number: 2033503028 time(s): 88
+2023-04-14 19:57:52.893 D process: read contig: 8 total reads: 1397724915 line number: 2103499055 time(s): 85
+2023-04-14 19:59:00.589 D process: read contig: 9 total reads: 1443038104 line number: 2155997027 time(s): 67
+2023-04-14 20:00:48.420 D process: read contig: 10 total reads: 1516361241 line number: 2240487979 time(s): 107
+2023-04-14 20:01:19.542 D process: read contig: 11 total reads: 1538145129 line number: 2267165520 time(s): 31
+2023-04-14 20:02:04.419 D process: read contig: 12 total reads: 1568631358 line number: 2301585349 time(s): 44
+2023-04-14 20:02:46.185 D process: read contig: 13 total reads: 1596815199 line number: 2334030534 time(s): 41
+2023-04-14 20:03:32.427 D process: read contig: 14 total reads: 1628111937 line number: 2370894476 time(s): 46
+2023-04-14 20:04:12.559 D process: read contig: 15 total reads: 1654239149 line number: 2399449030 time(s): 40
+2023-04-14 20:04:48.919 D process: read contig: 16 total reads: 1679396630 line number: 2440134161 time(s): 36
+2023-04-14 20:05:25.510 D process: read contig: 17 total reads: 1702156997 line number: 2468982175 time(s): 36
+2023-04-14 20:05:59.835 D process: read contig: 18 total reads: 1725806204 line number: 2497451948 time(s): 34
+2023-04-14 20:06:35.534 D process: read contig: 19 total reads: 1750309647 line number: 2524183602 time(s): 35
+2023-04-14 20:07:36.911 D process: read contig: 20 total reads: 1791669491 line number: 2573675139 time(s): 61
+2023-04-14 20:08:11.104 D process: read contig: X total reads: 1815304094 line number: 2604448151 time(s): 34
+2023-04-14 20:08:11.525 D process: read contig: Y total reads: 1815603671 line number: 2604857946 time(s): 0
+2023-04-14 20:10:48.366 D process: read contig: MT total reads: 1925438454 line number: 2714813329 time(s): 156
+2023-04-14 20:10:48.411 D process: read contig: MU150191.1 total reads: 1925470041 line number: 2714880491 time(s): 0
+2023-04-14 20:10:48.895 D process: read contig: MU150189.1 total reads: 1925596273 line number: 2715959704 time(s): 0
+2023-04-14 20:10:48.907 D process: read contig: MU150194.1 total reads: 1925614841 line number: 2715993209 time(s): 0
+2023-04-14 20:10:48.920 D process: read contig: MU150190.1 total reads: 1925636899 line number: 2716027122 time(s): 0
+2023-04-14 20:10:48.933 D process: read contig: MU150195.1 total reads: 1925653870 line number: 2716059950 time(s): 0
+2023-04-14 20:10:49.010 D process: read contig: JACYVU010000493.1 total reads: 1925826597 line number: 2716247801 time(s): 0
+2023-04-14 20:10:49.036 D process: read contig: MU150193.1 total reads: 1925876633 line number: 2716320674 time(s): 0
+2023-04-14 20:10:49.044 D process: read contig: MU150196.1 total reads: 1925887884 line number: 2716336670 time(s): 0
+2023-04-14 20:10:49.051 D process: read contig: MU150197.1 total reads: 1925899077 line number: 2716358164 time(s): 0
+2023-04-14 20:10:49.055 D process: read contig: JACYVU010000705.1 total reads: 1925901141 line number: 2716364525 time(s): 0
+2023-04-14 20:19:21.534 D process: find blocked. pointer IO 202249890 202249890
+2023-04-14 20:19:21.535 D process: unblock JACYVU010000706.1_AABR07024473.1 read status 2
+2023-04-14 20:19:21.535 D process: gene JACYVU010000706.1_AABR07024473.1 store correction data in memory
+2023-04-14 20:24:19.722 D process: read contig: JACYVU010000706.1 total reads: 2369880456 line number: 4165155727 time(s): 810
+2023-04-14 20:24:19.744 D process: gene JACYVU010000706.1_AABR07024473.1 retrieve correction data
+2023-04-14 20:24:19.760 D process: read contig: MU150192.1 total reads: 2369906925 line number: 4165204242 time(s): 0
+2023-04-14 20:24:19.765 D process: read contig: JACYVU010000707.1 total reads: 2369910592 line number: 4165213992 time(s): 0
+2023-04-14 20:24:19.783 D process: read contig: MU150198.1 total reads: 2369923320 line number: 4165233182 time(s): 0
+2023-04-14 20:24:19.788 D process: read contig: MU150199.1 total reads: 2369926733 line number: 4165240237 time(s): 0
+2023-04-14 20:24:19.847 D process: read contig: JACYVU010000238.1 total reads: 2369947103 line number: 4165372593 time(s): 0
+2023-04-14 20:24:19.887 D process: read contig: JACYVU010000319.1 total reads: 2369969244 line number: 4165439265 time(s): 0
+2023-04-14 20:24:19.895 D process: read contig: MU150215.1 total reads: 2369977103 line number: 4165455770 time(s): 0
+2023-04-14 20:24:19.898 D process: read contig: MU150216.1 total reads: 2369983558 line number: 4165466295 time(s): 0
+2023-04-14 20:24:19.909 D process: read contig: MU150217.1 total reads: 2369991342 line number: 4165478109 time(s): 0
+2023-04-14 20:24:19.920 D process: read contig: MU150218.1 total reads: 2369998609 line number: 4165487903 time(s): 0
+2023-04-14 20:24:19.923 D process: read contig: MU150219.1 total reads: 2369999983 line number: 4165492497 time(s): 0
+2023-04-14 20:24:19.928 D process: read contig: MU150220.1 total reads: 2370003761 line number: 4165500305 time(s): 0
+2023-04-14 20:24:19.934 D process: read contig: JACYVU010000704.1 total reads: 2370006507 line number: 4165518569 time(s): 0
+2023-04-14 20:24:19.938 D process: read contig: MU150221.1 total reads: 2370008927 line number: 4165525330 time(s): 0
+2023-04-14 20:24:19.943 D process: read contig: JACYVU010000727.1 total reads: 2370013373 line number: 4165537951 time(s): 0
+2023-04-14 20:24:19.948 D process: read contig: JACYVU010000728.1 total reads: 2370016838 line number: 4165544868 time(s): 0
+2023-04-14 20:24:19.965 D process: read contig: MU150222.1 total reads: 2370027811 line number: 4165560287 time(s): 0
+2023-04-14 20:24:20.008 D process: read contig: JACYVU010000731.1 total reads: 2370047937 line number: 4165618510 time(s): 0
+2023-04-14 20:24:20.013 D process: read contig: JACYVU010000732.1 total reads: 2370051865 line number: 4165625143 time(s): 0
+2023-04-14 20:24:20.025 D process: read contig: MU150223.1 total reads: 2370060173 line number: 4165643026 time(s): 0
+2023-04-14 20:24:20.043 D process: read contig: JACYVU010000735.1 total reads: 2370070796 line number: 4165657966 time(s): 0
+2023-04-14 20:24:20.047 D process: read contig: JACYVU010000736.1 total reads: 2370073573 line number: 4165664621 time(s): 0
+2023-04-14 20:33:49.490 D process: read contig: JACYVU010000738.1 total reads: 2524440223 line number: 5556873262 time(s): 569
+2023-04-14 20:33:49.494 D process: read contig: JACYVU010000737.1 total reads: 2524446524 line number: 5556881819 time(s): 0
+2023-04-14 20:33:49.495 D process: read contig: JACYVU010000739.1 total reads: 2524447602 line number: 5556884048 time(s): 0
+2023-04-14 20:33:49.495 D process: read contig: JACYVU010000740.1 total reads: 2524448416 line number: 5556886122 time(s): 0
+2023-04-14 20:33:49.499 D process: read contig: MU150224.1 total reads: 2524453826 line number: 5556895688 time(s): 0
+2023-04-14 20:33:49.502 D process: read contig: JACYVU010000743.1 total reads: 2524455832 line number: 5556905875 time(s): 0
+2023-04-14 20:33:49.506 D process: read contig: JACYVU010000744.1 total reads: 2524458631 line number: 5556919665 time(s): 0
+2023-04-14 20:33:49.508 D process: read contig: MU150225.1 total reads: 2524460616 line number: 5556924863 time(s): 0
+2023-04-14 20:33:49.511 D process: read contig: MU150226.1 total reads: 2524464134 line number: 5556933672 time(s): 0
+2023-04-14 20:33:49.512 D process: read contig: JACYVU010000749.1 total reads: 2524466679 line number: 5556937167 time(s): 0
+2023-04-14 20:33:49.514 D process: read contig: JACYVU010000750.1 total reads: 2524468411 line number: 5556942051 time(s): 0
+2023-04-14 20:33:49.522 D process: read contig: MU150227.1 total reads: 2524490283 line number: 5556966674 time(s): 0
+2023-04-14 20:33:49.525 D process: read contig: JACYVU010000753.1 total reads: 2524491117 line number: 5556972170 time(s): 0
+2023-04-14 20:33:49.525 D process: read contig: JACYVU010000754.1 total reads: 2524491136 line number: 5556972237 time(s): 0
+2023-04-14 20:33:49.525 D process: read contig: JACYVU010000755.1 total reads: 2524492089 line number: 5556974276 time(s): 0
+2023-04-14 20:33:49.525 D process: read contig: JACYVU010000756.1 total reads: 2524492562 line number: 5556975496 time(s): 0
+2023-04-14 20:33:49.526 D process: read contig: JACYVU010000590.1 total reads: 2524492864 line number: 5556975909 time(s): 0
+2023-04-14 20:33:49.548 D process: read contig: MU150200.1 total reads: 2524519516 line number: 5557039787 time(s): 0
+2023-04-14 20:33:49.549 D process: read contig: JACYVU010000596.1 total reads: 2524519913 line number: 5557041004 time(s): 0
+2023-04-14 20:33:49.550 D process: read contig: JACYVU010000595.1 total reads: 2524521098 line number: 5557043679 time(s): 0
+2023-04-14 20:33:49.553 D process: read contig: JACYVU010000597.1 total reads: 2524526810 line number: 5557053482 time(s): 0
+2023-04-14 20:33:49.553 D process: read contig: JACYVU010000598.1 total reads: 2524527061 line number: 5557053935 time(s): 0
+2023-04-14 20:33:49.555 D process: read contig: JACYVU010000601.1 total reads: 2524530397 line number: 5557059874 time(s): 0
+2023-04-14 20:33:49.556 D process: read contig: JACYVU010000599.1 total reads: 2524531166 line number: 5557061701 time(s): 0
+2023-04-14 20:33:49.557 D process: read contig: JACYVU010000600.1 total reads: 2524532374 line number: 5557065033 time(s): 0
+2023-04-14 20:33:49.559 D process: read contig: JACYVU010000602.1 total reads: 2524535802 line number: 5557070615 time(s): 0
+2023-04-14 20:33:49.560 D process: read contig: JACYVU010000603.1 total reads: 2524538382 line number: 5557073693 time(s): 0
+2023-04-14 20:33:49.560 D process: read contig: JACYVU010000604.1 total reads: 2524538416 line number: 5557073864 time(s): 0
+2023-04-14 20:33:49.560 D process: read contig: JACYVU010000605.1 total reads: 2524538475 line number: 5557074131 time(s): 0
+2023-04-14 20:33:49.561 D process: read contig: JACYVU010000606.1 total reads: 2524539802 line number: 5557076330 time(s): 0
+2023-04-14 20:33:49.561 D process: read contig: JACYVU010000607.1 total reads: 2524540850 line number: 5557077452 time(s): 0
+2023-04-14 20:33:49.561 D process: read contig: JACYVU010000608.1 total reads: 2524541539 line number: 5557078840 time(s): 0
+2023-04-14 20:33:49.562 D process: read contig: JACYVU010000609.1 total reads: 2524541890 line number: 5557080374 time(s): 0
+2023-04-14 20:33:49.562 D process: read contig: JACYVU010000610.1 total reads: 2524542621 line number: 5557081785 time(s): 0
+2023-04-14 20:33:49.563 D process: read contig: JACYVU010000611.1 total reads: 2524543614 line number: 5557084195 time(s): 0
+2023-04-14 20:33:49.563 D process: read contig: JACYVU010000612.1 total reads: 2524543898 line number: 5557085446 time(s): 0
+2023-04-14 20:33:49.564 D process: read contig: JACYVU010000613.1 total reads: 2524544048 line number: 5557085683 time(s): 0
+2023-04-14 20:33:49.564 D process: read contig: JACYVU010000614.1 total reads: 2524544243 line number: 5557086011 time(s): 0
+2023-04-14 20:33:49.567 D process: read contig: MU150201.1 total reads: 2524549252 line number: 5557095900 time(s): 0
+2023-04-14 20:33:49.568 D process: read contig: MU150202.1 total reads: 2524550079 line number: 5557096885 time(s): 0
+2023-04-14 20:33:49.573 D process: read contig: JACYVU010000619.1 total reads: 2524560344 line number: 5557115171 time(s): 0
+2023-04-14 20:33:49.575 D process: read contig: JACYVU010000620.1 total reads: 2524562264 line number: 5557118798 time(s): 0
+2023-04-14 20:33:49.576 D process: read contig: JACYVU010000621.1 total reads: 2524563782 line number: 5557121803 time(s): 0
+2023-04-14 20:33:49.576 D process: read contig: JACYVU010000622.1 total reads: 2524564192 line number: 5557122310 time(s): 0
+2023-04-14 20:33:49.578 D process: read contig: JACYVU010000624.1 total reads: 2524567103 line number: 5557127940 time(s): 0
+2023-04-14 20:33:49.578 D process: read contig: JACYVU010000625.1 total reads: 2524567303 line number: 5557128358 time(s): 0
+2023-04-14 20:33:49.578 D process: read contig: JACYVU010000623.1 total reads: 2524567858 line number: 5557128988 time(s): 0
+2023-04-14 20:33:49.582 D process: read contig: MU150203.1 total reads: 2524572910 line number: 5557138524 time(s): 0
+2023-04-14 20:33:49.585 D process: read contig: JACYVU010000626.1 total reads: 2524576443 line number: 5557146204 time(s): 0
+2023-04-14 20:33:49.586 D process: read contig: JACYVU010000589.1 total reads: 2524579384 line number: 5557150257 time(s): 0
+2023-04-14 20:33:49.586 D process: read contig: JACYVU010000629.1 total reads: 2524579484 line number: 5557150566 time(s): 0
+2023-04-14 20:33:49.586 D process: read contig: JACYVU010000630.1 total reads: 2524580387 line number: 5557151758 time(s): 0
+2023-04-14 20:33:49.586 D process: read contig: JACYVU010000632.1 total reads: 2524580897 line number: 5557152760 time(s): 0
+2023-04-14 20:33:49.587 D process: read contig: JACYVU010000631.1 total reads: 2524581874 line number: 5557155699 time(s): 0
+2023-04-14 20:33:49.587 D process: read contig: JACYVU010000633.1 total reads: 2524582117 line number: 5557156484 time(s): 0
+2023-04-14 20:33:49.588 D process: read contig: JACYVU010000634.1 total reads: 2524584183 line number: 5557160535 time(s): 0
+2023-04-14 20:33:49.591 D process: read contig: JACYVU010000635.1 total reads: 2524588149 line number: 5557164972 time(s): 0
+2023-04-14 20:33:49.591 D process: read contig: JACYVU010000636.1 total reads: 2524588618 line number: 5557165962 time(s): 0
+2023-04-14 20:33:49.591 D process: read contig: JACYVU010000637.1 total reads: 2524588833 line number: 5557166326 time(s): 0
+2023-04-14 20:33:49.594 D process: read contig: JACYVU010000638.1 total reads: 2524592531 line number: 5557171259 time(s): 0
+2023-04-14 20:33:49.594 D process: read contig: JACYVU010000639.1 total reads: 2524593270 line number: 5557172742 time(s): 0
+2023-04-14 20:33:49.594 D process: read contig: JACYVU010000640.1 total reads: 2524593917 line number: 5557173492 time(s): 0
+2023-04-14 20:33:49.595 D process: read contig: JACYVU010000641.1 total reads: 2524594790 line number: 5557175709 time(s): 0
+2023-04-14 20:33:49.597 D process: read contig: JACYVU010000642.1 total reads: 2524598757 line number: 5557181975 time(s): 0
+2023-04-14 20:33:49.598 D process: read contig: JACYVU010000643.1 total reads: 2524599986 line number: 5557184116 time(s): 0
+2023-04-14 20:33:49.602 D process: read contig: JACYVU010000644.1 total reads: 2524606040 line number: 5557197873 time(s): 0
+2023-04-14 20:33:49.603 D process: read contig: JACYVU010000645.1 total reads: 2524606868 line number: 5557199150 time(s): 0
+2023-04-14 20:33:49.603 D process: read contig: JACYVU010000646.1 total reads: 2524607060 line number: 5557199450 time(s): 0
+2023-04-14 20:33:49.603 D process: read contig: JACYVU010000647.1 total reads: 2524607416 line number: 5557203241 time(s): 0
+2023-04-14 20:33:49.606 D process: read contig: JACYVU010000648.1 total reads: 2524608641 line number: 5557205972 time(s): 0
+2023-04-14 20:33:49.606 D process: read contig: JACYVU010000649.1 total reads: 2524608863 line number: 5557206937 time(s): 0
+2023-04-14 20:33:49.608 D process: read contig: MU150204.1 total reads: 2524611851 line number: 5557211335 time(s): 0
+2023-04-14 20:33:49.608 D process: read contig: JACYVU010000652.1 total reads: 2524611983 line number: 5557211800 time(s): 0
+2023-04-14 20:33:49.609 D process: read contig: JACYVU010000655.1 total reads: 2524614565 line number: 5557216025 time(s): 0
+2023-04-14 20:33:49.611 D process: read contig: JACYVU010000653.1 total reads: 2524619039 line number: 5557222760 time(s): 0
+2023-04-14 20:33:49.612 D process: read contig: JACYVU010000654.1 total reads: 2524619200 line number: 5557223074 time(s): 0
+2023-04-14 20:33:49.618 D process: read contig: JACYVU010000315.1 total reads: 2524629368 line number: 5557240445 time(s): 0
+2023-04-14 20:33:49.618 D process: read contig: MU150205.1 total reads: 2524629722 line number: 5557241159 time(s): 0
+2023-04-14 20:33:49.618 D process: read contig: JACYVU010000658.1 total reads: 2524630304 line number: 5557242673 time(s): 0
+2023-04-14 20:33:49.619 D process: read contig: JACYVU010000316.1 total reads: 2524630567 line number: 5557243009 time(s): 0
+2023-04-14 20:33:49.620 D process: read contig: MU150206.1 total reads: 2524632537 line number: 5557246484 time(s): 0
+2023-04-14 20:33:49.621 D process: read contig: JACYVU010000661.1 total reads: 2524632785 line number: 5557247038 time(s): 0
+2023-04-14 20:33:49.622 D process: read contig: JACYVU010000662.1 total reads: 2524633458 line number: 5557248741 time(s): 0
+2023-04-14 20:33:49.622 D process: read contig: JACYVU010000587.1 total reads: 2524633476 line number: 5557249635 time(s): 0
+2023-04-14 20:33:49.622 D process: read contig: JACYVU010000317.1 total reads: 2524633712 line number: 5557250329 time(s): 0
+2023-04-14 20:33:49.622 D process: read contig: JACYVU010000663.1 total reads: 2524633767 line number: 5557250613 time(s): 0
+2023-04-14 20:33:49.622 D process: read contig: JACYVU010000664.1 total reads: 2524634191 line number: 5557251126 time(s): 0
+2023-04-14 20:33:49.624 D process: read contig: JACYVU010000665.1 total reads: 2524638358 line number: 5557257302 time(s): 0
+2023-04-14 20:33:49.625 D process: read contig: MU150207.1 total reads: 2524639748 line number: 5557260321 time(s): 0
+2023-04-14 20:33:49.625 D process: read contig: JACYVU010000318.1 total reads: 2524639880 line number: 5557260990 time(s): 0
+2023-04-14 20:33:49.626 D process: read contig: JACYVU010000668.1 total reads: 2524640456 line number: 5557262904 time(s): 0
+2023-04-14 20:33:49.629 D process: read contig: JACYVU010000669.1 total reads: 2524645200 line number: 5557268242 time(s): 0
+2023-04-14 20:33:49.629 D process: read contig: JACYVU010000670.1 total reads: 2524645263 line number: 5557268687 time(s): 0
+2023-04-14 20:33:49.629 D process: read contig: MU150208.1 total reads: 2524645341 line number: 5557268824 time(s): 0
+2023-04-14 20:33:49.629 D process: read contig: JACYVU010000671.1 total reads: 2524645425 line number: 5557269242 time(s): 0
+2023-04-14 20:33:49.629 D process: read contig: JACYVU010000674.1 total reads: 2524646096 line number: 5557270204 time(s): 0
+2023-04-14 20:33:49.630 D process: read contig: JACYVU010000675.1 total reads: 2524647348 line number: 5557271977 time(s): 0
+2023-04-14 20:33:49.630 D process: read contig: JACYVU010000676.1 total reads: 2524647457 line number: 5557272819 time(s): 0
+2023-04-14 20:33:49.630 D process: read contig: JACYVU010000677.1 total reads: 2524647610 line number: 5557273401 time(s): 0
+2023-04-14 20:33:49.630 D process: read contig: JACYVU010000678.1 total reads: 2524647988 line number: 5557274035 time(s): 0
+2023-04-14 20:33:49.632 D process: read contig: JACYVU010000679.1 total reads: 2524649395 line number: 5557276427 time(s): 0
+2023-04-14 20:33:49.632 D process: read contig: JACYVU010000680.1 total reads: 2524650415 line number: 5557277838 time(s): 0
+2023-04-14 20:33:49.633 D process: read contig: JACYVU010000681.1 total reads: 2524651570 line number: 5557279450 time(s): 0
+2023-04-14 20:33:49.633 D process: read contig: JACYVU010000682.1 total reads: 2524652167 line number: 5557280321 time(s): 0
+2023-04-14 20:33:49.633 D process: read contig: MU150209.1 total reads: 2524652270 line number: 5557280532 time(s): 0
+2023-04-14 20:33:49.633 D process: read contig: MU150210.1 total reads: 2524652400 line number: 5557281025 time(s): 0
+2023-04-14 20:33:49.866 D process: read contig: MU150211.1 total reads: 2524664637 line number: 5557905133 time(s): 0
+2023-04-14 20:33:49.867 D process: read contig: JACYVU010000689.1 total reads: 2524666152 line number: 5557906878 time(s): 0
+2023-04-14 20:33:49.867 D process: read contig: JACYVU010000690.1 total reads: 2524666305 line number: 5557907068 time(s): 0
+2023-04-14 20:33:49.867 D process: read contig: MU150212.1 total reads: 2524666325 line number: 5557907090 time(s): 0
+2023-04-14 20:33:49.867 D process: read contig: JACYVU010000693.1 total reads: 2524666327 line number: 5557907109 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000588.1 total reads: 2524667631 line number: 5557908646 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: MU150213.1 total reads: 2524667635 line number: 5557908654 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000696.1 total reads: 2524667677 line number: 5557908829 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: MU150214.1 total reads: 2524667677 line number: 5557908830 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000699.1 total reads: 2524667680 line number: 5557908834 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000700.1 total reads: 2524667680 line number: 5557908834 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000701.1 total reads: 2524667683 line number: 5557908837 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000702.1 total reads: 2524667683 line number: 5557908837 time(s): 0
+2023-04-14 20:33:49.868 D process: read contig: JACYVU010000703.1 total reads: 2524667685 line number: 5557908839 time(s): 0
+2023-04-14 20:33:49.880 D process: read total reads: 2524667685 line number: 5557908839 time(s): 3849
+2023-04-14 20:33:49.938 D process: prepare total reads: 1262333842 time(s): 3849
+2023-04-14 20:33:49.956 D process: prepare total reads: 1262333843 time(s): 3849
+2023-04-14 20:34:01.396 D process: uniq reads: 61126604 time(s): 3860
+2023-04-14 20:34:01.399 D process: filterted reads: 990197420 annotated reads: 755660532 time(s): 3860
+2023-04-14 20:38:36.153 D process: write total reads: 2524667685 time(s): 4135
+2023-04-14 20:38:36.154 I process: Total reads:2524667685 Pass filter reads:990197420 Annotated reads:755660532 Unique reads:61126604
+2023-04-14 20:38:36.159 I process: Failed filter rate:60.78%
+2023-04-14 20:38:36.159 I process: Failed annotate rate:23.69%
+2023-04-14 20:38:36.159 I process: Duplication rate:91.91%
+2023-04-14 20:38:36.173 I process: Success dump metrics file: /scratch/u/qqiu/project/multiomics/stereo_seq/result/954BR_F4/02.count/SS200000954BR_F4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat
+2023-04-14 20:38:37.184 D process: memory(GB) after process: 110.226
+2023-04-14 20:39:21.473 I main: Bam2Gem done. Elapsed time(s):4211

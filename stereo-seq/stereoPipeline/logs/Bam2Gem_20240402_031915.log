@@ -1,0 +1,177 @@
+2024-04-02 03:19:15.575 I main: /opt/saw_v6.1.0_software/pipeline/count/bin/Bam2Gem inputBamFiles: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/01.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/02.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/03.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/04.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/05.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/06.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/07.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/08.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/09.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/10.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/11.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/12.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/13.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/14.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/15.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/16.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam geneAnnotationFile: /xdisk/mliang1/qqiu/reference/SAW/mm10/genes/genes.gtf outputBamFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam outputExpFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.raw.gef outputMetricsFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat outputSatFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4_raw_barcode_gene_exp.txt saveLowQualReads: true saveDupReads: true umiPara.enable: true umiPara.minUmiNum: 5 umiPara.mismatch: 1 umiPara.len: 10 coreNum: 16 mapQualThre: 10 memoryGB: 128 sn: SS200000849BL_A4 multiMap: false
+2024-04-02 03:19:15.575 D process: assign threads, read bam: 4 write bam: 6 annotation: 2 umi correction: 2
+2024-04-02 03:19:17.443 D process: Bam contigs num:66
+2024-04-02 03:19:17.443 D process: reads buffer size: 287500000 buffer memory(GB): 115
+2024-04-02 03:19:31.571 I gtf: read     100000 valid GTF records. Last read position: chr1:178070529
+2024-04-02 03:19:33.023 I gtf: read     200000 valid GTF records. Last read position: chr2:118400535
+2024-04-02 03:19:34.483 I gtf: read     300000 valid GTF records. Last read position: chr3:94497544
+2024-04-02 03:19:35.945 I gtf: read     400000 valid GTF records. Last read position: chr4:123391051
+2024-04-02 03:19:37.406 I gtf: read     500000 valid GTF records. Last read position: chr5:100786984
+2024-04-02 03:19:38.837 I gtf: read     600000 valid GTF records. Last read position: chr6:80015879
+2024-04-02 03:19:40.285 I gtf: read     700000 valid GTF records. Last read position: chr7:42927805
+2024-04-02 03:19:41.739 I gtf: read     800000 valid GTF records. Last read position: chr8:3159453
+2024-04-02 03:19:43.190 I gtf: read     900000 valid GTF records. Last read position: chr9:31402056
+2024-04-02 03:19:44.626 I gtf: read    1000000 valid GTF records. Last read position: chr10:26772584
+2024-04-02 03:19:46.054 I gtf: read    1100000 valid GTF records. Last read position: chr11:54687544
+2024-04-02 03:19:47.496 I gtf: read    1200000 valid GTF records. Last read position: chr12:5209932
+2024-04-02 03:19:48.929 I gtf: read    1300000 valid GTF records. Last read position: chr13:77254123
+2024-04-02 03:19:50.347 I gtf: read    1400000 valid GTF records. Last read position: chr15:38549343
+2024-04-02 03:19:51.770 I gtf: read    1500000 valid GTF records. Last read position: chr16:59328590
+2024-04-02 03:19:53.192 I gtf: read    1600000 valid GTF records. Last read position: chr17:78961111
+2024-04-02 03:19:54.603 I gtf: read    1700000 valid GTF records. Last read position: chr19:46272175
+2024-04-02 03:19:55.748 I process: loadGTFFile time(s):25
+2024-04-02 03:19:55.854 W process: Strand disagreement for gene Ighv5-8 -- skipping
+2024-04-02 03:19:56.232 W process: Strand disagreement for gene Ighv1-13 -- skipping
+2024-04-02 03:19:56.873 I process: makeOverlapDetector time(s):1
+2024-04-02 03:19:56.873 I process: Gene count:32253
+2024-04-02 03:19:57.087 I process: Using threads num:16
+2024-04-02 03:19:57.198 D process: start anno thread: 0
+2024-04-02 03:19:57.198 D process: start anno thread: 1
+2024-04-02 03:19:57.330 D process: SamWriter init
+2024-04-02 03:24:08.662 D process: find blocked. pointer IO 1887623 1887623
+2024-04-02 03:24:08.672 D process: unblock chr1_Col19a1 read status 2
+2024-04-02 03:24:08.675 D process: gene chr1_Col19a1 store correction data in memory
+2024-04-02 03:24:08.764 D process: find blocked. pointer IO 1910518 1910518
+2024-04-02 03:24:08.764 D process: unblock chr1_Lmbrd1 read status 2
+2024-04-02 03:24:08.764 D process: gene chr1_Lmbrd1 store correction data in memory
+2024-04-02 03:32:37.340 D process: find blocked. pointer IO 41172228 41172228
+2024-04-02 03:32:37.344 D process: unblock chr1_Lmbrd1 read status 2
+2024-04-02 03:32:37.344 D process: gene chr1_Lmbrd1 retrieve correction data
+2024-04-02 03:32:37.344 D process: gene chr1_Lmbrd1 store correction data in memory
+2024-04-02 03:34:53.323 D process: gene chr1_Col19a1 retrieve correction data
+2024-04-02 03:34:53.416 D process: gene chr1_Lmbrd1 retrieve correction data
+2024-04-02 03:36:39.989 D process: read contig: chr1 total reads: 767157915 line number: 833637464 time(s): 1002
+2024-04-02 03:38:08.804 D process: read contig: chr10 total reads: 822715195 line number: 897963732 time(s): 88
+2024-04-02 03:41:33.145 D process: read contig: chr11 total reads: 951459200 line number: 1044985390 time(s): 204
+2024-04-02 03:42:25.149 D process: read contig: chr12 total reads: 981420063 line number: 1088324267 time(s): 52
+2024-04-02 03:43:28.521 D process: read contig: chr13 total reads: 1020375372 line number: 1135594217 time(s): 63
+2024-04-02 03:44:54.806 D process: read contig: chr14 total reads: 1073450922 line number: 1208929936 time(s): 86
+2024-04-02 03:46:40.592 D process: read contig: chr15 total reads: 1141229981 line number: 1287839436 time(s): 105
+2024-04-02 03:47:51.886 D process: read contig: chr16 total reads: 1185191533 line number: 1353660046 time(s): 71
+2024-04-02 03:54:49.273 D process: read contig: chr17 total reads: 1436462696 line number: 1638065882 time(s): 417
+2024-04-02 03:55:37.146 D process: read contig: chr18 total reads: 1465133452 line number: 1677458711 time(s): 47
+2024-04-02 03:56:31.476 D process: read contig: chr19 total reads: 1499215772 line number: 1716049150 time(s): 54
+2024-04-02 03:59:59.803 D process: read contig: chr2 total reads: 1615154476 line number: 1887183462 time(s): 208
+2024-04-02 04:01:46.391 D process: read contig: chr3 total reads: 1681228939 line number: 1961492984 time(s): 106
+2024-04-02 04:03:02.986 D process: read contig: chr4 total reads: 1731454126 line number: 2023584987 time(s): 76
+2024-04-02 04:05:29.009 D process: read contig: chr5 total reads: 1823337603 line number: 2126534454 time(s): 146
+2024-04-02 04:07:42.518 D process: read contig: chr6 total reads: 1902603810 line number: 2234322918 time(s): 133
+2024-04-02 04:10:34.264 D process: read contig: chr7 total reads: 2009766820 line number: 2354513587 time(s): 171
+2024-04-02 04:12:19.028 D process: read contig: chr8 total reads: 2075091211 line number: 2431393519 time(s): 104
+2024-04-02 04:15:05.220 D process: read contig: chr9 total reads: 2174392824 line number: 2543406902 time(s): 166
+2024-04-02 04:22:50.857 D process: find blocked. pointer IO 161893778 161893778
+2024-04-02 04:22:50.858 D process: unblock chrM_mt-Cytb read status 2
+2024-04-02 04:22:50.880 D process: gene chrM_mt-Cytb store correction data in memory
+2024-04-02 04:22:50.964 D process: find blocked. pointer IO 161902401 161902401
+2024-04-02 04:22:50.964 D process: unblock chrM_mt-Atp6 read status 2
+2024-04-02 04:22:50.980 D process: gene chrM_mt-Atp6 store correction data in memory
+2024-04-02 04:22:51.064 D process: find blocked. pointer IO 161902447 161902447
+2024-04-02 04:22:51.064 D process: unblock chrM_mt-Co1 read status 2
+2024-04-02 04:22:51.084 D process: gene chrM_mt-Co1 store correction data in memory
+2024-04-02 04:22:51.165 D process: find blocked. pointer IO 161903543 161903543
+2024-04-02 04:22:51.165 D process: unblock chrM_mt-Nd1 read status 2
+2024-04-02 04:23:36.118 D process: gene chrM_mt-Nd1 store correction data in memory
+2024-04-02 04:23:36.401 D process: find blocked. pointer IO 161904062 161904062
+2024-04-02 04:23:36.401 D process: unblock chrM_mt-Nd4 read status 2
+2024-04-02 04:23:36.424 D process: gene chrM_mt-Nd4 store correction data in memory
+2024-04-02 04:23:36.502 D process: find blocked. pointer IO 161904485 161904485
+2024-04-02 04:23:36.502 D process: unblock chrM_mt-Nd3 read status 2
+2024-04-02 04:23:36.508 D process: gene chrM_mt-Nd3 store correction data in memory
+2024-04-02 04:23:36.636 D process: find blocked. pointer IO 161942046 161942046
+2024-04-02 04:23:36.636 D process: unblock chrM_mt-Nd5 read status 2
+2024-04-02 04:23:36.639 D process: gene chrM_mt-Nd5 store correction data in memory
+2024-04-02 04:23:36.741 D process: find blocked. pointer IO 161950140 161950140
+2024-04-02 04:23:36.741 D process: unblock chrM_mt-Co2 read status 2
+2024-04-02 04:23:36.758 D process: gene chrM_mt-Co2 store correction data in memory
+2024-04-02 04:23:36.881 D process: find blocked. pointer IO 161993023 161993023
+2024-04-02 04:23:36.881 D process: unblock chrM_mt-Atp8 read status 2
+2024-04-02 04:23:36.882 D process: gene chrM_mt-Atp8 store correction data in memory
+2024-04-02 04:23:36.985 D process: find blocked. pointer IO 161998093 161998093
+2024-04-02 04:23:36.985 D process: unblock chrM_mt-Nd2 read status 2
+2024-04-02 04:23:36.997 D process: gene chrM_mt-Nd2 store correction data in memory
+2024-04-02 04:23:37.196 D process: find blocked. pointer IO 162104770 162104770
+2024-04-02 04:23:37.196 D process: unblock chrM_mt-Co3 read status 2
+2024-04-02 04:23:37.207 D process: gene chrM_mt-Co3 store correction data in memory
+2024-04-02 04:23:55.085 D process: find blocked. pointer IO 174006663 174006663
+2024-04-02 04:23:55.085 D process: unblock chrM_mt-Nd6 read status 2
+2024-04-02 04:23:55.086 D process: gene chrM_mt-Nd6 store correction data in memory
+2024-04-02 04:24:10.900 D process: gene chrM_mt-Nd1 retrieve correction data
+2024-04-02 04:24:42.732 D process: find blocked. pointer IO 186342139 186342139
+2024-04-02 04:24:42.733 D process: unblock chrM_mt-Nd4l read status 2
+2024-04-02 04:24:42.753 D process: gene chrM_mt-Nd4l store correction data in memory
+2024-04-02 04:25:22.841 D process: gene chrM_mt-Nd2 retrieve correction data
+2024-04-02 04:29:24.330 D process: gene chrM_mt-Co1 retrieve correction data
+2024-04-02 04:30:46.194 D process: gene chrM_mt-Co2 retrieve correction data
+2024-04-02 04:30:48.799 D process: gene chrM_mt-Atp8 retrieve correction data
+2024-04-02 04:32:00.607 D process: gene chrM_mt-Atp6 retrieve correction data
+2024-04-02 04:33:43.746 D process: gene chrM_mt-Co3 retrieve correction data
+2024-04-02 04:33:53.832 D process: gene chrM_mt-Nd3 retrieve correction data
+2024-04-02 04:33:56.296 D process: gene chrM_mt-Nd4l retrieve correction data
+2024-04-02 04:35:29.481 D process: gene chrM_mt-Nd4 retrieve correction data
+2024-04-02 04:35:43.385 D process: gene chrM_mt-Nd5 retrieve correction data
+2024-04-02 04:35:57.021 D process: gene chrM_mt-Nd6 retrieve correction data
+2024-04-02 04:36:52.304 D process: find blocked. pointer IO 162444317 162444317
+2024-04-02 04:36:52.304 D process: unblock chrM_mt-Cytb read status 2
+2024-04-02 04:36:53.728 D process: gene chrM_mt-Cytb retrieve correction data
+2024-04-02 04:37:13.892 D process: gene chrM_mt-Cytb store correction data in memory
+2024-04-02 04:38:19.575 D process: read contig: chrM total reads: 2792193581 line number: 3897434838 time(s): 1394
+2024-04-02 04:38:21.136 D process: gene chrM_mt-Cytb retrieve correction data
+2024-04-02 04:38:53.771 D process: read contig: chrX total reads: 2813213013 line number: 3926559584 time(s): 34
+2024-04-02 04:38:54.379 D process: read contig: chrY total reads: 2813612927 line number: 3927336990 time(s): 0
+2024-04-02 04:38:54.388 D process: read contig: JH584299.1 total reads: 2813616564 line number: 3927354322 time(s): 0
+2024-04-02 04:38:54.398 D process: read contig: GL456233.1 total reads: 2813627232 line number: 3927365319 time(s): 0
+2024-04-02 04:38:54.399 D process: read contig: JH584301.1 total reads: 2813627278 line number: 3927365799 time(s): 0
+2024-04-02 04:38:54.403 D process: read contig: GL456211.1 total reads: 2813629276 line number: 3927375542 time(s): 0
+2024-04-02 04:38:54.414 D process: read contig: GL456350.1 total reads: 2813635366 line number: 3927396464 time(s): 0
+2024-04-02 04:38:54.431 D process: read contig: JH584293.1 total reads: 2813636247 line number: 3927431085 time(s): 0
+2024-04-02 04:38:54.439 D process: read contig: GL456221.1 total reads: 2813639505 line number: 3927443845 time(s): 0
+2024-04-02 04:38:54.444 D process: read contig: JH584297.1 total reads: 2813640060 line number: 3927453425 time(s): 0
+2024-04-02 04:38:54.447 D process: read contig: JH584296.1 total reads: 2813642277 line number: 3927461082 time(s): 0
+2024-04-02 04:38:54.447 D process: read contig: GL456354.1 total reads: 2813642353 line number: 3927461621 time(s): 0
+2024-04-02 04:38:54.476 D process: read contig: JH584294.1 total reads: 2813650013 line number: 3927509287 time(s): 0
+2024-04-02 04:38:54.479 D process: read contig: JH584298.1 total reads: 2813651597 line number: 3927512811 time(s): 0
+2024-04-02 04:38:54.479 D process: read contig: JH584300.1 total reads: 2813651598 line number: 3927514667 time(s): 0
+2024-04-02 04:38:54.479 D process: read contig: GL456219.1 total reads: 2813651623 line number: 3927514956 time(s): 0
+2024-04-02 04:38:54.483 D process: read contig: GL456210.1 total reads: 2813653094 line number: 3927520912 time(s): 0
+2024-04-02 04:38:54.483 D process: read contig: JH584303.1 total reads: 2813653098 line number: 3927520966 time(s): 0
+2024-04-02 04:38:54.483 D process: read contig: JH584302.1 total reads: 2813653100 line number: 3927520995 time(s): 0
+2024-04-02 04:38:54.489 D process: read contig: GL456212.1 total reads: 2813655901 line number: 3927533023 time(s): 0
+2024-04-02 04:38:54.605 D process: read contig: JH584304.1 total reads: 2813724497 line number: 3927711699 time(s): 0
+2024-04-02 04:38:54.609 D process: read contig: GL456379.1 total reads: 2813727235 line number: 3927718504 time(s): 0
+2024-04-02 04:38:54.625 D process: read contig: GL456216.1 total reads: 2813743361 line number: 3927734824 time(s): 0
+2024-04-02 04:38:54.626 D process: read contig: GL456393.1 total reads: 2813743931 line number: 3927735567 time(s): 0
+2024-04-02 04:38:54.627 D process: read contig: GL456366.1 total reads: 2813745308 line number: 3927736964 time(s): 0
+2024-04-02 04:38:54.627 D process: read contig: GL456367.1 total reads: 2813745415 line number: 3927737157 time(s): 0
+2024-04-02 04:38:54.627 D process: read contig: GL456239.1 total reads: 2813745470 line number: 3927737228 time(s): 0
+2024-04-02 04:38:54.628 D process: read contig: GL456213.1 total reads: 2813745730 line number: 3927739918 time(s): 0
+2024-04-02 04:38:54.630 D process: read contig: GL456383.1 total reads: 2813746715 line number: 3927741489 time(s): 0
+2024-04-02 04:38:54.630 D process: read contig: GL456385.1 total reads: 2813746753 line number: 3927741559 time(s): 0
+2024-04-02 04:38:54.631 D process: read contig: GL456360.1 total reads: 2813748428 line number: 3927743352 time(s): 0
+2024-04-02 04:38:54.635 D process: read contig: GL456378.1 total reads: 2813751597 line number: 3927747419 time(s): 0
+2024-04-02 04:38:54.637 D process: read contig: GL456389.1 total reads: 2813753975 line number: 3927750741 time(s): 0
+2024-04-02 04:38:54.638 D process: read contig: GL456372.1 total reads: 2813754171 line number: 3927751348 time(s): 0
+2024-04-02 04:38:54.639 D process: read contig: GL456370.1 total reads: 2813755456 line number: 3927753280 time(s): 0
+2024-04-02 04:38:54.639 D process: read contig: GL456381.1 total reads: 2813755458 line number: 3927753284 time(s): 0
+2024-04-02 04:38:54.639 D process: read contig: GL456387.1 total reads: 2813755463 line number: 3927753289 time(s): 0
+2024-04-02 04:38:54.639 D process: read contig: GL456390.1 total reads: 2813755541 line number: 3927753484 time(s): 0
+2024-04-02 04:38:54.639 D process: read contig: GL456394.1 total reads: 2813755541 line number: 3927753484 time(s): 0
+2024-04-02 04:38:54.642 D process: read contig: GL456392.1 total reads: 2813757291 line number: 3927756500 time(s): 0
+2024-04-02 04:38:54.700 D process: read contig: GL456382.1 total reads: 2813759355 line number: 3927880388 time(s): 0
+2024-04-02 04:38:54.701 D process: read contig: GL456359.1 total reads: 2813760463 line number: 3927881517 time(s): 0
+2024-04-02 04:38:54.702 D process: read contig: GL456396.1 total reads: 2813761202 line number: 3927882797 time(s): 0
+2024-04-02 04:38:54.702 D process: read contig: GL456368.1 total reads: 2813761297 line number: 3927883098 time(s): 0
+2024-04-02 04:38:54.703 D process: read contig: JH584292.1 total reads: 2813761672 line number: 3927883996 time(s): 0
+2024-04-02 04:38:54.710 D process: read contig: JH584295.1 total reads: 2813769376 line number: 3927891710 time(s): 0
+2024-04-02 04:38:54.731 D process: read total reads: 2813769376 line number: 3927891710 time(s): 4737
+2024-04-02 04:38:54.787 D process: prepare total reads: 1406884688 time(s): 4737
+2024-04-02 04:38:55.050 D process: prepare total reads: 1406884688 time(s): 4737
+2024-04-02 04:39:17.351 D process: uniq reads: 59313660 time(s): 4760
+2024-04-02 04:39:17.355 D process: filterted reads: 1868396983 annotated reads: 1237014081 time(s): 4760
+2024-04-02 04:46:36.239 D process: write total reads: 2813769376 time(s): 5199
+2024-04-02 04:46:36.240 I process: Total reads:2813769376 Pass filter reads:1868396983 Annotated reads:1237014081 Unique reads:59313660
+2024-04-02 04:46:36.241 I process: Failed filter rate:33.60%
+2024-04-02 04:46:36.241 I process: Failed annotate rate:33.79%
+2024-04-02 04:46:36.241 I process: Duplication rate:95.21%
+2024-04-02 04:46:36.250 I process: Success dump metrics file: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat
+2024-04-02 04:46:37.276 D process: memory(GB) after process: 116.436
+2024-04-02 04:47:00.975 I main: Bam2Gem done. Elapsed time(s):5265

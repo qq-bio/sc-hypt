@@ -1,0 +1,98 @@
+2024-03-27 16:07:50.866 I main: /opt/saw_v6.1.0_software/pipeline/count/bin/Bam2Gem inputBamFiles: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/01.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/02.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/03.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/04.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/05.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/06.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/07.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/08.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/09.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/10.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/11.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/12.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/13.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/14.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/15.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/00.mapping/16.SS200000849BL_A4.Q4_SE.Aligned.sortedByCoord.out.bam geneAnnotationFile: /xdisk/mliang1/qqiu/reference/SAW/rn7/genes/genes.gtf outputBamFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam outputExpFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.raw.gef outputMetricsFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4.Aligned.sortedByCoord.out.merge.q10.dedup.target.bam.summary.stat outputSatFile: /xdisk/mliang1/qqiu/project/multiomics-hypertension/stereo_seq/result/849BL_A4/02.count/SS200000849BL_A4_raw_barcode_gene_exp.txt saveLowQualReads: true saveDupReads: true umiPara.enable: true umiPara.minUmiNum: 5 umiPara.mismatch: 1 umiPara.len: 10 coreNum: 16 mapQualThre: 10 memoryGB: 128 sn: SS200000849BL_A4 multiMap: false
+2024-03-27 16:07:50.866 D process: assign threads, read bam: 4 write bam: 6 annotation: 2 umi correction: 2
+2024-03-27 16:07:53.125 D process: Bam contigs num:23
+2024-03-27 16:07:53.125 D process: reads buffer size: 287500000 buffer memory(GB): 115
+2024-03-27 16:08:06.867 I gtf: read     100000 valid GTF records. Last read position: 1:202405761
+2024-03-27 16:08:07.960 I gtf: read     200000 valid GTF records. Last read position: 2:175564797
+2024-03-27 16:08:09.042 I gtf: read     300000 valid GTF records. Last read position: 3:64561038
+2024-03-27 16:08:10.121 I gtf: read     400000 valid GTF records. Last read position: 5:56064750
+2024-03-27 16:08:11.323 I gtf: read     500000 valid GTF records. Last read position: 6:102961276
+2024-03-27 16:08:12.403 I gtf: read     600000 valid GTF records. Last read position: 7:75722328
+2024-03-27 16:08:13.468 I gtf: read     700000 valid GTF records. Last read position: 9:705750
+2024-03-27 16:08:14.540 I gtf: read     800000 valid GTF records. Last read position: 10:49847233
+2024-03-27 16:08:15.614 I gtf: read     900000 valid GTF records. Last read position: 14:2857161
+2024-03-27 16:08:16.706 I gtf: read    1000000 valid GTF records. Last read position: 11:62320493
+2024-03-27 16:08:17.790 I gtf: read    1100000 valid GTF records. Last read position: 19:9345934
+2024-03-27 16:08:18.752 I process: loadGTFFile time(s):12
+2024-03-27 16:08:18.760 W process: Strand disagreement for gene Mafk -- skipping
+2024-03-27 16:08:18.766 W process: Strand disagreement for gene Sry3 -- skipping
+2024-03-27 16:08:18.770 W process: Strand disagreement for gene Tspyl1 -- skipping
+2024-03-27 16:08:18.770 W process: Strand disagreement for gene Olr1730 -- skipping
+2024-03-27 16:08:18.799 W process: Strand disagreement for gene Defb12 -- skipping
+2024-03-27 16:08:18.800 W process: Strand disagreement for gene RGD1562641 -- skipping
+2024-03-27 16:08:18.815 W process: Strand disagreement for gene Hist1h2bq -- skipping
+2024-03-27 16:08:18.815 W process: Strand disagreement for gene Olr1654 -- skipping
+2024-03-27 16:08:18.839 W process: Strand disagreement for gene Gbp6 -- skipping
+2024-03-27 16:08:18.860 W process: Strand disagreement for gene Pcdh7 -- skipping
+2024-03-27 16:08:18.866 W process: Strand disagreement for gene MGC105649 -- skipping
+2024-03-27 16:08:18.895 W process: Strand disagreement for gene Y_RNA -- skipping
+2024-03-27 16:08:18.904 W process: Strand disagreement for gene Atp5mc1 -- skipping
+2024-03-27 16:08:18.909 W process: Strand disagreement for gene Lcn1 -- skipping
+2024-03-27 16:08:18.920 W process: Strand disagreement for gene SNORA73 -- skipping
+2024-03-27 16:08:18.922 W process: Strand disagreement for gene Sumo3 -- skipping
+2024-03-27 16:08:18.930 W process: Strand disagreement for gene Tuba3b -- skipping
+2024-03-27 16:08:18.936 W process: Strand disagreement for gene Gnrh1 -- skipping
+2024-03-27 16:08:18.949 W process: Strand disagreement for gene Necab1 -- skipping
+2024-03-27 16:08:18.952 W process: Strand disagreement for gene Samd8 -- skipping
+2024-03-27 16:08:18.962 W process: Strand disagreement for gene U2 -- skipping
+2024-03-27 16:08:18.970 W process: Strand disagreement for gene Sub1 -- skipping
+2024-03-27 16:08:18.971 W process: Strand disagreement for gene Vom2r8 -- skipping
+2024-03-27 16:08:18.971 W process: Strand disagreement for gene SNORA72 -- skipping
+2024-03-27 16:08:18.973 W process: Strand disagreement for gene SNORA71 -- skipping
+2024-03-27 16:08:18.981 W process: Strand disagreement for gene SNORA70 -- skipping
+2024-03-27 16:08:18.985 W process: Strand disagreement for gene Tcte1 -- skipping
+2024-03-27 16:08:18.985 W process: Strand disagreement for gene Sdhaf1 -- skipping
+2024-03-27 16:08:18.988 W process: Strand disagreement for gene Vom2r80 -- skipping
+2024-03-27 16:08:18.993 W process: Strand disagreement for gene Selenow -- skipping
+2024-03-27 16:08:18.994 W process: Strand disagreement for gene Vom2r31 -- skipping
+2024-03-27 16:08:19.017 W process: Strand disagreement for gene U1 -- skipping
+2024-03-27 16:08:19.021 W process: Strand disagreement for gene Olr1542 -- skipping
+2024-03-27 16:08:19.026 W process: Strand disagreement for gene RNaseP_nuc -- skipping
+2024-03-27 16:08:19.029 W process: Strand disagreement for gene RGD1560718 -- skipping
+2024-03-27 16:08:19.042 W process: Strand disagreement for gene U7 -- skipping
+2024-03-27 16:08:19.046 W process: Strand disagreement for gene Vom2r26 -- skipping
+2024-03-27 16:08:19.049 W process: Strand disagreement for gene 5S_rRNA -- skipping
+2024-03-27 16:08:19.050 W process: Strand disagreement for gene U5 -- skipping
+2024-03-27 16:08:19.051 W process: Strand disagreement for gene Ces2g -- skipping
+2024-03-27 16:08:19.061 W process: Strand disagreement for gene Fam181b -- skipping
+2024-03-27 16:08:19.062 W process: Strand disagreement for gene Smptb -- skipping
+2024-03-27 16:08:19.063 W process: Strand disagreement for gene Vom2r33 -- skipping
+2024-03-27 16:08:19.085 W process: Strand disagreement for gene Vom2r11 -- skipping
+2024-03-27 16:08:19.090 W process: Strand disagreement for gene Prp15 -- skipping
+2024-03-27 16:08:19.096 W process: Strand disagreement for gene Cesl1 -- skipping
+2024-03-27 16:08:19.107 W process: Strand disagreement for gene Klk15 -- skipping
+2024-03-27 16:08:19.111 W process: Strand disagreement for gene U6 -- skipping
+2024-03-27 16:08:19.130 W process: Strand disagreement for gene Foxq1 -- skipping
+2024-03-27 16:08:19.140 W process: Strand disagreement for gene Fpr-rs4 -- skipping
+2024-03-27 16:08:19.146 W process: Strand disagreement for gene Ufm1 -- skipping
+2024-03-27 16:08:19.150 W process: Strand disagreement for gene Metazoa_SRP -- skipping
+2024-03-27 16:08:19.162 W process: Strand disagreement for gene Hist2h3c2 -- skipping
+2024-03-27 16:08:19.166 W process: Strand disagreement for gene U4 -- skipping
+2024-03-27 16:08:19.171 W process: Strand disagreement for gene Smim10l1 -- skipping
+2024-03-27 16:08:19.173 W process: Strand disagreement for gene Pdrg1 -- skipping
+2024-03-27 16:08:19.178 W process: Strand disagreement for gene Oog1 -- skipping
+2024-03-27 16:08:19.179 W process: Strand disagreement for gene Tmem125 -- skipping
+2024-03-27 16:08:19.185 W process: Strand disagreement for gene Tmem14a -- skipping
+2024-03-27 16:08:19.189 W process: Strand disagreement for gene Rps6 -- skipping
+2024-03-27 16:08:19.233 W process: Strand disagreement for gene Urm1 -- skipping
+2024-03-27 16:08:19.251 W process: Strand disagreement for gene U3 -- skipping
+2024-03-27 16:08:19.283 W process: Strand disagreement for gene Ube2i -- skipping
+2024-03-27 16:08:19.294 W process: Strand disagreement for gene RGD1560860 -- skipping
+2024-03-27 16:08:19.296 W process: Strand disagreement for gene Rhox9 -- skipping
+2024-03-27 16:08:19.309 W process: Strand disagreement for gene Sslp1 -- skipping
+2024-03-27 16:08:19.312 W process: Strand disagreement for gene Olr1326 -- skipping
+2024-03-27 16:08:19.313 W process: Strand disagreement for gene Arpp19 -- skipping
+2024-03-27 16:08:19.319 W process: Strand disagreement for gene Olr1142 -- skipping
+2024-03-27 16:08:19.322 W process: Strand disagreement for gene Zfp951 -- skipping
+2024-03-27 16:08:19.342 W process: Strand disagreement for gene Cdc45 -- skipping
+2024-03-27 16:08:19.347 W process: Strand disagreement for gene 5_8S_rRNA -- skipping
+2024-03-27 16:08:19.362 W process: Strand disagreement for gene Olr190 -- skipping
+2024-03-27 16:08:19.387 W process: Strand disagreement for gene Tceal3 -- skipping
+2024-03-27 16:08:19.400 I process: makeOverlapDetector time(s):0
+2024-03-27 16:08:19.400 I process: Gene count:21208
+2024-03-27 16:08:19.523 I process: Using threads num:16
+2024-03-27 16:08:19.629 D process: start anno thread: 1
+2024-03-27 16:08:19.629 D process: start anno thread: 0
+2024-03-27 16:08:19.641 D process: SamWriter init
+2024-03-27 16:09:31.576 D process: read contig: 1 total reads: 92660808 line number: 120224094 time(s): 72
+2024-03-27 16:10:08.170 D process: read contig: 2 total reads: 141743946 line number: 177963759 time(s): 36

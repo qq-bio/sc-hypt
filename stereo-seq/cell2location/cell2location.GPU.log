@@ -1,0 +1,148 @@
+==========================================
+SLURM_JOB_ID = 1274193
+SLURM_NODELIST = gn01
+==========================================
+[rank: 0] Global seed set to 0
+/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/anndata/compat/__init__.py:232: FutureWarning: Moving element from .uns['neighbors']['distances'] to .obsp['distances'].
+
+This is where adjacency matrices should go now.
+  warn(
+WARNING: Your filename has more than two extensions: ['.rna', '.cluster', '.RNA-0', '.9', '.anno', '.h5ad'].
+Only considering the two last: ['.anno', '.h5ad'].
+WARNING: Your filename has more than two extensions: ['.rna', '.cluster', '.RNA-0', '.9', '.anno', '.h5ad'].
+Only considering the two last: ['.anno', '.h5ad'].
+/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/anndata/_core/raw.py:139: FutureWarning: X.dtype being converted to np.float32 from float64. In the next version of anndata (0.9) conversion will not be automatic. Pass dtype explicitly to avoid this warning. Pass `AnnData(X, dtype=X.dtype, ...)` to get the future behavour.
+  return anndata.AnnData(
+/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pandas/core/arraylike.py:402: RuntimeWarning: divide by zero encountered in log10
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/scvi/data/fields/_layer_field.py:91: UserWarning: adata.X does not contain unnormalized count data. Are you sure this is what you want?
+  warnings.warn(
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/configuration_validator.py:106: UserWarning: You passed in a `val_dataloader` but have no `validation_step`. Skipping val loop.
+  rank_zero_warn("You passed in a `val_dataloader` but have no `validation_step`. Skipping val loop.")
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [2]
+SLURM auto-requeueing enabled. Setting signal handlers.
+Training:   0%|          | 0/250 [00:00<?, ?it/s]Epoch 1/250:   0%|          | 0/250 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/poutine/trace_struct.py", line 230, in compute_log_prob
+    log_p = site["fn"].log_prob(
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/distributions/conjugate.py", line 277, in log_prob
+    self._validate_sample(value)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/torch/distributions/distribution.py", line 294, in _validate_sample
+    raise ValueError(
+ValueError: Expected value argument (Tensor of shape (2500, 27622)) to be within the support (IntegerGreaterThan(lower_bound=0)) of the distribution GammaPoisson(), but found invalid values:
+tensor([[0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        ...,
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.]], device='cuda:0')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/qqiu/src/stereo-seq/cell2location/cell2location.GPU.test.py", line 51, in <module>
+    mod.train(max_epochs=250, use_gpu=True)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/cell2location/models/reference/_reference_model.py", line 157, in train
+    super().train(**kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/scvi/model/base/_pyromixin.py", line 178, in train
+    return runner()
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/scvi/train/_trainrunner.py", line 83, in __call__
+    self.trainer.fit(self.training_plan, self.data_splitter)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/scvi/train/_trainer.py", line 194, in fit
+    super().fit(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 608, in fit
+    call._call_and_handle_interrupt(
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/call.py", line 38, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 650, in _fit_impl
+    self._run(model, ckpt_path=self.ckpt_path)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 1112, in _run
+    results = self._run_stage()
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 1191, in _run_stage
+    self._run_train()
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 1214, in _run_train
+    self.fit_loop.run()
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/loop.py", line 199, in run
+    self.advance(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/fit_loop.py", line 267, in advance
+    self._outputs = self.epoch_loop.run(self._data_fetcher)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/loop.py", line 199, in run
+    self.advance(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/epoch/training_epoch_loop.py", line 213, in advance
+    batch_output = self.batch_loop.run(kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/loop.py", line 199, in run
+    self.advance(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/batch/training_batch_loop.py", line 90, in advance
+    outputs = self.manual_loop.run(kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/loop.py", line 199, in run
+    self.advance(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/loops/optimization/manual_loop.py", line 110, in advance
+    training_step_output = self.trainer._call_strategy_hook("training_step", *kwargs.values())
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/trainer/trainer.py", line 1494, in _call_strategy_hook
+    output = fn(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pytorch_lightning/strategies/strategy.py", line 378, in training_step
+    return self.model.training_step(*args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/scvi/train/_trainingplans.py", line 949, in training_step
+    loss = torch.Tensor([self.svi.step(*args, **kwargs)])
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/infer/svi.py", line 145, in step
+    loss = self.loss_and_grads(self.model, self.guide, *args, **kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/infer/trace_elbo.py", line 140, in loss_and_grads
+    for model_trace, guide_trace in self._get_traces(model, guide, args, kwargs):
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/infer/elbo.py", line 236, in _get_traces
+    yield self._get_trace(model, guide, args, kwargs)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/infer/trace_elbo.py", line 57, in _get_trace
+    model_trace, guide_trace = get_importance_trace(
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/infer/enum.py", line 75, in get_importance_trace
+    model_trace.compute_log_prob()
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/poutine/trace_struct.py", line 236, in compute_log_prob
+    raise ValueError(
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/poutine/trace_struct.py", line 230, in compute_log_prob
+    log_p = site["fn"].log_prob(
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/pyro/distributions/conjugate.py", line 277, in log_prob
+    self._validate_sample(value)
+  File "/home/qqiu/.conda/envs/cell2loc_env/lib/python3.9/site-packages/torch/distributions/distribution.py", line 294, in _validate_sample
+    raise ValueError(
+ValueError: Error while computing log_prob at site 'data_target':
+Expected value argument (Tensor of shape (2500, 27622)) to be within the support (IntegerGreaterThan(lower_bound=0)) of the distribution GammaPoisson(), but found invalid values:
+tensor([[0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        ...,
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.],
+        [0., 0., 0.,  ..., 0., 0., 0.]], device='cuda:0')
+                Trace Shapes:                      
+                 Param Sites:                      
+                Sample Sites:                      
+       per_cluster_mu_fg dist            | 25 27622
+                        value            | 25 27622
+                     log_prob            |         
+      detection_mean_y_e dist            |  8     1
+                        value            |  8     1
+                     log_prob            |         
+  s_g_gene_add_alpha_hyp dist    1     1 |         
+                        value    1     1 |         
+                     log_prob    1     1 |         
+       s_g_gene_add_mean dist            |  8     1
+                        value            |  8     1
+                     log_prob            |         
+s_g_gene_add_alpha_e_inv dist            |  8     1
+                        value            |  8     1
+                     log_prob            |         
+            s_g_gene_add dist            |  8 27622
+                        value            |  8 27622
+                     log_prob            |         
+         alpha_g_phi_hyp dist    1     1 |         
+                        value    1     1 |         
+                     log_prob    1     1 |         
+         alpha_g_inverse dist            |  1 27622
+                        value            |  1 27622
+                     log_prob            |         
+             data_target dist 2500 27622 |         
+                        value 2500 27622 |         
+Epoch 1/250:   0%|          | 0/250 [00:01<?, ?it/s]
