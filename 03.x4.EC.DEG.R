@@ -91,11 +91,32 @@ deg_merged$strain <- factor(deg_merged$strain, levels = strain_order)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type, deg_merged[deg_merged$p_val_adj<0.05,]$strain)
 
+deg_merged[deg_merged$cell_type==9 & deg_merged$p_val_adj<0.05,]
+table(deg_merged[deg_merged$cell_type==9 & deg_merged$p_val_adj<0.05,]$gene_name)
+
+# 1700018A04Rik     AABR07000398.1              Ampd3             Camk1d              Cmss1               Ddx5 ENSRNOG00000062930 
+# 1                  1                  1                  1                  1                  2                  2 
+# ENSRNOG00000065867 ENSRNOG00000068039 ENSRNOG00000070284              Egfl7                Eln            Gm19951            Gm42418 
+# 3                  1                  1                  1                  1                  1                  1 
+# Kcnj2              Lamb2              Lars2              Meis2              Plcl2              Prkg1               Psd3 
+# 1                  1                  1                  1                  1                  1                  1 
+# Slit2            Snrnp70                Zyx 
+# 1                  1                  1 
 
 
+sort(table(deg_merged[deg_merged$cell_type==4 & deg_merged$p_val_adj<0.05,]$gene_name))
+# Acta1             Atp2a2              Cdh13 
+# 2                  2                  2 
+# Cox7b              Cryab              Csrp3                Lpl                 Mb               Myl2              Tnnc1 
+# 2                  2                  2                  2                  2                  2                  2 
+# Tnni3              Tshz2              Uqcrq 
+# 2                  2                  2 
+for(i in c("Acta1", "Atp2a2", "Cdh13", "Cox7b", "Cryab", "Csrp3", "Lpl", 
+           "Mb", "Myl2", "Tnnc1", "Tnni3", "Tshz2", "Uqcrq")){
+  print(deg_merged[deg_merged$cell_type==4 & deg_merged$p_val_adj<0.05 & deg_merged$gene_name==i,])
+}
 
-
-
+# "Acta1", "Cox7b", "Cryab", "Csrp3", "Tnnc1", "Uqcrq"
 
 
 ################################################################################
