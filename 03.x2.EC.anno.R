@@ -70,7 +70,7 @@ DotPlot(seurat_object, features = marker_list, group.by = "RNA_snn_res.1") +
 
 seurat_object <- subset(seurat_object, seurat_clusters %in% c(1:14, 18))
 seurat_object <- FindNeighbors(seurat_object, dims = 1:10, reduction = "scvi")
-seurat_object <- FindClusters(seurat_object, resolution =1)
+seurat_object <- FindClusters(seurat_object, resolution = c(1, 1.5, 2, 2.5, 3))
 seurat_object <- RunUMAP(seurat_object, dims = 1:10, reduction = "scvi", n.components = 2)
 
 saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")

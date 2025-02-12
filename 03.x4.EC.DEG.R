@@ -120,6 +120,18 @@ for(i in c("Acta1", "Atp2a2", "Cdh13", "Cox7b", "Cryab", "Csrp3", "Lpl",
 
 
 ################################################################################
+i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds"
+seurat_object <- readRDS(i)
+cluster = "seurat_clusters"
+Idents(seurat_object) = cluster
+
+seurat_object$condition = ifelse(grepl("(C57BL/6-Ang|SS-HS|SHR-26w)", seurat_object$sxtxt), "Hypertension", "Normotension")
+seurat_object$strain_cat = ifelse(seurat_object$strain %in% c(""), "Hypertensive", "Normotensive")
+
+FeaturePlot(seurat_object, "Lpl", split.by = "condition")
+DotPlot(seurat_object, features = "Lpl", split.by = "condition")
+
+################################################################################
 library(metap)
 
 deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.DEG_all.out")
