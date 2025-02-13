@@ -109,6 +109,66 @@ write.table(markers,file="/xdisk/mliang1/qqiu/project/multiomics-hypertension/su
 treatment_order = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w")
 seurat_object$treatment <- factor(seurat_object$treatment, levels=treatment_order)
 
+
+seurat_object@meta.data %>%
+  dplyr::mutate(hypt = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive")) %>%
+  group_by(orig.ident, seurat_clusters, hypt, strain, treatment) %>%
+  dplyr::summarise(cell_count = n()) %>%
+  ungroup() %>% group_by(orig.ident) %>% 
+  dplyr::mutate(proportion = cell_count / sum(cell_count)) %>% 
+  group_by(hypt, strain, treatment, seurat_clusters) %>%  # Group for mean and SD calculation
+  dplyr::summarise(
+    mean_proportion = mean(proportion),
+    sd_proportion = sd(proportion)
+  ) %>% 
+  ggplot(aes(x = treatment, y = mean_proportion, fill = seurat_clusters)) +  # Plot the results
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  # Create a bar plot with means
+  geom_errorbar(aes(ymin = mean_proportion - sd_proportion, ymax = mean_proportion + sd_proportion),
+                position = position_dodge(width = 0.8), width = 0.2) +  # Add error bars
+  scale_y_continuous(labels = scales::percent) +  # Format the y-axis as percentages
+  # scale_fill_manual(values = lk_ec_col) +
+  labs(x = "Treatment", y = "Cell proportion") +  # Add labels and title
+  theme(    axis.text.y = element_text(colour = 'black'),
+            axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+            legend.position = "None"
+  ) +
+  facet_nested(seurat_clusters ~ hypt + strain, scales = "free") 
+
+
+
+prop_data <- seurat_object@meta.data %>%
+  dplyr::mutate(hypt = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive")) %>%
+  group_by(seurat_clusters, sxtxt, tissue, hypt, strain) %>%
+  summarise(cell_count = n(), .groups = "drop") %>%
+  group_by(seurat_clusters) %>%
+  mutate(proportion = cell_count / sum(cell_count)) %>%
+  ungroup() %>%
+  # Compute expected proportion based on total cell distribution per tissue
+  left_join(
+    seurat_object@meta.data %>%
+      count(sxtxt, name = "total_cells") %>%
+      mutate(expected_prop = total_cells / sum(total_cells)),
+    by = "sxtxt"
+  ) %>%
+  # Compute log(obs/exp) and adjust by variance
+  mutate(
+    log_obs_exp = log(proportion / expected_prop)
+  ) %>%
+  ungroup()
+
+ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = sxtxt, y = seurat_clusters, fill = log_obs_exp)) +
+  geom_tile(color="black") +  # Heatmap-style visualization
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(x = "Tissue", y = "Cluster", fill = "log(obs/exp)") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+    axis.text.y = element_text(colour = 'black')
+  ) +
+  facet_nested( ~ tissue + hypt + strain, scales = "free", space = "free_x")
+
+
+
+
 prop_data <- seurat_object@meta.data %>%
   dplyr::mutate(hypt = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive")) %>%
   group_by(seurat_clusters, hypt, strain, treatment) %>%

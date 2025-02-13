@@ -91,8 +91,8 @@ deg_merged$strain <- factor(deg_merged$strain, levels = strain_order)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type, deg_merged[deg_merged$p_val_adj<0.05,]$strain)
 
-deg_merged[deg_merged$cell_type==9 & deg_merged$p_val_adj<0.05,]
-table(deg_merged[deg_merged$cell_type==9 & deg_merged$p_val_adj<0.05,]$gene_name)
+deg_merged[deg_merged$cell_type==6 & deg_merged$p_val_adj<0.05,]
+table(deg_merged[deg_merged$cell_type==6 & deg_merged$p_val_adj<0.05,]$gene_name)
 
 # 1700018A04Rik     AABR07000398.1              Ampd3             Camk1d              Cmss1               Ddx5 ENSRNOG00000062930 
 # 1                  1                  1                  1                  1                  2                  2 
@@ -129,7 +129,9 @@ seurat_object$condition = ifelse(grepl("(C57BL/6-Ang|SS-HS|SHR-26w)", seurat_obj
 seurat_object$strain_cat = ifelse(seurat_object$strain %in% c(""), "Hypertensive", "Normotensive")
 
 FeaturePlot(seurat_object, "Lpl", split.by = "condition")
+FeaturePlot(seurat_object, "Lpl", split.by = "strain")
 DotPlot(seurat_object, features = "Lpl", split.by = "condition")
+
 
 ################################################################################
 library(metap)
