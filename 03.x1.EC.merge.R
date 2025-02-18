@@ -1,3 +1,5 @@
+.libPaths("/xdisk/mliang1/qqiu/R/library_Rv4.2_puma9/", include.site = F)
+
 library(Seurat)
 library(Signac)
 library(sceasy)
@@ -68,7 +70,7 @@ print(adata)
 
 
 ### Training
-scvi$model$SCVI$setup_anndata(adata, batch_key="species",
+scvi$model$SCVI$setup_anndata(adata, batch_key="strain",
                               categorical_covariate_keys=list("assays"), 
                               continuous_covariate_keys=list("nCount_RNA", "nFeature_RNA", "percent.mt"))
 
@@ -85,7 +87,7 @@ latent <- as.matrix(latent)
 rownames(latent) = colnames(seurat_object)
 seurat_object[["scvi"]] <- CreateDimReducObject(embeddings = latent, key = "scvi_", assay = DefaultAssay(seurat_object))
 
-saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.rds")
+saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.strain_batch.gene_nb.hvg_1k.rds")
 
 # 
 # seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.rds")
