@@ -17,6 +17,9 @@ seurat_object_nb_3k <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertens
 seurat_object_nb_4k <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_4k.rds")
 seurat_object_rec <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.rec.rds")
 
+seurat_object_strain_1k <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.strain_batch.gene_nb.hvg_1k.rds")
+seurat_object_strain_2k <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.strain_batch.gene_nb.hvg_2k.rds")
+seurat_object_strain_3k <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.strain_batch.gene_nb.hvg_3k.rds")
 # ###Find clusters, then run UMAP, and visualize
 
 seurat_object_org <- RunUMAP(seurat_object_org, dims = 1:10, reduction = "scvi", n.components = 2)
@@ -37,11 +40,33 @@ seurat_object_nb_3k <- RunUMAP(seurat_object_nb_3k, dims = 1:10, reduction = "sc
 DimPlot(seurat_object_nb_3k, group.by = "species", reduction = "umap", pt.size = 1)
 DimPlot(seurat_object_nb_3k, split.by = "tissue", reduction = "umap", pt.size = 1)
 
+seurat_object_strain <- RunUMAP(seurat_object_strain, dims = 1:10, reduction = "scvi", n.components = 2)
+DimPlot(seurat_object_strain, group.by = "species", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain, split.by = "tissue", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain, split.by = "strain", reduction = "umap", pt.size = 1)
+
+seurat_object_strain_1k <- RunUMAP(seurat_object_strain_1k, dims = 1:10, reduction = "scvi", n.components = 2)
+DimPlot(seurat_object_strain_1k, group.by = "species", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_1k, split.by = "tissue", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_1k, split.by = "strain", reduction = "umap", pt.size = 1)
+
+seurat_object_strain_2k <- RunUMAP(seurat_object_strain_2k, dims = 1:10, reduction = "scvi", n.components = 2)
+DimPlot(seurat_object_strain_2k, group.by = "species", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_2k, split.by = "tissue", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_2k, split.by = "strain", reduction = "umap", pt.size = 1)
+
+seurat_object_strain_3k <- RunUMAP(seurat_object_strain_3k, dims = 1:10, reduction = "scvi", n.components = 2)
+DimPlot(seurat_object_strain_3k, group.by = "species", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_3k, split.by = "tissue", reduction = "umap", pt.size = 1)
+DimPlot(seurat_object_strain_3k, split.by = "strain", reduction = "umap", pt.size = 1)
+
 # seurat_object_nb_4k <- RunUMAP(seurat_object_nb_4k, dims = 1:10, reduction = "scvi", n.components = 2)
 # DimPlot(seurat_object_nb_4k, group.by = "species", reduction = "umap", pt.size = 1)
 # DimPlot(seurat_object_nb_4k, split.by = "tissue", reduction = "umap", pt.size = 1)
 
-seurat_object = seurat_object_nb_1k
+seurat_object = seurat_object_strain_1k
+seurat_object = seurat_object_strain_2k
+seurat_object = seurat_object_strain_3k
 # seurat_object = seurat_object_nb_2k
 # seurat_object = seurat_object_nb_3k
 # seurat_object = seurat_object_nb_4k
