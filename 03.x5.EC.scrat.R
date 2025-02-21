@@ -78,5 +78,5 @@ env$indata <- seurat_object@assays$RNA@data
 env$group.labels <- seurat_object$seurat_clusters
 
 scrat.run(env)
-saveRDS(env, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/scrat/ec.scvi.subset.hvg.0.25.scrat.rds")
+saveRDS(env, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/scrat/ec.scvi.subset.hvg.0.25.scrat.sbatch.rds")
 
