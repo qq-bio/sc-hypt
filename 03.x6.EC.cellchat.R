@@ -6,6 +6,20 @@ library(Seurat)
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/")
 
 
+safe_computeCentrality <- function(cellchat) {
+  tryCatch({
+    cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
+    return(cellchat)  # Return the updated object
+  }, 
+  warning = function(w) {
+    return(cellchat)  # Return the original object if there's a warning
+  }, 
+  error = function(e) {
+    return(cellchat)  # Return the original object if there's an error
+  })
+}
+
+
 input <- "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.rds"
 output <- "cross_organ.EC.cellchat.rds"
 ec_seurat_object <- readRDS(input)
@@ -32,7 +46,7 @@ input_file = c(
 )
 
 CellChatDB = CellChatDB.mouse
-future::plan("multicore", workers = 4) 
+#future::plan("multicore", workers = 4) 
 
 
 e <- new.env()
@@ -74,7 +88,8 @@ for(i in input_file){
       cellchat <- computeCommunProbPathway(cellchat)
       cellchat <- aggregateNet(cellchat)
       
-      cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
+      # cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
+      cellchat <- safe_computeCentrality(cellchat)
       
       output_name = paste0(tissue, "_", gsub("/", ".", si), "_", ti)
       
@@ -126,7 +141,7 @@ input_file = c(
 )
 
 CellChatDB = CellChatDB.mouse
-future::plan("multicore", workers = 4) 
+#future::plan("multicore", workers = 4) 
 
 
 e <- new.env()
@@ -168,7 +183,8 @@ for(i in input_file){
       cellchat <- computeCommunProbPathway(cellchat)
       cellchat <- aggregateNet(cellchat)
       
-      cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
+      # cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
+      cellchat <- safe_computeCentrality(cellchat)
       
       output_name = paste0(tissue, "_", gsub("/", ".", si), "_", ti)
       
