@@ -86,22 +86,49 @@ write.table(deg_merged, outfile)
 
 
 ################################################################################
+i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds"
+seurat_object <- readRDS(i)
+cluster = "seurat_clusters"
+Idents(seurat_object) = cluster
+
 deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.DEG_all.out")
-deg_merged$strain <- factor(deg_merged$strain, levels = strain_order)
+# deg_merged$strain <- factor(deg_merged$strain, levels = strain_order)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type, deg_merged[deg_merged$p_val_adj<0.05,]$strain)
 
-deg_merged[deg_merged$cell_type==6 & deg_merged$p_val_adj<0.05,]
-table(deg_merged[deg_merged$cell_type==6 & deg_merged$p_val_adj<0.05,]$gene_name)
+tbl = table(deg_merged[deg_merged$p_val_adj<0.05,]$gene_name)
+tbl[order(tbl, decreasing = T)]
+# ENSRNOG00000065867     AABR07000398.1 ENSRNOG00000062930 ENSRNOG00000070284 ENSRNOG00000068039             Zbtb16             Camk1d              Cmss1 
+# 31                 29                 28                 24                 22                 18                 12                 11 
+# Lars2              Ptprg                Ttn                Dst             Rnf213              Srrm2     AABR07044900.1             Cacnb2 
+# 10                 10                  9                  8                  7                  7                  6                  6 
+# ENSRNOG00000067673             Mt-co3               Pbx1              Plcb4             Arglu1            Auts2l1              Dach1             Luc7l3 
+# 6                  6                  6                  6                  5                  5                  5                  5 
+# Mt-co1             Mt-nd4          RT1-T24-4               Chd7              Ddx46               Ddx5               Dlc1              Eif3a 
+# 5                  5                  5                  4                  4                  4                  4                  4 
+# ENSRNOG00000055562               Etl4              Fabp4            Filip1l            Gm19951              Herc6              Hmcn1           Hsp90ab1 
+# 4                  4                  4                  4                  4                  4                  4                  4 
+# Mb              Meis2              Myrip              Plcl1              Pnisr            Prpf38b              Rasa4         RGD1565355 
+# 4                  4                  4                  4                  4                  4                  4                  4 
+# RT1-T24-1            Snrnp70               Uaca             Zbtb20     AABR07007032.1              Acin1              Ahnak              Akap9 
+# 4                  4                  4                  4
 
-# 1700018A04Rik     AABR07000398.1              Ampd3             Camk1d              Cmss1               Ddx5 ENSRNOG00000062930 
-# 1                  1                  1                  1                  1                  2                  2 
-# ENSRNOG00000065867 ENSRNOG00000068039 ENSRNOG00000070284              Egfl7                Eln            Gm19951            Gm42418 
-# 3                  1                  1                  1                  1                  1                  1 
-# Kcnj2              Lamb2              Lars2              Meis2              Plcl2              Prkg1               Psd3 
-# 1                  1                  1                  1                  1                  1                  1 
-# Slit2            Snrnp70                Zyx 
-# 1                  1                  1 
+
+deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05,]
+table(deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05,]$gene_name)
+# AABR07000398.1     AABR07044900.1             Cacnb2             Camk1d               Chd3              Cmss1               Dlc1 ENSRNOG00000062930 
+# 4                  1                  1                  1                  1                  1                  1                  1 
+# ENSRNOG00000065867 ENSRNOG00000068039 ENSRNOG00000069480 ENSRNOG00000070284             Mt-co1             Mt-nd4              Myrip              Plcb4 
+# 2                  2                  1                  1                  1                  1                  1                  1 
+# Ptk2              Ptprg          RT1-T24-4              Tmtc2                Ttn             Zbtb16 
+# 1                  1                  1                  1                  1                  2 
+
+deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="AABR07000398.1",]
+FeaturePlot(seurat_object, "AABR07000398.1", split.by = "sxtxt")
+deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="AABR07000398.1",]
+deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="Zbtb16",]
+deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="Zbtb16",]
+deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="Reln",]
 
 
 sort(table(deg_merged[deg_merged$cell_type==4 & deg_merged$p_val_adj<0.05,]$gene_name))

@@ -75,10 +75,11 @@ marker_list = c("Pecam1", "Egfl7", "Vwf", # EC
                 # "Flt1",
                 "Plvap", # venous EC
                 "Rgcc", # capillary EC
-                "Ccl21", "Prox1", # lymphatic EC
+                "Ccl21", "Prox1", "Lyve1", # lymphatic EC
                 "Igfbp5", # kidney capillary EC
-                "Ehd3", # glomerular EC
-                "Adgrl3", "Slc38a3" # BBB EC
+                "Ehd3", # "Emcn", "Sost", "Plat", # glomerular EC
+                "Adgrl3", "Slc38a3", # BBB EC
+                "Npr3"
 )
 FeaturePlot(seurat_object, features = marker_list)
 
@@ -89,7 +90,13 @@ seurat_object <- FindClusters(seurat_object, resolution =1)
 
 DimPlot(seurat_object, reduction = "umap", pt.size = 1, label = T)
 
-DotPlot(seurat_object, features = marker_list, group.by = "RNA_snn_res.1") + 
+DotPlot(seurat_object, features = marker_list) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
+marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
+DotPlot(seurat_object, features = marker_list) + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
