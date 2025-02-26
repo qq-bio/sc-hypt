@@ -64,12 +64,29 @@ DimPlot(seurat_object_strain_3k, split.by = "strain", reduction = "umap", pt.siz
 # DimPlot(seurat_object_nb_4k, group.by = "species", reduction = "umap", pt.size = 1)
 # DimPlot(seurat_object_nb_4k, split.by = "tissue", reduction = "umap", pt.size = 1)
 
-seurat_object = seurat_object_strain_1k
-seurat_object = seurat_object_strain_2k
-seurat_object = seurat_object_strain_3k
+# seurat_object = seurat_object_strain_1k
+# seurat_object = seurat_object_strain_2k
+# seurat_object = seurat_object_strain_3k
 # seurat_object = seurat_object_nb_2k
 # seurat_object = seurat_object_nb_3k
 # seurat_object = seurat_object_nb_4k
+
+seurat_object = seurat_object_nb_1k
+seurat_object <- FindNeighbors(seurat_object, dims = 1:10, reduction = "scvi")
+seurat_object <- FindClusters(seurat_object, resolution = c(1, 2))
+seurat_object <- RunUMAP(seurat_object, dims = 1:10, reduction = "scvi", n.components = 2)
+
+Idents(seurat_object) = "RNA_snn_res.1"
+
+contamination_list = c("Pecam1", "Egfl7", "Vwf", "Tagln", "Acta2", "Pdgfra", "Pdgfrb", "Notch3", "Myh11", "Kcnj8", "Myh6", "Mb", "Lrp2")
+# DimPlot(seurat_object, reduction = "umap", pt.size = 1, label = T, group.by = "seurat_clusters")
+DotPlot(seurat_object, features = contamination_list) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+FeaturePlot(seurat_object, features = c("Pecam1", "Mb", "Lrp2"), ncol = 3)
+FeaturePlot(seurat_object, features = c("Trpv4", "Kcnd1", "Piezo1"), ncol = 3)
+
+
 marker_list = c("Pecam1", "Egfl7", "Vwf", # EC
                 "Sulf1", "Col8a1", "Eln", "Sema3g", # arterial EC
                 # "Flt1",
@@ -85,8 +102,6 @@ FeaturePlot(seurat_object, features = marker_list)
 
 # negative marker list: "Ackr1", "Gpihbp1", "Fcn3", "Ca4", "Lyve1", "Pdpn", "Sost", "Postn", "Selp", "Sele"
 
-seurat_object <- FindNeighbors(seurat_object, dims = 1:10, reduction = "scvi")
-seurat_object <- FindClusters(seurat_object, resolution =1)
 
 DimPlot(seurat_object, reduction = "umap", pt.size = 1, label = T)
 
@@ -94,16 +109,23 @@ DotPlot(seurat_object, features = marker_list) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
-marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
-DotPlot(seurat_object, features = marker_list) + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
+# marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
+# DotPlot(seurat_object, features = marker_list) + 
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-seurat_object <- subset(seurat_object, seurat_clusters %in% c(1:14, 18))
+seurat_object <- subset(seurat_object, RNA_snn_res.1 %in% c(1:6, 8:14, 18))
 seurat_object <- FindNeighbors(seurat_object, dims = 1:10, reduction = "scvi")
 seurat_object <- FindClusters(seurat_object, resolution = c(1, 1.5, 2, 2.5, 3))
 seurat_object <- RunUMAP(seurat_object, dims = 1:10, reduction = "scvi", n.components = 2)
+Idents(seurat_object) = "RNA_snn_res.1.5"
+seurat_object$seurat_clusters = seurat_object$RNA_snn_res.1.5
+
+DotPlot(seurat_object, features = marker_list) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+DotPlot(seurat_object, features = contamination_list) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
 
@@ -311,7 +333,7 @@ DimPlot(seurat_object, group.by = "tissue", split.by = "subclass_level2", reduct
 
 FeaturePlot(seurat_object, features = c("Vwf", "Fabp4", "Pecam1", "Egfl7", "Flt1", "Sema3g", "Postn", "Plvap", "Pdpn", "Prox1", "Slc38a3"))
 
-FeaturePlot(seurat_object, features = c("Tagln", "Acta2", "Pdgfra", "Pdgfrb", "Notch3", "Myh11", "Kcnj8")) # mural cell
+FeaturePlot(seurat_object, features = c("Tagln", "Acta2", "Pdgfra", "Pdgfrb", "Notch3", "Myh11", "Kcnj8", "Myh6", "Mb")) # mural cell & cardiomyocyte
 FeaturePlot(seurat_object, features = c("Smoc1", "Inhba", "Npr3")) # endocardial_ec
 
 FeaturePlot(seurat_object, features = c("Slco1a2", "Slc38a3", "Slc7a8"))

@@ -86,7 +86,7 @@ write.table(deg_merged, outfile)
 
 
 ################################################################################
-i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds"
+i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/ec.scvi.gene_nb.hvg_1k.refined.rds"
 seurat_object <- readRDS(i)
 cluster = "seurat_clusters"
 Idents(seurat_object) = cluster
