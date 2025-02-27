@@ -109,10 +109,10 @@ DotPlot(seurat_object, features = marker_list) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-# marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
-# marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
-# DotPlot(seurat_object, features = marker_list) + 
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
+marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
+DotPlot(seurat_object, features = marker_list) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 seurat_object <- subset(seurat_object, RNA_snn_res.1 %in% c(1:6, 8:14, 18))
@@ -342,3 +342,71 @@ FeaturePlot(seurat_object, features = c("Cdh5", "Sema3g", "Rgcc", "Ackr1", "Ccl2
 FeaturePlot(seurat_object, features = c("Ptgds", "Pla1a", "Adgrl3", "Sh3rf3", "Cdh23", "Trpm6")) # brain vein
 
 FeaturePlot(seurat_object, features = c("Mecom"))
+
+
+
+
+
+################################################################################
+###
+
+seurat_object <- FindVariableFeatures(seurat_object, nfeatures = 5000)
+
+r2h <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out.txt", sep = "\t", header = T)
+m2h <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out.txt", sep = "\t", header = T)
+
+Tip_cell_list = c("ADM", "ANGPT2", "ANKRD37", "APLN", "C1QTNF6", "CD93", "CLDN5", 
+                  "COL4A1", "COL4A2", "COTL1", "CXCR4", "DLL4", "EDNRB", "ESM1", 
+                  "FSCN1", "GPIHBP1", "HSPG2", "IGFBP3", "INHBB", "ITGA5", "JUP", 
+                  "KCNE3", "KCNJ8", "KDR", "LAMA4", "LAMB1", "LAMC1", "LXN", "MARCKS", 
+                  "MARCKSL1", "MCAM", "MEST", "MYH9", "MYO1B", "N4BP3", "NID2", 
+                  "NOTCH4", "PDGFB", "PGF", "PLOD1", "PLXND1", "PMEPA1", "PTN", 
+                  "RAMP3", "RBP1", "RGCC", "RHOC", "SMAD1", "SOX17", "SOX4", "SPARC", 
+                  "TCF4", "UNC5B", "VIM")
+Stalk_cell_list = c("ACKR1", "AQP1", "C1QTNF9", "CD36", "CSRP2", "EHD4", "FBLN5", 
+                    "HSPB1", "LIGP1", "IL6ST", "JAM2", "LGALS3", "LRG1", "MEOX2", 
+                    "PLSCR2", "SDPR", "SELP", "SPINT2", "TGFBI", "TGM2", "TMEM176A", 
+                    "TMEM176B", "TMEM252", "TSPAN7", "VEGFR1", "VWF")
+
+Tip_cell_list_use = unique(c(r2h[r2h$Human.gene.name %in% Tip_cell_list, ]$Gene.name,
+                             m2h[m2h$Human.gene.name %in% Tip_cell_list, ]$Gene.name)) %>%
+  setdiff(., c("")) # %>% intersect(., VariableFeatures(seurat_object))
+
+Stalk_cell_list_use = unique(c(r2h[r2h$Human.gene.name %in% Stalk_cell_list, ]$Gene.name,
+                             m2h[m2h$Human.gene.name %in% Stalk_cell_list, ]$Gene.name)) %>%
+  setdiff(., c("")) # %>% intersect(., VariableFeatures(seurat_object))
+
+seurat_object <- AddModuleScore(seurat_object, features=list(Tip_cell_list_use), name = "tip_cell_score", assay = "RNA")
+seurat_object <- AddModuleScore(seurat_object, features=list(Stalk_cell_list_use), name = "stalk_cell_score", assay = "RNA")
+
+FeaturePlot(seurat_object, features = c("tip_cell_score1"))
+FeaturePlot(seurat_object, features = c("stalk_cell_score1"))
+
+
+
+
+library(UCell)
+
+gene.sets <- list(tip_cell_score = Tip_cell_list_use,
+                  stalk_cell_score = Stalk_cell_list_use)
+
+seurat_object <- AddModuleScore_UCell(seurat_object, features = gene.sets)
+
+FeaturePlot(seurat_object, features = c("tip_cell_score_UCell"))
+FeaturePlot(seurat_object, features = c("stalk_cell_score_UCell"))
+
+
+
+
+
+
+dflow_genes <- c("Icam1", "Vcam1", "Yap", "Bmp4", "Vegfa")
+sflow_genes <- c("Klf2", "Klf4", "Nos3", "Cdh5")
+
+gene.sets <- list(dflow_score = dflow_genes,
+                  sflow_score = sflow_genes)
+
+seurat_object <- AddModuleScore_UCell(seurat_object, features = gene.sets)
+
+FeaturePlot(seurat_object, features = c("dflow_score_UCell"))
+FeaturePlot(seurat_object, features = c("sflow_score_UCell"))

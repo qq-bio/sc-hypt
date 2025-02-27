@@ -4,7 +4,7 @@ library(dplyr)
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/")
 
 
-i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds"
+i = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/ec.scvi.gene_nb.hvg_1k.refined.rds"
 outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/",
                  gsub("rds", "DEG_all.out", basename(i)))
 
@@ -98,21 +98,30 @@ table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type, deg_merged[deg_merged$p_
 
 tbl = table(deg_merged[deg_merged$p_val_adj<0.05,]$gene_name)
 tbl[order(tbl, decreasing = T)]
-# ENSRNOG00000065867     AABR07000398.1 ENSRNOG00000062930 ENSRNOG00000070284 ENSRNOG00000068039             Zbtb16             Camk1d              Cmss1 
-# 31                 29                 28                 24                 22                 18                 12                 11 
-# Lars2              Ptprg                Ttn                Dst             Rnf213              Srrm2     AABR07044900.1             Cacnb2 
-# 10                 10                  9                  8                  7                  7                  6                  6 
-# ENSRNOG00000067673             Mt-co3               Pbx1              Plcb4             Arglu1            Auts2l1              Dach1             Luc7l3 
-# 6                  6                  6                  6                  5                  5                  5                  5 
-# Mt-co1             Mt-nd4          RT1-T24-4               Chd7              Ddx46               Ddx5               Dlc1              Eif3a 
-# 5                  5                  5                  4                  4                  4                  4                  4 
-# ENSRNOG00000055562               Etl4              Fabp4            Filip1l            Gm19951              Herc6              Hmcn1           Hsp90ab1 
-# 4                  4                  4                  4                  4                  4                  4                  4 
-# Mb              Meis2              Myrip              Plcl1              Pnisr            Prpf38b              Rasa4         RGD1565355 
-# 4                  4                  4                  4                  4                  4                  4                  4 
-# RT1-T24-1            Snrnp70               Uaca             Zbtb20     AABR07007032.1              Acin1              Ahnak              Akap9 
-# 4                  4                  4                  4
+# ENSRNOG00000065867 ENSRNOG00000062930     AABR07000398.1 ENSRNOG00000070284 ENSRNOG00000068039             Zbtb16             Camk1d              Cmss1             Cacnb2              Ptprg                Ttn 
+# 37                 31                 29                 26                 24                 19                 12                 12                  9                  9                  9 
+# AABR07044900.1              Lars2               Pbx1             Rnf213                Dst            Auts2l1 ENSRNOG00000056487           Hsp90ab1              Plcb4              Plcl1             Arglu1 
+# 8                  8                  8                  8                  7                  6                  6                  6                  6                  6                  5 
+# Cdh13               Dlc1 ENSRNOG00000067673               Gbp1              Herc6              Meis2             Mt-nd4          RT1-T24-4              Srrm2     AABR07007032.1               Etl4 
+# 5                  5                  5                  5                  5                  5                  5                  5                  5                  4                  4 
+# Hmcn1              Mecom             Mt-co3               Nfia              Rasa4         RGD1565355          RT1-T24-1             Zbtb20     AABR07040864.1               Actb              Ahnak 
+# 4                  4                  4                  4                  4                  4                  4                  4
 
+for(i in c("Zbtb16", "Camk1d", "Cmss1", "Cacnb2", "Ptprg", "Ttn", "Lars2", 
+           "Pbx1", "Rnf213", "Dst", "Auts2l1", "Hsp90ab1", "Plcb4", "Plcl1",
+           "Arglu1", "Cdh13", "Dlc1", "Gbp1", "Herc6", "Meis2", "Srrm2",
+           "Etl4", "Hmcn1", "Nfia", "Rasa4", "Zbtb20", "Actb", "Ahnak")){
+  print(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name==i,])
+}
+
+deg_merged[deg_merged$gene_name %in% c("Klf2", "Klf4", "Nos3", "Cdh5") & deg_merged$p_val_adj<0.05, ]
+# p_val avg_log2FC pct.1 pct.2    p_val_adj gene_name cell_type pct.diff     project strain control treatment control_size treatment_size test_gene
+# Cdh590  5.071221e-08  0.2449179 0.305 0.196 2.149691e-03      Cdh5         6    0.109 Spontaneous    SHR     10w       26w          997           2053      6868
+# Klf2110 2.843230e-18 -2.3522984 0.058 0.485 1.205245e-13      Klf2        19   -0.427 Spontaneous    WKY     10w       26w          173            200      9524
+# Klf4108 6.499390e-07 -1.6300259 0.075 0.285 2.755092e-02      Klf4        19   -0.210 Spontaneous    WKY     10w       26w          173            200      9524
+deg_merged[deg_merged$gene_name %in% c("Prg5", "Myo10", "Tip60", "Ef1a2") & deg_merged$p_val_adj<0.05, ]
+# p_val avg_log2FC pct.1 pct.2   p_val_adj gene_name cell_type pct.diff        project strain control treatment control_size treatment_size test_gene
+# Myo1074 1.080692e-07   0.432542 0.615 0.515 0.004581053     Myo10         0      0.1 Salt-sensitive     SD      LS     HS 3d         1224            796      7166
 
 deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05,]
 table(deg_merged[deg_merged$cell_type==7 & deg_merged$p_val_adj<0.05,]$gene_name)
