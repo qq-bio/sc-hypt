@@ -109,12 +109,6 @@ DotPlot(seurat_object, features = marker_list) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
-marker_list = unique(marker_list[marker_list$rank<=5, ]$gene)
-DotPlot(seurat_object, features = marker_list) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
 seurat_object <- subset(seurat_object, RNA_snn_res.1 %in% c(1:6, 8:14, 18))
 seurat_object <- FindNeighbors(seurat_object, dims = 1:10, reduction = "scvi")
 seurat_object <- FindClusters(seurat_object, resolution = c(1, 1.5, 2, 2.5, 3))
@@ -130,6 +124,7 @@ DotPlot(seurat_object, features = contamination_list) +
 saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
 
 
+################################################################################
 
 seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
 DimPlot(seurat_object, reduction = "umap", pt.size = 1, label = T)
@@ -158,6 +153,27 @@ markers = markers %>% group_by(cluster) %>%
   dplyr::arrange(desc(pct.diff), .by_group=TRUE) %>%
   dplyr::mutate(rank = row_number()) %>% ungroup()
 write.table(markers,file="/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.DEG.out", sep="\t")
+
+
+
+################################################################################
+
+seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
+cluster_order = c(0, 10, 6, 2, 18, 4, 5, 8, 13, 
+                  1, 7, 9, 
+                  12, 21, 15, 19,
+                  14, 20, 23, 
+                  22, 16, 
+                  3, 11, 17)
+seurat_object$seurat_clusters <- factor(seurat_object$seurat_clusters, levels=cluster_order)
+Idents(seurat_object) = "seurat_clusters"
+
+marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
+marker_list = marker_list %>% arrange(factor(cluster, levels = cluster_order)) %>% filter(rank<=5) %>% select(gene) %>% unique()
+
+DotPlot(seurat_object, features = marker_list) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 
 treatment_order = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w")
