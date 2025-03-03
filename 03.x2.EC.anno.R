@@ -162,7 +162,7 @@ seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/su
 cluster_order = c(0, 10, 6, 2, 18, 4, 5, 8, 13, 
                   1, 7, 9, 
                   12, 21, 15, 19,
-                  14, 20, 23, 
+                  20,14, 23, 
                   22, 16, 
                   3, 11, 17)
 seurat_object$seurat_clusters <- factor(seurat_object$seurat_clusters, levels=cluster_order)
@@ -170,6 +170,21 @@ Idents(seurat_object) = "seurat_clusters"
 
 marker_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out")
 marker_list = marker_list %>% arrange(factor(cluster, levels = cluster_order)) %>% filter(rank<=5) %>% select(gene) %>% unique()
+
+marker_list= c("Nav3",'Ablim3',"Ccdc85a",'Ncald',"Nrp1",'Kitlg',"Dach1","Arhgap18",'Ank3',
+               "Hdac9","Nrp2","Lamc1",'Ano4',
+               "Nav2",'Diaph3',"Mki67","Rad51b","Sdk1",
+               'Fhod3',"Unc5c","Il1r1","Hmcn1","Vwf",
+               "Myo10","Lrrc3b","Btnl9",'Kcnt2',
+               "Nebl",'St6galnac3',
+               "Prdm16","Ptprj","Sulf1","Auts2l1",'Eln',"Myof","Pcdh7","Alcam",
+               "Slco1a4","Lef1","Gpcpd1",'Ccdc141',
+               "Zfp521","Nuak1","Mctp1",
+               'Pkhd1l1','Cgnl1',"Cdh11",
+               "Meis2","Pbx1","Ldb2",
+               "Rbms3","Inpp4b","Fmnl2","Chrm3","Malat1",
+               'Pkhd1',"Erbb4",'Ca12')
+
 
 DotPlot(seurat_object, features = marker_list) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
