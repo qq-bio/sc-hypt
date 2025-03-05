@@ -29,7 +29,7 @@ source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/00.initial_setti
 # 
 # ###############################################################################
 # ## 
-# seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
+# seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
 # 
 # cluster = "seurat_clusters"
 # 
@@ -164,7 +164,7 @@ source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/00.initial_setti
 # 
 # }
 # 
-# write.table(da_merge, "milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
+# write.table(da_merge, "ec.scvi.gene_nb.hvg_1k.refined.merged.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
 # 
 # 
 # 
@@ -173,12 +173,12 @@ source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/00.initial_setti
 ################################################################################
 ### strain-wise comparison
 
-seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
+seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
 outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.miloR.rds")
 
 cluster = "seurat_clusters"
 
-seurat_object@active.ident = seurat_object@meta.data[, cluster]
+# seurat_object@active.ident = seurat_object@meta.data[, cluster]
 Idents(seurat_object) = cluster
 
 meta_table = seurat_object@meta.data
@@ -272,7 +272,7 @@ for( i in comp_list ){
 }
 
 
-write.table(da_merge, "EC.all.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
+write.table(da_merge, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
 
 
 

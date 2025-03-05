@@ -157,9 +157,9 @@ write.table(markers,file="/xdisk/mliang1/qqiu/project/multiomics-hypertension/su
 
 
 ################################################################################
-
+### merge clusters
 seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds")
-cluster_order = c(0, 10, 6, 2, 18, 4, 5, 8, 13, 
+cluster_order = c(0, 10, 6, 2, 4, 18, 5, 8, 13, 
                   1, 7, 9, 
                   12, 21, 15, 19,
                   20,14, 23, 
@@ -188,6 +188,109 @@ marker_list= c("Nav3",'Ablim3',"Ccdc85a",'Ncald',"Nrp1",'Kitlg',"Dach1","Arhgap1
 
 DotPlot(seurat_object, features = marker_list) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+pre_marker_list = c("Pecam1", "Egfl7", "Vwf", # EC
+                "Sulf1", "Col8a1", "Eln", "Sema3g", # arterial EC
+                # "Flt1",
+                "Plvap", # venous EC
+                "Rgcc", # capillary EC
+                "Ccl21", "Prox1", "Lyve1", # lymphatic EC
+                "Igfbp5", # kidney capillary EC
+                "Ehd3", # "Emcn", "Sost", "Plat", # glomerular EC
+                "Adgrl3", "Slc38a3", # BBB EC
+                "Npr3"
+)
+DotPlot(seurat_object, features = pre_marker_list) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+seurat_object$seurat_clusters <- paste0("C", seurat_object$seurat_clusters)
+seurat_object@meta.data[seurat_object$seurat_clusters %in% c("C5", "C8", "C13"), ]$seurat_clusters <- "M5813"
+seurat_object@meta.data[seurat_object$seurat_clusters %in% c("C2", "C4"), ]$seurat_clusters <- "M24"
+seurat_object@meta.data[seurat_object$seurat_clusters %in% c("C0", "C6", "C10"), ]$seurat_clusters <- "M0610"
+
+saveRDS(seurat_object, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
+
+
+
+
+seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
+cluster_order = c("M0610", "M24", "C18", "M5813",
+                  "C1", "C7", "C9", 
+                  "C12", "C21", "C15", "C19",
+                  "C20", "C14", "C23", 
+                  "C22", "C16", 
+                  "C3", "C11", "C17")
+
+seurat_object$seurat_clusters <- factor(seurat_object$seurat_clusters, levels=cluster_order)
+Idents(seurat_object) = "seurat_clusters"
+
+prop_data <- seurat_object@meta.data %>%
+  group_by(seurat_clusters, tissue) %>%
+  summarise(cell_count = n(), .groups = "drop") %>%
+  group_by(seurat_clusters) %>%
+  mutate(proportion = cell_count / sum(cell_count)) %>%
+  ungroup() %>%
+  # Compute expected proportion based on total cell distribution per tissue
+  left_join(
+    seurat_object@meta.data %>%
+      count(tissue, name = "total_cells") %>%
+      mutate(expected_prop = total_cells / sum(total_cells)),
+    by = "tissue"
+  ) %>%
+  # Compute log(obs/exp) and adjust by variance
+  mutate(
+    log_obs_exp = log(proportion / expected_prop)
+  ) %>%
+  ungroup()
+
+ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = tissue, y = seurat_clusters, fill = log_obs_exp)) +
+  geom_tile(color="black") +  # Heatmap-style visualization
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(x = "Tissue", y = "Cluster", fill = "log(obs/exp)") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+    axis.text.y = element_text(colour = 'black')
+  )
+
+
+marker_list= c("Nav3",'Ablim3',"Ccdc85a",'Ncald',"Nrp1",'Kitlg',"Dach1","Arhgap18",'Ank3',
+               "Hdac9","Nrp2","Lamc1",'Ano4',
+               "Nav2",'Diaph3',"Mki67","Rad51b","Sdk1",
+               'Fhod3',"Unc5c","Il1r1","Hmcn1","Vwf",
+               "Myo10","Lrrc3b","Btnl9",'Kcnt2',
+               "Nebl",'St6galnac3',
+               "Prdm16","Ptprj","Sulf1","Auts2l1",'Eln',"Myof","Pcdh7","Alcam",
+               "Slco1a4","Lef1","Gpcpd1",'Ccdc141',
+               "Zfp521","Nuak1","Mctp1",
+               'Pkhd1l1','Cgnl1',"Cdh11",
+               "Meis2","Pbx1","Ldb2",
+               "Rbms3","Inpp4b","Fmnl2","Chrm3","Malat1",
+               'Pkhd1',"Erbb4",'Ca12')
+
+
+DotPlot(seurat_object, features = marker_list) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+pre_marker_list = c("Pecam1", "Egfl7", "Vwf", # EC
+                    "Sulf1", "Col8a1", "Eln", "Sema3g", # arterial EC
+                    # "Flt1",
+                    "Plvap", # venous EC
+                    "Rgcc", # capillary EC
+                    "Ccl21", "Prox1", "Lyve1", # lymphatic EC
+                    "Igfbp5", # kidney capillary EC
+                    "Ehd3", # "Emcn", "Sost", "Plat", # glomerular EC
+                    "Adgrl3", "Slc38a3", # BBB EC
+                    "Npr3"
+)
+DotPlot(seurat_object, features = pre_marker_list) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+DimPlot(seurat_object, group.by = "seurat_clusters", reduction = "umap", pt.size = 1, label = T)
+
+
+
 
 
 
@@ -286,33 +389,9 @@ ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = treatment, y = seurat_clust
   facet_nested( ~ hypt + strain, scales = "free", space = "free_x")
 
 
-prop_data <- seurat_object@meta.data %>%
-  group_by(seurat_clusters, tissue) %>%
-  summarise(cell_count = n(), .groups = "drop") %>%
-  group_by(seurat_clusters) %>%
-  mutate(proportion = cell_count / sum(cell_count)) %>%
-  ungroup() %>%
-  # Compute expected proportion based on total cell distribution per tissue
-  left_join(
-    seurat_object@meta.data %>%
-      count(tissue, name = "total_cells") %>%
-      mutate(expected_prop = total_cells / sum(total_cells)),
-    by = "tissue"
-  ) %>%
-  # Compute log(obs/exp) and adjust by variance
-  mutate(
-    log_obs_exp = log(proportion / expected_prop)
-  ) %>%
-  ungroup()
 
-ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = tissue, y = seurat_clusters, fill = log_obs_exp)) +
-  geom_tile(color="black") +  # Heatmap-style visualization
-  scale_fill_gradient(low = "white", high = "red") +
-  labs(x = "Tissue", y = "Cluster", fill = "log(obs/exp)") +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
-    axis.text.y = element_text(colour = 'black')
-  )
+
+################################################################################
 
 
 
