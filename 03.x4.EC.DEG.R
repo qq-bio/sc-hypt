@@ -95,6 +95,7 @@ deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cr
 # deg_merged$strain <- factor(deg_merged$strain, levels = strain_order)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type)
 table(deg_merged[deg_merged$p_val_adj<0.05,]$cell_type, deg_merged[deg_merged$p_val_adj<0.05,]$strain)
+table(deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.5,]$cell_type, deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.5,]$strain)
 
 tbl = table(deg_merged[deg_merged$p_val_adj<0.05,]$gene_name)
 tbl[order(tbl, decreasing = T)]
@@ -126,6 +127,32 @@ tbl[order(tbl, decreasing = T)]
 for(i in names(tbl[tbl>=4])){
   print(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name==i,])
 }
+
+# Il1r1+ EC
+tbl = table(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$cell_type %in% c("C23", "C20", "M5813"),]$gene_name)
+tbl[order(tbl, decreasing = T)]
+# ENSRNOG00000068039 ENSRNOG00000062930 ENSRNOG00000065867 ENSRNOG00000070284     AABR07000398.1     AABR07044900.1            Auts2l1              Ednra              Herc6             Inpp4b                Me3 
+# 5                  4                  4                  4                  3                  2                  2                  2                  2                  2                  2 
+# Rnf213              Stab1             Zbtb16
+# 2                  2                  2
+for(i in names(tbl[tbl>=2])){
+  print(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$cell_type %in% c("C23", "C20", "M5813") & deg_merged$gene_name==i,])
+}
+
+
+tbl = table(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$cell_type %in% c("C14"),]$gene_name)
+tbl[order(tbl, decreasing = T)]
+# Etl4             Cadps2             Camk1d               Cdk8             Cep112              Cmss1               Gnas               Gphn           Hsp90ab1               Ica1             Jarid2 
+# 4                  2                  2                  2                  2                  2                  2                  2                  2                  2                  2 
+# Lars2                Mbp              Mcf2l               Mobp               Nav1              Nova2              Prkce              Ptgds               Rtn3             Slc6a6             Zbtb16 
+# 2                  2                  2                  2                  2                  2                  2                  2                  2                  2                  2 
+for(i in names(tbl[tbl>=2])){
+  print(deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$cell_type %in% c("C14") & deg_merged$gene_name==i,])
+}
+
+deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name=="Cdk8",]
+
+
 
 deg_merged[deg_merged$gene_name %in% c("Klf2", "Klf4", "Nos3", "Cdh5") & deg_merged$p_val_adj<0.05, ]
 # p_val avg_log2FC pct.1 pct.2    p_val_adj gene_name cell_type pct.diff     project strain control treatment control_size treatment_size test_gene

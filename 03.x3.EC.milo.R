@@ -26,155 +26,10 @@ library(ggtext)
 source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/00.initial_setting.R")
 
 
-# 
-# ###############################################################################
-# ## 
-# seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
-# 
-# cluster = "seurat_clusters"
-# 
-# seurat_object@active.ident = seurat_object@meta.data[, cluster]
-# Idents(seurat_object) = cluster
-# 
-# meta_table = seurat_object@meta.data
-# species_list <- unique(meta_table$strain)
-# 
-# # Loop through each species
-# for (si in species_list) {
-#   
-#   # Subset Seurat object by strain
-#   seurat_object_use <- subset(seurat_object, strain == si)
-#   
-#   # Adjust strain label for mouse
-#   if (si == "C57BL/6") { si <- "mouse" }
-#   
-#   # Set output file path
-#   outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/",
-#                     si, ".miloR.rds")
-#   
-#   # Set dimensionality reduction method based on tissue type
-#   reduced.dim <- "SCVI"
-#   
-#   # Construct KNN graph and identify representative neighborhoods
-#   sce <- as.SingleCellExperiment(seurat_object_use, assay = "RNA")
-#   milo_object <- Milo(sce)
-#   milo_object <- buildGraph(milo_object, k = 15, d = 5, reduced.dim = reduced.dim)
-#   milo_object <- makeNhoods(milo_object, prop = 0.2, k = 15, d = 5, refined = TRUE, 
-#                             reduced_dims = reduced.dim, refinement_scheme = "graph")
-#   
-#   # Visualize neighborhood size histogram
-#   plotNhoodSizeHist(milo_object) # Ideal average size: 5 x N_samples / 50-100
-#   
-#   # Count cells within each neighborhood and create design matrix
-#   milo_object <- countCells(milo_object, meta.data = seurat_object_use@meta.data, sample = "orig.ident")
-#   
-#   # Create and format design matrix for Milo analysis
-#   milo_design <- distinct(seurat_object_use@meta.data[, c("orig.ident", "treatment")])
-#   rownames(milo_design) <- milo_design$orig.ident
-#   milo_design$orig.ident <- as.factor(milo_design$orig.ident)
-#   milo_design$treatment <- as.factor(milo_design$treatment)
-#   
-#   # Calculate neighborhood connectivity
-#   milo_object <- calcNhoodDistance(milo_object, d = 5, reduced.dim = reduced.dim)
-#   
-#   # Save the Milo object for downstream analysis
-#   saveRDS(milo_object, outfile)
-# }
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# ################################################################################
-# input_file = c(
-# 
-#   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/mouse.miloR.rds",
-#   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SS.miloR.rds",
-#   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SD.miloR.rds",
-#   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SHR.miloR.rds",
-#   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/WKY.miloR.rds"
-#   
-# )
-# 
-# 
-# ################################################################################
-# ### pairwise comparison
-# library(ggtext)
-# setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR")
-# 
-# 
-# da_merge = c()
-# for( i in input_file ){
-# 
-#   # tissue = strsplit(basename(i), "\\.")[[1]][2]
-#   # tissue = sub(".*\\.([^.]*)\\.(miloR).*", "\\1", basename(i))
-#   reduction = "SCVI"
-# 
-#   milo_object = readRDS(i)
-# 
-#   milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
-#   milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident")]
-#   milo_design = distinct(milo_design)
-#   rownames(milo_design) = milo_design$orig.ident
-#   milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
-#   milo_design$strain = as.factor(milo_design$strain)
-# 
-#   species_list = unique(milo_design$strain)
-#   treatment_list = intersect(treatment_order, unique(milo_design$treatment))
-#   treatment.new_list = gsub(" ", "", treatment_list)
-# 
-#   for( si in species_list ){
-# 
-#     for( j in 1:length(treatment.new_list[-1]) ){
-# 
-#       control.new = treatment.new_list[1]
-#       treatment.new = treatment.new_list[j+1]
-#       control = treatment_list[1]
-#       treatment = treatment_list[j+1]
-# 
-#       model.contrasts = paste0("treatment.new", control.new, " - ", "treatment.new", treatment.new)
-# 
-#       da_tmp = try(testNhoods(milo_object, design = ~ 0 + treatment.new, design.df = milo_design,
-#                           fdr.weighting="k-distance", reduced.dim = reduction,
-#                           model.contrasts = model.contrasts), silent = T)
-#       
-#       if(class(da_tmp) != "try-error"){
-# 
-#         da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = "seurat_clusters")
-#         da_tmp$subcluster = da_tmp$seurat_clusters
-#         da_tmp$species = si
-#         # da_tmp$tissue = tissue
-#         da_tmp$control = control
-#         da_tmp$treatment = treatment
-#         da_merge = rbind(da_merge, da_tmp)
-# 
-#       }else{
-#         print(i)
-#       }
-# 
-#     }
-# 
-#   }
-# 
-# }
-# 
-# write.table(da_merge, "ec.scvi.gene_nb.hvg_1k.refined.merged.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
-# 
-# 
-# 
 
-
-################################################################################
-### strain-wise comparison
-
+###############################################################################
+##
 seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
-outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.miloR.rds")
 
 cluster = "seurat_clusters"
 
@@ -184,95 +39,240 @@ Idents(seurat_object) = cluster
 meta_table = seurat_object@meta.data
 species_list <- unique(meta_table$strain)
 
-# Set dimensionality reduction method based on tissue type
-reduced.dim <- "SCVI"
+# Loop through each species
+for (si in species_list) {
 
-# Construct KNN graph and identify representative neighborhoods
-sce <- as.SingleCellExperiment(seurat_object, assay = "RNA")
-milo_object <- Milo(sce)
-milo_object <- buildGraph(milo_object, k = 30, d = 10, reduced.dim = reduced.dim)
-milo_object <- makeNhoods(milo_object, prop = 0.1, k = 30, d = 10, refined = TRUE, 
-                          reduced_dims = reduced.dim, refinement_scheme = "graph")
+  # Subset Seurat object by strain
+  seurat_object_use <- subset(seurat_object, strain == si)
 
-# Visualize neighborhood size histogram
-plotNhoodSizeHist(milo_object) # Ideal average size: 5 x N_samples / 50-100
+  # Adjust strain label for mouse
+  if (si == "C57BL/6") { si <- "mouse" }
 
-# Count cells within each neighborhood and create design matrix
-milo_object <- countCells(milo_object, meta.data = seurat_object@meta.data, sample = "orig.ident")
+  # Set output file path
+  outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/",
+                    si, ".miloR.rds")
 
-# Create and format design matrix for Milo analysis
-milo_design <- distinct(seurat_object@meta.data[, c("orig.ident", "treatment")])
-rownames(milo_design) <- milo_design$orig.ident
-milo_design$orig.ident <- as.factor(milo_design$orig.ident)
-milo_design$treatment <- as.factor(milo_design$treatment)
+  # Set dimensionality reduction method based on tissue type
+  reduced.dim <- "SCVI"
 
-# Calculate neighborhood connectivity
-milo_object <- calcNhoodDistance(milo_object, d = 10, reduced.dim = reduced.dim)
+  # Construct KNN graph and identify representative neighborhoods
+  sce <- as.SingleCellExperiment(seurat_object_use, assay = "RNA")
+  milo_object <- Milo(sce)
+  milo_object <- buildGraph(milo_object, k = 15, d = 5, reduced.dim = reduced.dim)
+  milo_object <- makeNhoods(milo_object, prop = 0.2, k = 15, d = 5, refined = TRUE,
+                            reduced_dims = reduced.dim, refinement_scheme = "graph")
 
-# Save the Milo object for downstream analysis
-saveRDS(milo_object, outfile)
+  # Visualize neighborhood size histogram
+  plotNhoodSizeHist(milo_object) # Ideal average size: 5 x N_samples / 50-100
+
+  # Count cells within each neighborhood and create design matrix
+  milo_object <- countCells(milo_object, meta.data = seurat_object_use@meta.data, sample = "orig.ident")
+
+  # Create and format design matrix for Milo analysis
+  milo_design <- distinct(seurat_object_use@meta.data[, c("orig.ident", "treatment")])
+  rownames(milo_design) <- milo_design$orig.ident
+  milo_design$orig.ident <- as.factor(milo_design$orig.ident)
+  milo_design$treatment <- as.factor(milo_design$treatment)
+
+  # Calculate neighborhood connectivity
+  milo_object <- calcNhoodDistance(milo_object, d = 5, reduced.dim = reduced.dim)
+
+  # Save the Milo object for downstream analysis
+  saveRDS(milo_object, outfile)
+}
 
 
 
 
 
-input_file = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.miloR.rds"
 
 
-reduction = "SCVI"
 
-milo_object = readRDS(input_file)
-milo_object$sxt = gsub("[/ ]", "", paste0(milo_object$strain, "_", milo_object$treatment))
 
-milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
-milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident", "sxt")]
-milo_design = distinct(milo_design)
-rownames(milo_design) = milo_design$orig.ident
-milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
-milo_design$strain = as.factor(milo_design$strain)
-milo_design$sxt = as.factor(milo_design$sxt)
 
-comp_list = list(c("C57BL6_Saline3d", "C57BL6_AngII3d"),
-                 c("C57BL6_Saline3d", "C57BL6_AngII28d"),
-                 c("SD_LS", "SD_HS3d"),
-                 c("SS_LS", "SS_HS3d"),
-                 c("SS_LS", "SS_HS21d"),
-                 c("WKY_10w", "WKY_26w"),
-                 c("SHR_10w", "SHR_26w")
+
+################################################################################
+input_file = c(
+
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/mouse.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SS.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SD.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/SHR.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/WKY.miloR.rds"
+
 )
 
+
+################################################################################
+### pairwise comparison
+library(ggtext)
+setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR")
+
+
 da_merge = c()
-for( i in comp_list ){
+for( i in input_file ){
 
-  control = i[1]
-  treatment = i[2]
+  # tissue = strsplit(basename(i), "\\.")[[1]][2]
+  # tissue = sub(".*\\.([^.]*)\\.(miloR).*", "\\1", basename(i))
+  reduction = "SCVI"
 
-  model.contrasts = paste0("sxt", control, " - ", "sxt", treatment)
+  milo_object = readRDS(i)
 
-  da_tmp = try(testNhoods(milo_object, design = ~ 0 + sxt, design.df = milo_design,
+  milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
+  milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident")]
+  milo_design = distinct(milo_design)
+  rownames(milo_design) = milo_design$orig.ident
+  milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
+  milo_design$strain = as.factor(milo_design$strain)
+
+  species_list = unique(milo_design$strain)
+  treatment_list = intersect(treatment_order, unique(milo_design$treatment))
+  treatment.new_list = gsub(" ", "", treatment_list)
+
+  for( si in species_list ){
+
+    for( j in 1:length(treatment.new_list[-1]) ){
+
+      control.new = treatment.new_list[1]
+      treatment.new = treatment.new_list[j+1]
+      control = treatment_list[1]
+      treatment = treatment_list[j+1]
+
+      model.contrasts = paste0("treatment.new", control.new, " - ", "treatment.new", treatment.new)
+
+      da_tmp = try(testNhoods(milo_object, design = ~ 0 + treatment.new, design.df = milo_design,
                           fdr.weighting="k-distance", reduced.dim = reduction,
                           model.contrasts = model.contrasts), silent = T)
 
-  if(class(da_tmp) != "try-error"){
+      if(class(da_tmp) != "try-error"){
 
-    da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = "seurat_clusters")
-    da_tmp$SpatialFDR.org = da_tmp$SpatialFDR
-    da_tmp$SpatialFDR = p.adjust(da_tmp$PValue, "fdr")
-    da_tmp$subcluster = da_tmp$seurat_clusters
-    # da_tmp$species = pi
-    # da_tmp$tissue = tissue
-    da_tmp$control = control
-    da_tmp$treatment = treatment
-    da_merge = rbind(da_merge, da_tmp)
+        da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = "seurat_clusters")
+        da_tmp$subcluster = da_tmp$seurat_clusters
+        da_tmp$species = si
+        # da_tmp$tissue = tissue
+        da_tmp$control = control
+        da_tmp$treatment = treatment
+        da_merge = rbind(da_merge, da_tmp)
 
-  }else{
-    print(i)
+      }else{
+        print(i)
+      }
+
+    }
+
   }
 
 }
 
+write.table(da_merge, "ec.scvi.gene_nb.hvg_1k.refined.merged.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
 
-write.table(da_merge, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
+
+
+
+# 
+# ################################################################################
+# ### strain-wise comparison
+# 
+# seurat_object <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
+# outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.miloR.rds")
+# 
+# cluster = "seurat_clusters"
+# 
+# # seurat_object@active.ident = seurat_object@meta.data[, cluster]
+# Idents(seurat_object) = cluster
+# 
+# meta_table = seurat_object@meta.data
+# species_list <- unique(meta_table$strain)
+# 
+# # Set dimensionality reduction method based on tissue type
+# reduced.dim <- "SCVI"
+# 
+# # Construct KNN graph and identify representative neighborhoods
+# sce <- as.SingleCellExperiment(seurat_object, assay = "RNA")
+# milo_object <- Milo(sce)
+# milo_object <- buildGraph(milo_object, k = 30, d = 10, reduced.dim = reduced.dim)
+# milo_object <- makeNhoods(milo_object, prop = 0.1, k = 30, d = 10, refined = TRUE, 
+#                           reduced_dims = reduced.dim, refinement_scheme = "graph")
+# 
+# # Visualize neighborhood size histogram
+# plotNhoodSizeHist(milo_object) # Ideal average size: 5 x N_samples / 50-100
+# 
+# # Count cells within each neighborhood and create design matrix
+# milo_object <- countCells(milo_object, meta.data = seurat_object@meta.data, sample = "orig.ident")
+# 
+# # Create and format design matrix for Milo analysis
+# milo_design <- distinct(seurat_object@meta.data[, c("orig.ident", "treatment")])
+# rownames(milo_design) <- milo_design$orig.ident
+# milo_design$orig.ident <- as.factor(milo_design$orig.ident)
+# milo_design$treatment <- as.factor(milo_design$treatment)
+# 
+# # Calculate neighborhood connectivity
+# milo_object <- calcNhoodDistance(milo_object, d = 10, reduced.dim = reduced.dim)
+# 
+# # Save the Milo object for downstream analysis
+# saveRDS(milo_object, outfile)
+# 
+# 
+# 
+# 
+# 
+# input_file = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.miloR.rds"
+# 
+# 
+# reduction = "SCVI"
+# 
+# milo_object = readRDS(input_file)
+# milo_object$sxt = gsub("[/ ]", "", paste0(milo_object$strain, "_", milo_object$treatment))
+# 
+# milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
+# milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident", "sxt")]
+# milo_design = distinct(milo_design)
+# rownames(milo_design) = milo_design$orig.ident
+# milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
+# milo_design$strain = as.factor(milo_design$strain)
+# milo_design$sxt = as.factor(milo_design$sxt)
+# 
+# comp_list = list(c("C57BL6_Saline3d", "C57BL6_AngII3d"),
+#                  c("C57BL6_Saline3d", "C57BL6_AngII28d"),
+#                  c("SD_LS", "SD_HS3d"),
+#                  c("SS_LS", "SS_HS3d"),
+#                  c("SS_LS", "SS_HS21d"),
+#                  c("WKY_10w", "WKY_26w"),
+#                  c("SHR_10w", "SHR_26w")
+# )
+# 
+# da_merge = c()
+# for( i in comp_list ){
+# 
+#   control = i[1]
+#   treatment = i[2]
+# 
+#   model.contrasts = paste0("sxt", control, " - ", "sxt", treatment)
+# 
+#   da_tmp = try(testNhoods(milo_object, design = ~ 0 + sxt, design.df = milo_design,
+#                           fdr.weighting="k-distance", reduced.dim = reduction,
+#                           model.contrasts = model.contrasts), silent = T)
+# 
+#   if(class(da_tmp) != "try-error"){
+# 
+#     da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = "seurat_clusters")
+#     da_tmp$SpatialFDR.org = da_tmp$SpatialFDR
+#     da_tmp$SpatialFDR = p.adjust(da_tmp$PValue, "fdr")
+#     da_tmp$subcluster = da_tmp$seurat_clusters
+#     # da_tmp$species = pi
+#     # da_tmp$tissue = tissue
+#     da_tmp$control = control
+#     da_tmp$treatment = treatment
+#     da_merge = rbind(da_merge, da_tmp)
+# 
+#   }else{
+#     print(i)
+#   }
+# 
+# }
+# 
+# 
+# write.table(da_merge, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/EC.all.milo.da_result.out", sep='\t', quote=F, col.names = T, row.names = F)
 
 
 
@@ -284,12 +284,21 @@ write.table(da_merge, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross
 
 ################################################################################
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/miloR/")
-da_merge = read.table("EC.all.milo.da_result.out", sep='\t', header=T)
-da_merge$species = gsub("_.*", "", da_merge$control)
-da_merge[da_merge$species=="C57BL6", ]$species = "C57BL/6"
+
+cluster_order = c("M0610", "M24", "C18", "M5813",
+                  "C1", "C7", "C9", 
+                  "C12", "C21", "C15", "C19",
+                  "C20", "C14", "C23", 
+                  "C22", "C16", 
+                  "C3", "C11", "C17")
+
+da_merge = read.table("ec.scvi.gene_nb.hvg_1k.refined.merged.milo.da_result.out", sep='\t', header=T)
+# da_merge$species = gsub("_.*", "", da_merge$control)
+# da_merge[da_merge$species=="C57BL6", ]$species = "C57BL/6"
 da_merge$species = factor(da_merge$species, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
-da_merge$treatment = gsub(".*_", "", da_merge$treatment)
-da_merge$treatment = factor(da_merge$treatment, levels = c("Saline3d", "AngII3d", "AngII28d", "10w", "26w", "LS", "HS3d", "HS21d"))
+# da_merge$treatment = gsub(".*_", "", da_merge$treatment)
+da_merge$treatment = factor(da_merge$treatment, levels = c("AngII 3d", "AngII 28d", "26w", "HS 3d", "HS 21d"))
+da_merge$seurat_clusters = factor(da_merge$seurat_clusters, levels = cluster_order)
 da_merge$SpatialFDR.org = da_merge$SpatialFDR
 da_merge$SpatialFDR = p.adjust(da_merge$PValue, "fdr")
 da_merge_plot <- da_merge %>%

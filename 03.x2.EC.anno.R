@@ -292,6 +292,175 @@ DimPlot(seurat_object, group.by = "seurat_clusters", reduction = "umap", pt.size
 
 
 
+meta_list <- c(
+  # ---- Glycolysis ----
+  "Hk1", "Hk2", # Hexokinases
+  "Gpi1",       # Glucose-6-phosphate isomerase
+  "Pfkp", "Pfkm", "Pfkl", # Phosphofructokinase isoforms
+  "Pfkfb3",     # PFKFB3 (regulator of glycolysis)
+  "Aldoa",      # Aldolase A
+  "Tpi1",       # Triosephosphate isomerase
+  "Gapdh",      # Glyceraldehyde-3-phosphate dehydrogenase
+  "Pgk1",       # Phosphoglycerate kinase 1
+  "Pgam1",      # Phosphoglycerate mutase 1
+  "Eno1",       # Enolase 1
+  "Pkm",        # Pyruvate kinase, muscle
+  "Ldha",       # Lactate dehydrogenase A
+  
+  # ---- TCA cycle ----
+  "Cs",         # Citrate synthase
+  "Aco2",       # Aconitase 2
+  "Idh3a", "Idh3b", "Idh3g", # Mitochondrial IDH3 subunits
+  "Ogdh",       # Oxoglutarate dehydrogenase
+  "Sdha", "Sdhb", # Succinate dehydrogenase subunits
+  "Fh",         # Fumarate hydratase
+  "Mdh1", "Mdh2", # Malate dehydrogenases (cytosolic and mitochondrial)
+  
+  # ---- Oxidative Phosphorylation (ETC) ----
+  # Complex I
+  "Ndufa9", "Ndufb5", "Ndufs1",
+  # Complex II
+  "Sdha", "Sdhb",   # (already included above, but can be repeated if needed)
+  # Complex III
+  "Uqcrc1", "Uqcrc2",
+  # Complex IV
+  "Cox4i1", "Cox7a2",
+  # Complex V
+  "Atp5f1a", "Atp5f1b",
+  
+  # ---- Fatty Acid β-Oxidation ----
+  "Cpt1a", "Cpt2",  # Carnitine palmitoyltransferases
+  "Acadl", "Acadm", "Acads",  # Acyl-CoA dehydrogenases (long-, medium-, short-chain)
+  "Acox1", "Acox2",  # Acyl-CoA oxidase
+  "Acaa2",          # 3-Ketoacyl-CoA thiolase
+  "Hadha", "Hadhb", # Hydroxyacyl-CoA dehydrogenase subunits
+  
+  # ---- PPP (Pentose Phosphate Pathway) ----
+  "G6pd",   # Glucose-6-phosphate dehydrogenase
+  "Pgls",   # 6-phosphogluconolactonase
+  "Pgd",    # 6-phosphogluconate dehydrogenase
+  "Tkt",    # Transketolase
+  "Taldo1", # Transaldolase
+  "Rpia",   # Ribose 5-phosphate isomerase A
+  
+  # ---- Serine Biosynthesis ----
+  "ENSRNOG00000068650", "ENSRNOG00000066787", "ENSRNOG00000069953", "Phgdh",  # Phosphoglycerate dehydrogenase
+  "Psat1",  # Phosphoserine aminotransferase
+  "Psph",   # Phosphoserine phosphatase
+  
+  # ---- Glutamine Metabolism (GLS-related) ----
+  "Gls",    # Glutaminase (Kidney type)
+  "Gls2",   # Glutaminase 2
+  "Glud1",  # Glutamate dehydrogenase 1 (GDH1)
+  "Slc1a5", # Neutral amino acid transporter B(0)
+  "Gpt2",    # Alanine transaminase 2 (ALT2)
+  
+  # ---- Superoxide Dismutases (SOD) ----
+  "Sod1",   # Cytosolic superoxide dismutase
+  "Sod2",   # Mitochondrial superoxide dismutase
+  "Sod3",   # Extracellular superoxide dismutase
+  
+  # ---- Catalase ----
+  "Cat",    # Catalase
+  
+  # ---- Glutathione System ----
+  "Gclc",   # Glutamate-cysteine ligase, catalytic subunit
+  "Gclm",   # Glutamate-cysteine ligase, modifier subunit
+  "Gss",    # Glutathione synthetase
+  "Gsr",    # Glutathione-disulfide reductase
+  "Gpx1",   # Glutathione peroxidase 1
+  "Gpx2",   # Glutathione peroxidase 2
+  "Gpx4",   # Glutathione peroxidase 4
+  "Glrx1",  # Glutaredoxin 1
+  "Glrx2",  # Glutaredoxin 2
+  
+  # ---- Thioredoxin System ----
+  "Txn1",   # Thioredoxin 1 (cytosolic)
+  "Txn2",   # Thioredoxin 2 (mitochondrial)
+  "Txnrd1", # Thioredoxin reductase 1 (cytosolic)
+  "Txnrd2", # Thioredoxin reductase 2 (mitochondrial)
+  "Txnrd3", # Thioredoxin reductase 3 (testis-specific, but sometimes relevant)
+  
+  # ---- Peroxiredoxins ----
+  "Prdx1",
+  "Prdx2",
+  "Prdx3",
+  "Prdx4",
+  "Prdx5",
+  "Prdx6",
+  
+  # ---- Heme Oxygenases ----
+  "Hmox1",  # Heme oxygenase 1
+  "Hmox2",  # Heme oxygenase 2
+  
+  # ---- NRF2 Pathway ----
+  "Nfe2l2", # NRF2 transcription factor
+  "Keap1",   # NRF2 repressor
+  
+  # ---- NADPH-consuming vasculoprotective genes ----
+  # eNOS (nitric oxide synthase 3)
+  "Nos3",
+  # Prostaglandin G/H synthase 1 (Cyclooxygenase-1)
+  "Ptgs1",
+  # Glutaredoxin
+  "Glrx"
+)
+
+laminar_shear_stress_genes <- c(
+  "Klf2",   # Kruppel-like factor 2, key shear-responsive transcription factor
+  "Klf4",   # Kruppel-like factor 4, also upregulated by laminar flow
+  "Nos3",   # eNOS, promoted by laminar flow for NO production
+  "Nfe2l2", # NRF2, redox-sensitive TF, upregulated in certain shear contexts
+  "Hmox1",  # Heme oxygenase-1, protective enzyme often induced under shear
+  "Thbd",   # Thrombomodulin, anti-thrombotic factor upregulated by shear
+  "Bmx"     # Non-receptor tyrosine kinase, implicated in flow signaling
+)
+
+# ---- Disturbed/Low/Oscillatory Flow-Responsive Genes ----
+disturbed_flow_genes <- c(
+  "Nfkb1",  # NF-κB subunit, activated under disturbed flow → inflammation
+  "Icam1",  # Intercellular adhesion molecule
+  "Vcam1",  # Vascular cell adhesion molecule
+  "Edn1",   # Endothelin-1, promotes vasoconstriction, often up in disturbed flow
+  "Cxcl1",  # Chemokine (C-X-C motif) ligand 1
+  "Ccl2",   # Chemokine (C-C motif) ligand 2 (a.k.a. MCP-1)
+  "Selp",   # P-selectin, upregulated in activated/endothelium
+  "Egr1",    # Early growth response 1, immediate-early gene in stress response
+  "Nox4"
+)
+
+# ---- Hypoxia-Responsive Genes ----
+hypoxia_genes <- c(
+  "Hif1a",   # Hypoxia-inducible factor-1 alpha
+  "Epas1",   # HIF-2 alpha, also known as EPAS1
+  "Egln1",   # PHD2 (prolyl hydroxylase domain protein 2), key HIF regulator
+  "Vegfa",   # Vascular endothelial growth factor A
+  "Pdk1",    # Pyruvate dehydrogenase kinase 1
+  "Slc2a1",  # Glucose transporter 1 (GLUT1)
+  "Pgk1",    # Phosphoglycerate kinase 1
+  "Ca9",     # Carbonic anhydrase IX
+  "Bnip3",   # BCL2 interacting protein 3, involved in autophagy/apoptosis
+  "Epo"      # Erythropoietin (may be low in ECs, but a classic hypoxia-inducible gene)
+)
+
+DotPlot(seurat_object, features = unique(meta_list)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+DotPlot(seurat_object, features = unique(laminar_shear_stress_genes)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+DotPlot(seurat_object, features = unique(disturbed_flow_genes)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+DotPlot(seurat_object, features = unique(hypoxia_genes)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+DotPlot(seurat_object, features = c("Pfkfb3", "Cpt1a")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
 
 
 treatment_order = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w")
