@@ -2,7 +2,7 @@ library(Seurat)
 library(slingshot)
 library(grDevices)
 library(RColorBrewer)
-library(tradeSeq)
+# library(tradeSeq)
 library(dplyr)
 
 set.seed(1)
@@ -11,7 +11,7 @@ setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slings
 
 
 ### 1. load data
-i <- "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/ec.scvi.gene_nb.hvg_1k.refined.rds"
+i <- "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/ec.scvi.gene_nb.hvg_1k.refined.merged.rds"
 outfile <- paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/",
                  gsub("rds", "slingshot.rds", basename(i)))
 
@@ -22,10 +22,11 @@ Idents(seurat_object) <- cluster
 sce <- as.SingleCellExperiment(seurat_object)
 
 ### 2. using slingshot
-sce <- slingshot(sce, clusterLabels = seurat_object$seurat_clusters, reducedDim = 'UMAP', allow.breaks = TRUE, approx_points = 5)
+sce <- slingshot(sce, clusterLabels = seurat_object$seurat_clusters, reducedDim = 'UMAP', allow.breaks = TRUE)
 saveRDS(sce, outfile)
 
 summary(sce$slingPseudotime_1)
+summary(sce$slingPseudotime_2)
 
 colors <- colorRampPalette(brewer.pal(11,'Spectral')[-6])(100)
 plotcol <- colors[cut(sce$slingPseudotime_1, breaks=100)]

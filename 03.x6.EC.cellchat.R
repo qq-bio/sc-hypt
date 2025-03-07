@@ -202,3 +202,111 @@ saveRDS(e, output)
 
 
 
+
+
+################################################################################
+
+
+
+model <- c("AngII", "Salt-sensitive", "Spontaneous")
+names(model) <- c("mouse", "rat.ss", "rat.sp")
+
+cellchat_list <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.rds")
+cc_df <- data.frame()
+
+for (output_name in names(cellchat_list)) {
+  
+  cellchat <- cellchat_list[[output_name]]
+  
+  # Extract tissue, strain, and treatment information
+  parts <- strsplit(output_name, "_")[[1]]
+  tissue <- parts[1]
+  strain <- gsub("\\.", "/", parts[2])
+  treatment <- parts[3]
+  
+  # Extract ligand-receptor interactions
+  LR_list <- rownames(cellchat@LR$LRsig)
+  
+  for (lr in LR_list) {
+    prob_tmp <- cellchat@net$prob[, , lr]
+    
+    lr_df_tmp <- reshape2::melt(prob_tmp, value.name = "value")
+    colnames(lr_df_tmp)[1:2] <- c("source", "target")
+    lr_df_tmp$LR_pair <- lr
+    lr_df_tmp <- lr_df_tmp[lr_df_tmp$value > 0, ]
+    
+    if (nrow(lr_df_tmp) > 0) {
+      # Add metadata and append to results
+      lr_df_tmp$model <- model[gsub("(.*)\\.([A-Z]+).*", "\\1", tissue, perl = TRUE)]
+      lr_df_tmp$tissue <- gsub("(.*)\\.([A-Z]+).*", "\\2", tissue, perl = TRUE)
+      lr_df_tmp$strain <- strain
+      lr_df_tmp$treatment <- treatment
+      lr_df_tmp <- cbind(lr_df_tmp, cellchat@LR$LRsig[lr, , drop = FALSE])
+      cc_df <- rbind(cc_df, lr_df_tmp)
+    }
+  }
+}
+
+
+write.table(cc_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.result.out", col.names = TRUE, row.names = FALSE, sep = '\t', quote = FALSE)
+
+
+
+cc_df = cc_df[order(cc_df$value, decreasing = T), ]
+
+cc_df[cc_df$source=="ECC14" & cc_df$tissue=="MCA", ]
+
+
+cc_df[cc_df$source=="ECM0610" & cc_df$tissue=="LV", ]
+cc_df[cc_df$source=="ECM0610" & cc_df$tissue=="LV" & cc_df$LR_pair %in% c("APP_CD74"), ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cc_df$model = factor(cc_df$model, levels=c("AngII", "Salt-sensitive", "Spontaneous"))
+cc_df$strain = factor(cc_df$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
+cc_df$tissue = factor(cc_df$tissue, levels = c("HYP", "MCA", "LV", "LK", "MSA"))
+cc_df$treatment = factor(cc_df$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
+cc_df$sxt = paste0(cc_df$strain, "-", cc_df$treatment)
+
+id_vars = setdiff(colnames(cc_df), c("sxt", "value"))
+cc_df_reshape = reshape(cc_df, idvar = id_vars, timevar = "sxt", direction = "wide")
+cc_df_reshape[is.na(cc_df_reshape)] <- 0
+
+cc_df_reshape$`diff.C57BL/6-AngII 3d` = cc_df_reshape$`value.C57BL/6-AngII 3d` - cc_df_reshape$`value.C57BL/6-Saline 3d`
+cc_df_reshape$`diff.C57BL/6-AngII 28d` = cc_df_reshape$`value.C57BL/6-AngII 28d` - cc_df_reshape$`value.C57BL/6-Saline 3d`
+cc_df_reshape$`diff.SS-HS 3d` = cc_df_reshape$`value.SS-HS 3d` - cc_df_reshape$`value.SS-LS`
+cc_df_reshape$`diff.SS-HS 21d` = cc_df_reshape$`value.SS-HS 21d` - cc_df_reshape$`value.SS-LS`
+cc_df_reshape$`diff.SD-HS 3d` = cc_df_reshape$`value.SD-HS 3d` - cc_df_reshape$`value.SD-LS`
+cc_df_reshape$`diff.SHR-26w` = cc_df_reshape$`value.SHR-26w` - cc_df_reshape$`value.SHR-10w`
+cc_df_reshape$`diff.WKY-26w` = cc_df_reshape$`value.WKY-26w` - cc_df_reshape$`value.WKY-10w`
+
+diff_cols = colnames(cc_df_reshape)[grepl("diff", colnames(cc_df_reshape))]
+dis_cols = c("treatment", colnames(cc_df_reshape)[grepl("value.", colnames(cc_df_reshape))])
+id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, diff_cols))
+cc_df_diff = reshape2::melt(cc_df_reshape[, c(id_vars, diff_cols)], id.vars = id_vars, measured.vars=diff_cols,
+                            variable.name = "sxt")
+cc_df_diff$sxt = gsub("diff.", "", cc_df_diff$sxt)
+cc_df_diff$treatment = as.character(lapply(strsplit(cc_df_diff$sxt, "-"), function(x) x[2]))
+cc_df_diff$treatment = factor(cc_df_diff$treatment, c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
+cc_df_diff = cc_df_diff[cc_df_diff$value!=0, ]
+
+
+
+
+
+
+
+
+
+
