@@ -252,25 +252,13 @@ write.table(cc_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-or
 
 
 
-cc_df = cc_df[order(cc_df$value, decreasing = T), ]
-
-cc_df[cc_df$source=="ECC14" & cc_df$tissue=="MCA", ]
-
-
-cc_df[cc_df$source=="ECM0610" & cc_df$tissue=="LV", ]
-cc_df[cc_df$source=="ECM0610" & cc_df$tissue=="LV" & cc_df$LR_pair %in% c("APP_CD74"), ]
 
 
 
+################################################################################
+cc_df <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.result.out", sep = "\t", header = T)
 
-
-
-
-
-
-
-
-
+# cc_df = cc_df[order(cc_df$value, decreasing = T), ]
 
 
 cc_df$model = factor(cc_df$model, levels=c("AngII", "Salt-sensitive", "Spontaneous"))
@@ -292,19 +280,55 @@ cc_df_reshape$`diff.SHR-26w` = cc_df_reshape$`value.SHR-26w` - cc_df_reshape$`va
 cc_df_reshape$`diff.WKY-26w` = cc_df_reshape$`value.WKY-26w` - cc_df_reshape$`value.WKY-10w`
 
 diff_cols = colnames(cc_df_reshape)[grepl("diff", colnames(cc_df_reshape))]
-dis_cols = c("treatment", colnames(cc_df_reshape)[grepl("value.", colnames(cc_df_reshape))])
-id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, diff_cols))
+# dis_cols = c("treatment", colnames(cc_df_reshape)[grepl("value.", colnames(cc_df_reshape))])
+# id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, diff_cols))
+id_vars = colnames(cc_df_reshape)[!grepl("\\.", colnames(cc_df_reshape))]
 cc_df_diff = reshape2::melt(cc_df_reshape[, c(id_vars, diff_cols)], id.vars = id_vars, measured.vars=diff_cols,
                             variable.name = "sxt")
 cc_df_diff$sxt = gsub("diff.", "", cc_df_diff$sxt)
 cc_df_diff$treatment = as.character(lapply(strsplit(cc_df_diff$sxt, "-"), function(x) x[2]))
 cc_df_diff$treatment = factor(cc_df_diff$treatment, c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
 cc_df_diff = cc_df_diff[cc_df_diff$value!=0, ]
+cc_df_diff = cc_df_diff[order(cc_df_diff$value, decreasing = T), ]
+
+
+epsilon = 1e-7
+cc_df_reshape$`ratio.C57BL/6-AngII 3d` = (cc_df_reshape$`value.C57BL/6-AngII 3d` - cc_df_reshape$`value.C57BL/6-Saline 3d`)/(cc_df_reshape$`value.C57BL/6-Saline 3d`+epsilon)
+cc_df_reshape$`ratio.C57BL/6-AngII 28d` = (cc_df_reshape$`value.C57BL/6-AngII 28d` - cc_df_reshape$`value.C57BL/6-Saline 3d`)/(cc_df_reshape$`value.C57BL/6-Saline 3d`+epsilon)
+cc_df_reshape$`ratio.SS-HS 3d` = (cc_df_reshape$`value.SS-HS 3d` - cc_df_reshape$`value.SS-LS`)/(cc_df_reshape$`value.SS-LS`+epsilon)
+cc_df_reshape$`ratio.SS-HS 21d` = (cc_df_reshape$`value.SS-HS 21d` - cc_df_reshape$`value.SS-LS`)/(cc_df_reshape$`value.SS-LS`+epsilon)
+cc_df_reshape$`ratio.SD-HS 3d` = (cc_df_reshape$`value.SD-HS 3d` - cc_df_reshape$`value.SD-LS`)/(cc_df_reshape$`value.SD-LS`+epsilon)
+cc_df_reshape$`ratio.SHR-26w` = (cc_df_reshape$`value.SHR-26w` - cc_df_reshape$`value.SHR-10w`)/(cc_df_reshape$`value.SHR-10w`+epsilon)
+cc_df_reshape$`ratio.WKY-26w` = (cc_df_reshape$`value.WKY-26w` - cc_df_reshape$`value.WKY-10w`)/(cc_df_reshape$`value.WKY-10w`+epsilon)
+
+ratio_cols = colnames(cc_df_reshape)[grepl("ratio", colnames(cc_df_reshape))]
+# dis_cols = c("treatment", colnames(cc_df_reshape)[grepl("value.", colnames(cc_df_reshape))])
+# id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, ratio_cols))
+id_vars = colnames(cc_df_reshape)[!grepl("\\.", colnames(cc_df_reshape))]
+cc_df_ratio = reshape2::melt(cc_df_reshape[, c(id_vars, ratio_cols)], id.vars = id_vars, measured.vars=ratio_cols,
+                            variable.name = "sxt")
+cc_df_ratio$sxt = gsub("diff.", "", cc_df_ratio$sxt)
+cc_df_ratio$treatment = as.character(lapply(strsplit(cc_df_ratio$sxt, "-"), function(x) x[2]))
+cc_df_ratio$treatment = factor(cc_df_ratio$treatment, c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
+cc_df_ratio = cc_df_ratio[cc_df_ratio$value!=0, ]
+cc_df_ratio = cc_df_ratio[order(cc_df_ratio$value, decreasing = T), ]
 
 
 
+cc_df_diff[cc_df_diff$source=="ECC14" & cc_df_diff$tissue=="MCA", ]
+cc_df_diff[cc_df_diff$source=="ECM0610" & cc_df_diff$tissue=="LV", ]
 
 
+
+for( i in c("HYP", "MCA", "LV", "LK", "MSA") ){
+  print(head(cc_df_diff[grepl("^EC", cc_df_diff$source) & !(grepl("^EC", cc_df_diff$target)) & cc_df_diff$tissue==i, ], n=10))
+}
+
+
+### visualize the top changes in each tissue
+
+cc_df_diff %>% mutate(source_interaction = paste0(source, ":", interaction_name_2)) %>%
+  group_by(tissue) %>% 
 
 
 
