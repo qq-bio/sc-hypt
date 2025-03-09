@@ -291,6 +291,8 @@ cc_df_diff$treatment = factor(cc_df_diff$treatment, c("Saline 3d", "AngII 3d", "
 cc_df_diff = cc_df_diff[cc_df_diff$value!=0, ]
 cc_df_diff = cc_df_diff[order(cc_df_diff$value, decreasing = T), ]
 
+write.table(cc_df_diff, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", col.names = TRUE, row.names = FALSE, sep = '\t', quote = FALSE)
+
 
 epsilon = 1e-7
 cc_df_reshape$`ratio.C57BL/6-AngII 3d` = (cc_df_reshape$`value.C57BL/6-AngII 3d` - cc_df_reshape$`value.C57BL/6-Saline 3d`)/(cc_df_reshape$`value.C57BL/6-Saline 3d`+epsilon)
@@ -328,7 +330,7 @@ for( i in c("HYP", "MCA", "LV", "LK", "MSA") ){
 ### visualize the top changes in each tissue
 
 cc_df_diff %>% mutate(source_interaction = paste0(source, ":", interaction_name_2)) %>%
-  group_by(tissue) %>% 
+  group_by(tissue, source_interaction, target) %>% 
 
 
 
