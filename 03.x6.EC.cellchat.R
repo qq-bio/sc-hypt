@@ -327,10 +327,175 @@ for( i in c("HYP", "MCA", "LV", "LK", "MSA") ){
 }
 
 
-### visualize the top changes in each tissue
 
-cc_df_diff %>% mutate(source_interaction = paste0(source, ":", interaction_name_2)) %>%
-  group_by(tissue, source_interaction, target) %>% 
+### visualize the top changes in each tissue
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+
+cc_diff_ec_source <- cc_df_diff[grepl("^EC", cc_df_diff$source) & !(grepl("^EC", cc_df_diff$target)), ]
+cc_diff_ec_target <- cc_df_diff[grepl("^EC", cc_df_diff$target) & !(grepl("^EC", cc_df_diff$source)), ]
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  ggplot(aes(x = rank, y = value, colour = annotation)) +
+  geom_point() +
+  geom_line() +
+  xlab("Rank") +
+  ylab("Differential communication") +
+  facet_wrap(~source, scales = "free_x")
+
+
+cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  ggplot(aes(x = rank, y = value, colour = annotation)) +
+  geom_point() +
+  geom_line() +
+  xlab("Rank") +
+  ylab("Differential communication") +
+  facet_grid2(source~target, scales = "free_x")
+
+
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as source", color = "Type") +
+  facet_grid2(target~source, scales = "free_x")
+
+cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as target", color = "Type") +
+  # scale_color_manual(values=tissue_col) +
+  facet_grid2(source~target, scales = "free_x")
+
+
+
+
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="ECM-Receptor" &
+         target %in% c("Fibroblast", "VSMC", "Pericyte")) %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as source in ECM-receptor", color = "Type") +
+  facet_grid2(target~source, scales = "free_x")
+
+cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="ECM-Receptor" &
+           source %in% c("Fibroblast", "VSMC", "Pericyte")) %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as target in ECM-receptor", color = "Type") +
+  # scale_color_manual(values=tissue_col) +
+  facet_grid2(source~target, scales = "free_x")
+
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="Cell-Cell Contact") %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as source in Cell-Cell Contact", color = "Type") +
+  facet_grid2(target~source, scales = "free_x")
+
+cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="Cell-Cell Contact") %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as target in Cell-Cell Contact", color = "Type") +
+  # scale_color_manual(values=tissue_col) +
+  facet_grid2(source~target, scales = "free_x")
+
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="Secreted Signaling") %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as source in Secreted Signaling", color = "Type") +
+  facet_grid2(target~source, scales = "free_x")
+
+cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="Secreted Signaling") %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  theme(    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Rank", y = "Differential communication after treatment",
+       title = "EC as target in Secreted Signaling", color = "Type") +
+  # scale_color_manual(values=tissue_col) +
+  facet_grid2(source~target, scales = "free_x")
+
+
+
+
+
+
+
+
+
+
+cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(annotation=="ECM-Receptor") %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~source, scales = "free_x")
+
+
+head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC16" & cc_diff_ec_source$annotation=="ECM-Receptor" & cc_diff_ec_source$tissue=="LV", ], n=10)
+head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC16" & cc_diff_ec_source$annotation=="ECM-Receptor" & cc_diff_ec_source$tissue=="LK", ], n=10)
+
+head(cc_diff_ec_source[cc_diff_ec_source$source=="ECM24" & cc_diff_ec_source$annotation=="ECM-Receptor" & cc_diff_ec_source$tissue=="LV", ], n=10)
+head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC22" & cc_diff_ec_source$annotation=="ECM-Receptor" & cc_diff_ec_source$tissue=="LV", ], n=10)
+
+head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC22" & cc_diff_ec_source$target=="Pericyte", ], n=10)
+head(cc_diff_ec_target[cc_diff_ec_target$target=="ECC22" & cc_diff_ec_target$source=="Pericyte", ], n=10)
+
+
+
+
 
 
 
