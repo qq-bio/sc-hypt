@@ -282,7 +282,8 @@ cc_df_reshape$`diff.WKY-26w` = cc_df_reshape$`value.WKY-26w` - cc_df_reshape$`va
 diff_cols = colnames(cc_df_reshape)[grepl("diff", colnames(cc_df_reshape))]
 # dis_cols = c("treatment", colnames(cc_df_reshape)[grepl("value.", colnames(cc_df_reshape))])
 # id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, diff_cols))
-id_vars = colnames(cc_df_reshape)[!grepl("\\.", colnames(cc_df_reshape))]
+# id_vars = colnames(cc_df_reshape)[!grepl("\\.", colnames(cc_df_reshape))]
+id_vars = setdiff(colnames(cc_df_reshape), c(diff_cols))
 cc_df_diff = reshape2::melt(cc_df_reshape[, c(id_vars, diff_cols)], id.vars = id_vars, measured.vars=diff_cols,
                             variable.name = "sxt")
 cc_df_diff$sxt = gsub("diff.", "", cc_df_diff$sxt)
@@ -328,11 +329,50 @@ for( i in c("HYP", "MCA", "LV", "LK", "MSA") ){
 
 
 
+
 ### visualize the top changes in each tissue
 cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
 
+cc_df_diff <- cc_df_diff %>% 
+  filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))
+
+
 cc_diff_ec_source <- cc_df_diff[grepl("^EC", cc_df_diff$source) & !(grepl("^EC", cc_df_diff$target)), ]
 cc_diff_ec_target <- cc_df_diff[grepl("^EC", cc_df_diff$target) & !(grepl("^EC", cc_df_diff$source)), ]
+
+
+cc_df_diff %>% 
+  group_by(EC_type) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  xlab("Rank") +
+  ylab("Differential communication score (vs. baseline") +
+  facet_grid2(annotation~EC_type, scales = "free")
+
+
+
+path_list = cc_df_diff %>% arrange(desc(abs(value)))
+# > unique(path_list$EC_type)[1:15]
+# [1] "ECC21"   "ECC12"   "ECC14"   "ECC15"   "ECC1"    "ECC9"    "ECC7"    "ECM24"   "ECM0610" "ECC18"   "ECC3"    "ECM5813" "ECC23"   "ECC11"   "ECC19"  
+path_list = unique(path_list$pathway_name)[1:15]
+cc_df_diff %>% 
+  group_by(EC_type) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(pathway_name %in% path_list) %>%
+  ggplot(aes(x = rank, y = value, colour = Type)) +
+  geom_point() +
+  geom_line() +
+  xlab("Rank") +
+  ylab("Differential communication score") +
+  facet_grid2(pathway_name~EC_type, scales = "free")
+
+
+head(cc_df_diff[cc_df_diff$EC_type=="ECC14" & cc_df_diff$pathway_name=="PDGF", ])
 
 
 cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
@@ -342,7 +382,7 @@ cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
   geom_line() +
   xlab("Rank") +
   ylab("Differential communication") +
-  facet_wrap(~source, scales = "free_x")
+  facet_wrap(~source, scales = "free_x", nrow = 1)
 
 
 cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
@@ -352,7 +392,7 @@ cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
   geom_line() +
   xlab("Rank") +
   ylab("Differential communication") +
-  facet_grid2(source~target, scales = "free_x")
+  facet_grid2(~target, scales = "free_x")
 
 
 
@@ -492,6 +532,20 @@ head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC22" & cc_diff_ec_source$ann
 
 head(cc_diff_ec_source[cc_diff_ec_source$source=="ECC22" & cc_diff_ec_source$target=="Pericyte", ], n=10)
 head(cc_diff_ec_target[cc_diff_ec_target$target=="ECC22" & cc_diff_ec_target$source=="Pericyte", ], n=10)
+
+
+
+
+
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out", header = T)
+deg_all <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+
+### ECC22 related
+deg_merged[deg_merged$cell_type=="C22" & deg_merged$p_val_adj<0.05, ]
+# p_val avg_log2FC pct.1 pct.2    p_val_adj gene_name cell_type pct.diff        project strain control treatment control_size treatment_size test_gene
+# Ccdc14127 8.817412e-09  -3.116759 0.079  0.42 0.0003737701   Ccdc141       C22   -0.341 Salt-sensitive     SD      LS     HS 3d          127             69     10376
+# Ccdc is not included in 
+
 
 
 
