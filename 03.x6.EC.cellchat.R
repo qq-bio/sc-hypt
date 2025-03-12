@@ -1,6 +1,7 @@
 library(CellChat)
 library(Seurat)
-
+library(dplyr)
+library(tidyr)
 
 
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/")
@@ -258,15 +259,13 @@ write.table(cc_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-or
 ################################################################################
 cc_df <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.result.out", sep = "\t", header = T)
 
-# cc_df = cc_df[order(cc_df$value, decreasing = T), ]
-
-
 cc_df$model = factor(cc_df$model, levels=c("AngII", "Salt-sensitive", "Spontaneous"))
 cc_df$strain = factor(cc_df$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
 cc_df$tissue = factor(cc_df$tissue, levels = c("HYP", "MCA", "LV", "LK", "MSA"))
 cc_df$treatment = factor(cc_df$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
 cc_df$sxt = paste0(cc_df$strain, "-", cc_df$treatment)
 
+cc_df = cc_df[, !(colnames(cc_df) %in% c("strain", "treatment"))]
 id_vars = setdiff(colnames(cc_df), c("sxt", "value"))
 cc_df_reshape = reshape(cc_df, idvar = id_vars, timevar = "sxt", direction = "wide")
 cc_df_reshape[is.na(cc_df_reshape)] <- 0
@@ -284,9 +283,10 @@ diff_cols = colnames(cc_df_reshape)[grepl("diff", colnames(cc_df_reshape))]
 # id_vars = setdiff(colnames(cc_df_reshape), c(dis_cols, diff_cols))
 # id_vars = colnames(cc_df_reshape)[!grepl("\\.", colnames(cc_df_reshape))]
 id_vars = setdiff(colnames(cc_df_reshape), c(diff_cols))
-cc_df_diff = reshape2::melt(cc_df_reshape[, c(id_vars, diff_cols)], id.vars = id_vars, measured.vars=diff_cols,
+cc_df_diff = reshape2::melt(cc_df_reshape, id.vars = id_vars, measured.vars=diff_cols,
                             variable.name = "sxt")
 cc_df_diff$sxt = gsub("diff.", "", cc_df_diff$sxt)
+cc_df_diff$strain = as.character(lapply(strsplit(cc_df_diff$sxt, "-"), function(x) x[1]))
 cc_df_diff$treatment = as.character(lapply(strsplit(cc_df_diff$sxt, "-"), function(x) x[2]))
 cc_df_diff$treatment = factor(cc_df_diff$treatment, c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d", "10w", "26w"))
 cc_df_diff = cc_df_diff[cc_df_diff$value!=0, ]
@@ -339,26 +339,21 @@ cc_df_diff <- cc_df_diff %>%
   mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
   mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))
 
-
-cc_diff_ec_source <- cc_df_diff[grepl("^EC", cc_df_diff$source) & !(grepl("^EC", cc_df_diff$target)), ]
-cc_diff_ec_target <- cc_df_diff[grepl("^EC", cc_df_diff$target) & !(grepl("^EC", cc_df_diff$source)), ]
-
-
-cc_df_diff %>% 
-  group_by(EC_type) %>% arrange(value) %>%
-  mutate(rank = row_number()) %>% ungroup() %>%
-  ggplot(aes(x = rank, y = value, colour = Type)) +
-  geom_point() +
-  geom_line() +
-  xlab("Rank") +
-  ylab("Differential communication score (vs. baseline") +
-  facet_grid2(annotation~EC_type, scales = "free")
+# cc_df_diff %>% 
+#   group_by(EC_type) %>% arrange(value) %>%
+#   mutate(rank = row_number()) %>% ungroup() %>%
+#   ggplot(aes(x = rank, y = value, colour = Type)) +
+#   geom_point() +
+#   geom_line() +
+#   xlab("Rank") +
+#   ylab("Differential communication score (vs. baseline") +
+#   facet_grid2(annotation~EC_type, scales = "free")
 
 
 
 path_list = cc_df_diff %>% arrange(desc(abs(value)))
 # > unique(path_list$EC_type)[1:15]
-# [1] "ECC21"   "ECC12"   "ECC14"   "ECC15"   "ECC1"    "ECC9"    "ECC7"    "ECM24"   "ECM0610" "ECC18"   "ECC3"    "ECM5813" "ECC23"   "ECC11"   "ECC19"  
+# [1] "ECC15"   "ECC3"    "ECM24"   "ECC7"    "ECC1"    "ECC23"   "ECM0610" "ECC12"   "ECC11"   "ECC19"   "ECC14"   "ECC17"   "ECC16"   "ECC20"   "ECC18"  
 path_list = unique(path_list$pathway_name)[1:15]
 cc_df_diff %>% 
   group_by(EC_type) %>% arrange(value) %>%
@@ -372,7 +367,26 @@ cc_df_diff %>%
   facet_grid2(pathway_name~EC_type, scales = "free")
 
 
-head(cc_df_diff[cc_df_diff$EC_type=="ECC14" & cc_df_diff$pathway_name=="PDGF", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC11" & cc_df_diff$pathway_name=="ANGPT", ])
+head(cc_df_diff[cc_df_diff$EC_type %in% c("ECC11", "ECC12", "ECC16", "ECM5813") & cc_df_diff$pathway_name=="APP", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC20" & cc_df_diff$pathway_name=="CADM", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECM24" & cc_df_diff$pathway_name=="COLLAGEN", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC17" & cc_df_diff$pathway_name=="EPHA", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC11" & cc_df_diff$pathway_name=="IGF", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECM24" & cc_df_diff$pathway_name=="LAMININ", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC22" & cc_df_diff$pathway_name=="NRG", ])
+head(cc_df_diff[cc_df_diff$EC_type %in% c("ECC14", "ECC21") & cc_df_diff$pathway_name=="PDGF", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC21" & cc_df_diff$pathway_name=="PECAM1", ])
+head(cc_df_diff[cc_df_diff$EC_type %in% c("ECC3") & cc_df_diff$pathway_name=="PTPRM", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC12" & cc_df_diff$pathway_name=="SELL", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC14" & cc_df_diff$pathway_name=="SEMA3", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC3" & cc_df_diff$pathway_name=="SEMA6", ])
+head(cc_df_diff[cc_df_diff$EC_type=="ECC3" & cc_df_diff$pathway_name=="VEGF", ])
+
+
+
+
+
 
 
 cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
@@ -551,7 +565,66 @@ deg_merged[deg_merged$cell_type=="C22" & deg_merged$p_val_adj<0.05, ]
 
 
 
+################################################################################
+### add expr res to cellchat res
+
+deg_ec <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out", header = T)
+deg_all <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+
+deg_ec$tissue = "NA"
+deg_ec$cell_type = paste0("EC", deg_ec$cell_type)
+deg_merged = rbind(deg_all, deg_ec[, colnames(deg_all)])
+
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+cc_df_diff <- cc_df_diff %>% 
+  filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))
 
 
+cc_df_diff_mod <- cc_df_diff %>% 
+  rowwise() %>%
+  mutate(
+    ligand_mod = gsub(" ()", "", strsplit(interaction_name_2, " - ")[[1]][1]),
+    receptor_mod = gsub(" ()", "", strsplit(interaction_name_2, " - ")[[1]][2])
+  ) %>%
+  ungroup() %>%
+  separate_rows(receptor_mod, sep = "\\+")
 
+source_with_tissue <- cc_df_diff_mod %>% filter(!grepl("^EC(C|M)", source))
+source_without_tissue <- cc_df_diff_mod %>% filter(grepl("^EC(C|M)", source))
+
+source_with_tissue <- source_with_tissue %>% 
+  left_join(deg_merged, by = c("ligand_mod" = "gene_name",
+                                 "source"     = "cell_type",
+                                 "strain"     = "strain",
+                                 "treatment"  = "treatment",
+                                 "tissue"     = "tissue"))
+source_without_tissue <- source_without_tissue %>% 
+  left_join(deg_merged[, colnames(deg_merged)!="tissue"], by = c("ligand_mod" = "gene_name",
+                                 "source"     = "cell_type",
+                                 "strain"     = "strain",
+                                 "treatment"  = "treatment"))
+
+joined_source <- bind_rows(source_with_tissue, source_without_tissue)
+
+target_with_tissue <- joined_source %>% filter(!grepl("^EC(C|M)", target))
+target_without_tissue <- joined_source %>% filter(grepl("^EC(C|M)", target))
+
+target_with_tissue <- target_with_tissue %>% 
+  left_join(deg_merged, by = c("receptor_mod" = "gene_name",
+                                 "target"     = "cell_type",
+                                 "strain"     = "strain",
+                                 "treatment"  = "treatment",
+                                 "tissue"     = "tissue"))
+target_without_tissue <- target_without_tissue %>% 
+  left_join(deg_merged[, colnames(deg_merged)!="tissue"], by = c("receptor_mod" = "gene_name",
+                                 "target"     = "cell_type",
+                                 "strain"     = "strain",
+                                 "treatment"  = "treatment"))
+
+cc_df_diff_mod_final <- bind_rows(target_with_tissue, target_without_tissue)  
+
+write.table(cc_df_diff_mod_final, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.expr.out", sep = "\t", col.names = T, row.names = F, quote = F)
 
