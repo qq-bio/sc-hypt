@@ -580,14 +580,15 @@ cc_df_diff <- cc_df_diff %>%
   filter(grepl("^EC", source) | grepl("^EC", target)) %>%
   filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
   mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(EC_type = ifelse(grepl("^EC", EC_type), EC_type, "NA")) %>% 
   mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))
 
 
 cc_df_diff_mod <- cc_df_diff %>% 
   rowwise() %>%
   mutate(
-    ligand_mod = gsub(" ()", "", strsplit(interaction_name_2, " - ")[[1]][1]),
-    receptor_mod = gsub(" ()", "", strsplit(interaction_name_2, " - ")[[1]][2])
+    ligand_mod = gsub("\\s|\\(|\\)", "", strsplit(interaction_name_2, " - ")[[1]][1]),
+    receptor_mod = gsub("\\s|\\(|\\)", "", strsplit(interaction_name_2, " - ")[[1]][2])
   ) %>%
   ungroup() %>%
   separate_rows(receptor_mod, sep = "\\+")
@@ -627,4 +628,71 @@ target_without_tissue <- target_without_tissue %>%
 cc_df_diff_mod_final <- bind_rows(target_with_tissue, target_without_tissue)  
 
 write.table(cc_df_diff_mod_final, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.expr.out", sep = "\t", col.names = T, row.names = F, quote = F)
+
+
+
+
+
+
+
+deg_ec <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out", header = T)
+deg_all <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+
+deg_ec$tissue = "NA"
+deg_ec$cell_type = paste0("EC", deg_ec$cell_type)
+deg_merged = rbind(deg_all, deg_ec[, colnames(deg_all)])
+
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+cc_df_diff <- cc_df_diff %>% 
+  # filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  # filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(EC_type = ifelse(grepl("^EC", EC_type), EC_type, "NA")) %>% 
+  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))
+
+
+cc_df_diff_mod <- cc_df_diff %>% 
+  rowwise() %>%
+  mutate(
+    ligand_mod = gsub("\\s|\\(|\\)", "", strsplit(interaction_name_2, " - ")[[1]][1]),
+    receptor_mod = gsub("\\s|\\(|\\)", "", strsplit(interaction_name_2, " - ")[[1]][2])
+  ) %>%
+  ungroup() %>%
+  separate_rows(receptor_mod, sep = "\\+")
+
+source_with_tissue <- cc_df_diff_mod %>% filter(!grepl("^EC(C|M)", source))
+source_without_tissue <- cc_df_diff_mod %>% filter(grepl("^EC(C|M)", source))
+
+source_with_tissue <- source_with_tissue %>% 
+  left_join(deg_merged, by = c("ligand_mod" = "gene_name",
+                               "source"     = "cell_type",
+                               "strain"     = "strain",
+                               "treatment"  = "treatment",
+                               "tissue"     = "tissue"))
+source_without_tissue <- source_without_tissue %>% 
+  left_join(deg_merged[, colnames(deg_merged)!="tissue"], by = c("ligand_mod" = "gene_name",
+                                                                 "source"     = "cell_type",
+                                                                 "strain"     = "strain",
+                                                                 "treatment"  = "treatment"))
+
+joined_source <- bind_rows(source_with_tissue, source_without_tissue)
+
+target_with_tissue <- joined_source %>% filter(!grepl("^EC(C|M)", target))
+target_without_tissue <- joined_source %>% filter(grepl("^EC(C|M)", target))
+
+target_with_tissue <- target_with_tissue %>% 
+  left_join(deg_merged, by = c("receptor_mod" = "gene_name",
+                               "target"     = "cell_type",
+                               "strain"     = "strain",
+                               "treatment"  = "treatment",
+                               "tissue"     = "tissue"))
+target_without_tissue <- target_without_tissue %>% 
+  left_join(deg_merged[, colnames(deg_merged)!="tissue"], by = c("receptor_mod" = "gene_name",
+                                                                 "target"     = "cell_type",
+                                                                 "strain"     = "strain",
+                                                                 "treatment"  = "treatment"))
+
+cc_df_diff_mod_final <- bind_rows(target_with_tissue, target_without_tissue)  
+
+write.table(cc_df_diff_mod_final, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.expr.all.out", sep = "\t", col.names = T, row.names = F, quote = F)
 
