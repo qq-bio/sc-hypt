@@ -387,6 +387,11 @@ head(cc_df_diff[cc_df_diff$EC_type=="ECC3" & cc_df_diff$pathway_name=="VEGF", ])
 
 
 
+cc_diff_ec_source <- cc_df_diff %>% 
+  filter(grepl("^EC", source))
+  
+cc_diff_ec_target <- cc_df_diff %>% 
+  filter(grepl("^EC", target))
 
 
 cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
@@ -397,7 +402,6 @@ cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
   xlab("Rank") +
   ylab("Differential communication") +
   facet_wrap(~source, scales = "free_x", nrow = 1)
-
 
 cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
   mutate(rank = row_number()) %>% ungroup() %>%
@@ -410,9 +414,7 @@ cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
 
 
 
-
 cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
-  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
   mutate(rank = row_number()) %>% ungroup() %>%
   ggplot(aes(x = rank, y = value, colour = Type)) +
   geom_point() +
@@ -423,7 +425,6 @@ cc_diff_ec_source %>% group_by(source) %>% arrange(value) %>%
   facet_grid2(target~source, scales = "free_x")
 
 cc_diff_ec_target %>% group_by(target) %>% arrange(value) %>%
-  mutate(Type = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive")) %>%
   mutate(rank = row_number()) %>% ungroup() %>%
   ggplot(aes(x = rank, y = value, colour = Type)) +
   geom_point() +

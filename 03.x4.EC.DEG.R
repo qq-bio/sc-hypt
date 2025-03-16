@@ -286,6 +286,48 @@ deg_wide$nt_meta_pval_adj <- p.adjust(deg_wide$nt_combined_p, method = "fdr")
 
 
 
+################################################################################
+### check expr of selected genes for both 
+### DEG results
+deg_ec <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out", header = T)
+deg_all <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+
+deg_ec$tissue = "NA"
+deg_ec$cell_type = paste0("EC", deg_ec$cell_type)
+deg_merged = rbind(deg_all, deg_ec[, colnames(deg_all)])
+
+
+### load seurat for vlnplot
+so_ec <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/ec.scvi.gene_nb.hvg_1k.refined.merged.rds")
+Idents(so_ec) = "seurat_clusters"
+
+so_ss_lk <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cluster/rat.ss.LK.multiomics.anno.v2.rds")
+Idents(so_ss_lk) = "subclass_level2"
+
+
+
+
+
+
+### test individual gene
+### efna5 x ephb2 (ecc17 to tal, ephb2 up in ss, down in shr/wky), inflammation-induced vascular endothelial barrier disruption
+gene <- c("Efna5", "Ephb2")
+
+deg_merged[deg_merged$p_val_adj<0.05 & deg_merged$gene_name%in%gene, ]
+VlnPlot(so_ec, gene)
+VlnPlot(so_ss_lk, gene)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
