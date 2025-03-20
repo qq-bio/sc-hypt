@@ -4,6 +4,10 @@ library(grDevices)
 library(RColorBrewer)
 library(tradeSeq)
 library(dplyr)
+library(ggplot2)
+
+base_font_size = 12
+theme_set(theme_classic(base_size = base_font_size))
 
 set.seed(1)
 
@@ -31,6 +35,7 @@ saveRDS(sce, outfile)
 
 
 ################################################################################
+### 3. visualize slingshot res
 sce <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.rds")
 
 ### three branches in total
@@ -63,40 +68,74 @@ lines(slingCurves(sce)[[1]], lwd=2, col = 'red')
 
 
 plot_slingshot_lineage <- function(sce, lineage_num, color_palette = 'PiYG', breaks = 100, 
-                                   arrow_col = 'red', line_col = 'black', legend_thickness = 0.1) {
+                                   arrow_col = 'red', legend_thickness = 0.1, 
+                                   remove_outliers = FALSE) {
   library(fields)
   library(RColorBrewer)
+  
+  pseudotime_col <- paste0('slingPseudotime_', lineage_num)
+  pt <- sce[[pseudotime_col]]
+  valid <- !is.na(pt)
+  
+  keep_cells <- rep(TRUE, length(pt))
+  if (remove_outliers) {
+    pt_valid <- pt[valid]
+    q1 <- quantile(pt_valid, 0.25)
+    q3 <- quantile(pt_valid, 0.75)
+    iqr <- q3 - q1
+    upper <- q3 + 1.5 * iqr
+    lower <- q1 - 1.5 * iqr
+    outlier_mask <- valid & ((pt < lower) | (pt > upper))
+    keep_cells[outlier_mask] <- FALSE
+    removed_ratio <- sum(outlier_mask) / sum(valid)
+    message(sprintf("Outlier removal proportion: %.2f%% (NA values retained)", removed_ratio * 100))
+  }
   
   layout(matrix(c(1, 2), ncol = 2), widths = c(4, 1)) 
   
   colors <- colorRampPalette(rev(brewer.pal(11, color_palette)[-6]))(breaks)
-  pseudotime_col <- paste0('slingPseudotime_', lineage_num)
-  
-  plotcol <- colors[cut(sce[[pseudotime_col]], breaks = breaks)]
-  plotcol[is.na(sce[[pseudotime_col]])] <- 'gray'
+  plotcol <- rep("gray", length(pt))
+  plotcol[valid & keep_cells] <- colors[cut(pt[valid & keep_cells], breaks = breaks)]
   
   # Plot main panel
   par(mar = c(5, 5, 4, 2))
-  plot(reducedDims(sce)$UMAP, col = plotcol, pch = 16, asp = 1,
+  plot_coords <- reducedDims(sce)$UMAP[keep_cells, ]
+  plot(plot_coords, col = plotcol[keep_cells], pch = 16, asp = 1,
        xlab = 'UMAP 1', ylab = 'UMAP 2')
-  lines(SlingshotDataSet(sce), lwd = 2, type = 'lineages', col = line_col)
-  lines(slingCurves(sce)[[lineage_num]], lwd = 3, col = arrow_col)
   
-  # Add arrow at the end of the curve
+  slingshot_ds <- SlingshotDataSet(sce)
+  lines(slingshot_ds, lwd = 2, type = 'lineages', col = "black")
+  
   curve_points <- slingCurves(sce)[[lineage_num]]$s
-  end_idx <- nrow(curve_points)
-  arrows(
-    x0 = curve_points[end_idx - 1, 1], y0 = curve_points[end_idx - 1, 2],
-    x1 = curve_points[end_idx, 1], y1 = curve_points[end_idx, 2],
-    length = 0.2, angle = 25, col = arrow_col, lwd = 3
-  )
+  lines(curve_points, lwd = 3, col = arrow_col)
+  
+  max_visible_x <- max(plot_coords[, 1], na.rm = TRUE)
+  visible_points <- which(curve_points[, 1] <= max_visible_x)
+  
+  if (length(visible_points) >= 2) {
+    end_idx <- tail(visible_points, 1)
+    if (end_idx < nrow(curve_points)) {
+      arrows(
+        x0 = curve_points[end_idx, 1], y0 = curve_points[end_idx, 2],
+        x1 = curve_points[end_idx + 1, 1], y1 = curve_points[end_idx + 1, 2],
+        length = 0.2, angle = 25, col = arrow_col, lwd = 3
+      )
+    }
+  } else {
+    end_idx <- nrow(curve_points)
+    arrows(
+      x0 = curve_points[end_idx - 1, 1], y0 = curve_points[end_idx - 1, 2],
+      x1 = curve_points[end_idx, 1], y1 = curve_points[end_idx, 2],
+      length = 0.2, angle = 25, col = arrow_col, lwd = 3
+    )
+  }
   
   # Plot legend in second panel
   par(mar = c(5, 2, 4, 2))
   plot.new()
   fields::image.plot(
     legend.only = TRUE,
-    zlim = range(sce[[pseudotime_col]], na.rm = TRUE),
+    zlim = range(pt[valid & keep_cells], na.rm = TRUE),
     col = colors,
     horizontal = FALSE,
     legend.args = list(text = 'Pseudotime', side = 3, line = 1),
@@ -108,6 +147,10 @@ png("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.lineage2.p
 plot_slingshot_lineage(sce, 2)
 dev.off()
 
+png("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.lineage2.rm_outlier.png", width = 463/96, height = 374/96, units = "in", res = 300)
+plot_slingshot_lineage(sce, 2, remove_outliers = TRUE)
+dev.off()
+
 png("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.lineage3.png", width = 463/96, height = 374/96, units = "in", res = 300)
 plot_slingshot_lineage(sce, 3)
 dev.off()
@@ -116,7 +159,7 @@ dev.off()
 
 
 ################################################################################
-### 3. temporally dynamic genes
+### 4. temporally dynamic genes (in another code)
 sce <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.rds")
 
 gam_l2 <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.l2.rds")
@@ -128,60 +171,113 @@ pseudotime_association_l3 <- associationTest(gam_l3)
 # topgenes <- rownames(ATres[order(ATres$pvalue), ])[1:250]
 
 
-### 3.1 specific genes
-plot_gene_pseudotime <- function(sce, gene, lineage = 1, col = "dodgerblue", remove_outliers = TRUE) {
+### 5. visualize specific genes
+plot_gene_pseudotime <- function(sce, gene, lineage = 1, col = "dodgerblue", remove_outliers = FALSE) {
   pt <- slingPseudotime(sce)[, lineage]
-  expr <- log1p(assay(sce, "counts")[gene, ])  # or "logcounts" if you prefer
+  expr <- log1p(assay(sce, "counts")[gene, ])
   valid <- !is.na(pt)
   
   if (remove_outliers) {
     pt_valid <- pt[valid]
-    q1 <- quantile(pt_valid, 0.25)
-    q3 <- quantile(pt_valid, 0.75)
-    iqr <- q3 - q1
-    upper <- q3 + 1.5 * iqr
-    lower <- q1 - 1.5 * iqr
-    keep <- (pt_valid >= lower) & (pt_valid <= upper)
-    removed_ratio <- 1 - sum(keep) / length(keep)
-    message(sprintf("Outlier removal proportion: %.2f%%", removed_ratio * 100))
-    expr <- expr[valid][keep]
-    pt <- pt[valid][keep]
+    q <- quantile(pt_valid, probs = c(0.25, 0.75))
+    iqr <- q[2] - q[1]
+    keep <- valid & pt >= (q[1] - 1.5 * iqr) & pt <= (q[2] + 1.5 * iqr)
   } else {
-    expr <- expr[valid]
-    pt <- pt[valid]
+    keep <- valid
   }
   
-  smoothed <- loess(expr[valid] ~ pt[valid])
+  pt_keep <- pt[keep]
+  expr_keep <- expr[keep]
+  
+  smoothed <- loess(expr_keep ~ pt_keep)
   pred <- predict(smoothed, se = TRUE)
-  x_sorted <- sort(pt[valid])
-  order_idx <- order(pt[valid])
-  fit_sorted <- pred$fit[order_idx]
-  se_sorted <- pred$se.fit[order_idx]
+  ord <- order(pt_keep)
+  df_plot <- data.frame(
+    pt = pt_keep[ord],
+    fit = pred$fit[ord],
+    upper = pred$fit[ord] + 1.96 * pred$se.fit[ord],
+    lower = pred$fit[ord] - 1.96 * pred$se.fit[ord]
+  )
   
-  ylim_range <- range(fit_sorted + 2 * se_sorted, fit_sorted - 2 * se_sorted, na.rm = TRUE)
-  
-  plot(NA, xlim = range(pt, na.rm = TRUE), ylim = ylim_range,
-       xlab = "Pseudotime",
-       ylab = "Expression")
-  mtext(gene, side = 3, adj = 0, line = 1, cex = 1.2, font = 2)
-  
-  # Add confidence interval as shaded region
-  polygon(c(x_sorted, rev(x_sorted)),
-          c(fit_sorted + 1.96 * se_sorted, rev(fit_sorted - 1.96 * se_sorted)),
-          col = adjustcolor(col, alpha.f = 0.2), border = NA)
-  
-  # Add smoothed line
-  lines(x_sorted, fit_sorted, col = col, lwd = 2)
+  ggplot(df_plot, aes(x = pt, y = fit)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), fill = col, alpha = 0.2) +
+    geom_line(color = col, size = 1.2) +
+    labs(x = "Pseudotime", y = "Expression", title = gene) +
+    theme_classic() +
+    theme(plot.title = element_text(hjust = 0))
 }
 
+# width=244&height=179
 
-# keep_cells <- !is.na(slingPseudotime(sce)[, 2])
-# sce_sub <- sce[, keep_cells]
-# counts <- as.matrix(sce_sub@assays@data$counts)
-
+### some markers
 plot_gene_pseudotime(sce, 'Il1r1', lineage=3)
-plot_gene_pseudotime(sce, 'Myo10', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Vwf', lineage=3)
+plot_gene_pseudotime(sce, 'Kcnt2', lineage=2)
+plot_gene_pseudotime(sce, 'St6galnac3', lineage=2)
 plot_gene_pseudotime(sce, 'Kcnt2', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'St6galnac3', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Myo10', lineage=2, remove_outliers = TRUE)
+
+### C7: lipoprotein
+plot_gene_pseudotime(sce, 'Lpl', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Cdh13', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Cd36', lineage=2, remove_outliers = TRUE)
+
+### C7: interfeson
+plot_gene_pseudotime(sce, 'Notch1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Notch1', lineage=2)
+plot_gene_pseudotime(sce, 'Notch1', lineage=3)
+
+plot_gene_pseudotime(sce, 'Ifit1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Mx1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Oas2', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Gbp1', lineage=2, remove_outliers = TRUE)
+
+### C7: ECM
+plot_gene_pseudotime(sce, 'Col4a1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Lama4', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Sulf1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Hmcn1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Hsp90aa1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Hsp90ab1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Cdc37', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Nrp2', lineage=2, remove_outliers = TRUE)
+
+### C7: blood coagulation
+plot_gene_pseudotime(sce, 'F8', lineage=2, remove_outliers = TRUE)
+
+### C7: angiogenesis
+plot_gene_pseudotime(sce, 'Cdh13', lineage=2, remove_outliers = TRUE)
+
+
+
+### M5813: aerobic respiration
+plot_gene_pseudotime(sce, 'Aco2', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'mt-Atp6', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'mt-Co1', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'mt-Co3', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'mt-Cytb', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'mt-Nd4', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Sdhc', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Me3', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Atp1a1', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Ednra', lineage=3, remove_outliers = TRUE)
+
+
+plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Tpm1', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Mapt', lineage=3, remove_outliers = TRUE)
+
+plot_gene_pseudotime(sce, 'Auts2', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Sema5b', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Auts2', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Sema5b', lineage=3, remove_outliers = TRUE)
+
+
+
+
 
 
 
