@@ -34,6 +34,7 @@ saveRDS(sce, outfile)
 
 
 
+
 ################################################################################
 ### 3. visualize slingshot res
 sce <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.rds")
@@ -162,6 +163,14 @@ dev.off()
 ### 4. temporally dynamic genes (in another code)
 sce <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.rds")
 
+
+### check sample source
+tbl = table(colData(sce)$sxtxt, colData(sce)$seurat_clusters)
+tbl = tbl[grepl("LV", rownames(tbl)), ]
+tbl/rowSums(tbl)*100
+
+
+
 gam_l2 <- readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/slingshot/ec.scvi.gene_nb.hvg_1k.refined.merged.slingshot.LV.l2.rds")
 pseudotime_association_l2 <- associationTest(gam_l2)
 
@@ -250,33 +259,46 @@ plot_gene_pseudotime(sce, 'F8', lineage=2, remove_outliers = TRUE)
 plot_gene_pseudotime(sce, 'Cdh13', lineage=2, remove_outliers = TRUE)
 
 
-
 ### M5813: aerobic respiration
-plot_gene_pseudotime(sce, 'Aco2', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'mt-Atp6', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'mt-Co1', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'mt-Co3', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'mt-Cytb', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'mt-Nd4', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Sdhc', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Me3', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Atp1a1', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Ednra', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Aco2', lineage=3)
+plot_gene_pseudotime(sce, 'mt-Atp6', lineage=3)
+plot_gene_pseudotime(sce, 'mt-Co1', lineage=3)
+plot_gene_pseudotime(sce, 'mt-Co3', lineage=3)
+plot_gene_pseudotime(sce, 'mt-Cytb', lineage=3)
+plot_gene_pseudotime(sce, 'mt-Nd4', lineage=3)
+plot_gene_pseudotime(sce, 'Sdhc', lineage=3)
+plot_gene_pseudotime(sce, 'Me3', lineage=3)
+plot_gene_pseudotime(sce, 'Atp1a1', lineage=3)
+plot_gene_pseudotime(sce, 'Ednra', lineage=3)
 
 
-plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Tpm1', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Mapt', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Ttn', lineage=3)
+plot_gene_pseudotime(sce, 'Tpm1', lineage=3)
+plot_gene_pseudotime(sce, 'Mapt', lineage=3)
 
-plot_gene_pseudotime(sce, 'Auts2', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Sema5b', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Auts2', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Ttn', lineage=3, remove_outliers = TRUE)
-plot_gene_pseudotime(sce, 'Sema5b', lineage=3, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Auts2', lineage=3)
+plot_gene_pseudotime(sce, 'Ttn', lineage=3)
+plot_gene_pseudotime(sce, 'Sema5b', lineage=3)
+plot_gene_pseudotime(sce, 'Auts2', lineage=3)
+plot_gene_pseudotime(sce, 'Ttn', lineage=3)
+plot_gene_pseudotime(sce, 'Sema5b', lineage=3)
 
 
+### cellchat based
+### C7
+plot_gene_pseudotime(sce, 'Col4a1', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Col4a2', lineage=2, remove_outliers = TRUE)
 
+### M5813
+plot_gene_pseudotime(sce, 'Col4a1', lineage=3)
+plot_gene_pseudotime(sce, 'Col4a2', lineage=3)
+
+### M0610
+plot_gene_pseudotime(sce, 'Lama4', lineage=2, remove_outliers = TRUE)
+plot_gene_pseudotime(sce, 'Plxna4', lineage=2, remove_outliers = TRUE)
+
+plot_gene_pseudotime(sce, 'Lama4', lineage=3)
+plot_gene_pseudotime(sce, 'Plxna4', lineage=3)
 
 
 
