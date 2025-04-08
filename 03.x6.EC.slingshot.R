@@ -221,6 +221,7 @@ plot_gene_pseudotime <- function(sce, gene, lineage = 1, col = "dodgerblue", rem
 ### some markers
 plot_gene_pseudotime(sce, 'Il1r1', lineage=3)
 plot_gene_pseudotime(sce, 'Vwf', lineage=3)
+plot_gene_pseudotime(sce, 'Hdac9', lineage=3)
 plot_gene_pseudotime(sce, 'Kcnt2', lineage=2)
 plot_gene_pseudotime(sce, 'St6galnac3', lineage=2)
 plot_gene_pseudotime(sce, 'Kcnt2', lineage=2, remove_outliers = TRUE)
@@ -236,6 +237,7 @@ plot_gene_pseudotime(sce, 'Cd36', lineage=2, remove_outliers = TRUE)
 plot_gene_pseudotime(sce, 'Notch1', lineage=2, remove_outliers = TRUE)
 plot_gene_pseudotime(sce, 'Notch1', lineage=2)
 plot_gene_pseudotime(sce, 'Notch1', lineage=3)
+plot_gene_pseudotime(sce, 'Notch4', lineage=2, remove_outliers = TRUE)
 
 plot_gene_pseudotime(sce, 'Ifit1', lineage=2, remove_outliers = TRUE)
 plot_gene_pseudotime(sce, 'Mx1', lineage=2, remove_outliers = TRUE)
@@ -303,7 +305,14 @@ plot_gene_pseudotime(sce, 'Plxna4', lineage=3)
 
 
 
+### TFs of vwf
+plot_gene_pseudotime(sce, 'Nfya', lineage=3)
 
+
+
+
+FeaturePlot(seurat_object, c("Notch1", "Vwf"), split.by = "strain")
+FeaturePlot(seurat_object, c("Notch1", "Notch2", "Notch3", "Notch4"), split.by = "strain")
 
 
 
