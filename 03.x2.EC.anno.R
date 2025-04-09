@@ -443,6 +443,15 @@ hypoxia_genes <- c(
   "Epo"      # Erythropoietin (may be low in ECs, but a classic hypoxia-inducible gene)
 )
 
+# fatty acid transporter
+fatty_trans_genes <- c(
+  "Slc27a1",
+  "Slc27a4",
+  "Cd36",
+  "Mfsd2a"
+)
+
+
 DotPlot(seurat_object, features = unique(meta_list)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
@@ -455,9 +464,11 @@ DotPlot(seurat_object, features = unique(disturbed_flow_genes)) +
 DotPlot(seurat_object, features = unique(hypoxia_genes)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-DotPlot(seurat_object, features = c("Pfkfb3", "Cpt1a")) +
+DotPlot(seurat_object, features = c("Cpt1a", "Mfsd2a", "Pfkfb3")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+DotPlot(seurat_object, features = unique(fatty_trans_genes)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
