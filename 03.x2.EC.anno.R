@@ -451,6 +451,16 @@ fatty_trans_genes <- c(
   "Mfsd2a"
 )
 
+fatty_trans_nm <- c(
+  "Cd36",
+  "Slc27a4",
+  "Slc27a5",
+  "Meox2",
+  "Tcf15",
+  "Pparg",
+  "Lpl"
+)
+
 
 DotPlot(seurat_object, features = unique(meta_list)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -470,6 +480,25 @@ DotPlot(seurat_object, features = c("Cpt1a", "Mfsd2a", "Pfkfb3")) +
 DotPlot(seurat_object, features = unique(fatty_trans_genes)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+DotPlot(seurat_object, features = unique(fatty_trans_nm)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+ec_cardio_hypertrophy <- c(
+  "Nos3", "Vegfa", 
+  "Edn1", "Angpt2", "Il6", "Tgfb1", 
+  "Fgf2"
+)
+
+DotPlot(seurat_object, features = unique(ec_cardio_hypertrophy)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(title = "Cardio hypertrophy")
+
+
+ec_fibro <- c("Tgfb1", "Il1b", "Il6", "Edn1", "Notch1", "Snai1", "Snai2", "Twist1", "Vegfa", "Ccn2", "Mmp2", "Mmp9")
+
+DotPlot(seurat_object, features = unique(ec_fibro)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(title = "Fibrosis")
 
 
 

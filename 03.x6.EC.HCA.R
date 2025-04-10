@@ -203,7 +203,9 @@ FeaturePlot(seurat, "C74", reduction = "spatial", split.by = "sangerID")
 all_results <- list()
 signature_list = paste0(names(marker_list), c(1, 2, 3, 4))
 signature_list = c("EC5_art", "EC6_ven", "EC7_endocardial")
+signature_list = c("IL1R1_EC_index")
 
+seurat_meta = seurat@meta.data
 for (slide_id in unique(seurat_meta$sangerID)) {
   slide_results <- list()  # Store results for all signatures for this slide
   
@@ -294,4 +296,154 @@ ggplot(moran_long, aes(x = signature, y = moran_i)) +
     axis.text.x = element_text(angle = 45, hjust = 1, colour = "black"),
     plot.title = element_text(hjust = 0.5)
   )
+
+
+
+
+
+
+
+ec_prop_idx <- c(32:40, 88)
+
+gene_expr <- FetchData(seurat, vars = "IL1R1")[,1]
+seurat$IL1R1_EC_index <- gene_expr * rowSums(seurat@meta.data[, ec_prop_idx])
+seurat$IL1R1_EC_index_scaled <- scale(seurat$IL1R1_EC_index)
+FeaturePlot(seurat, "IL1R1_EC_index", reduction = "spatial", split.by = "sangerID")
+FeaturePlot(seurat, "IL1R1_EC_index_scaled", reduction = "spatial", split.by = "sangerID")
+
+gene_expr <- FetchData(seurat, vars = "NRP2")[,1]
+seurat$NRP2_EC_index <- gene_expr * rowSums(seurat@meta.data[, ec_prop_idx])
+seurat$NRP2_EC_index_scaled <- scale(seurat$NRP2_EC_index)
+FeaturePlot(seurat, "NRP2_EC_index", reduction = "spatial", split.by = "sangerID")
+FeaturePlot(seurat, "NRP2_EC_index_scaled", reduction = "spatial", split.by = "sangerID")
+
+gene_expr <- FetchData(seurat, vars = "NOTCH1")[,1]
+seurat$NOTCH1_EC_index <- gene_expr * rowSums(seurat@meta.data[, ec_prop_idx])
+seurat$NOTCH1_EC_index_scaled <- scale(seurat$NOTCH1_EC_index)
+FeaturePlot(seurat, "NOTCH1_EC_index", reduction = "spatial", split.by = "sangerID")
+FeaturePlot(seurat, "NOTCH1_EC_index_scaled", reduction = "spatial", split.by = "sangerID")
+
+
+all_results <- list()
+signature_list = c("IL1R1_EC_index", "NRP2_EC_index", "NOTCH1_EC_index")
+seurat_meta = seurat@meta.data
+for (slide_id in unique(seurat_meta$sangerID)) {
+  slide_results <- list()  # Store results for all signatures for this slide
+  
+  coords <- seurat_meta[seurat_meta$sangerID == slide_id, c("array_row", "array_col")]
+  
+  knn <- knearneigh(coords, k = 6)
+  nb <- knn2nb(knn)
+  listw <- nb2listw(nb, style = "W")
+  
+  for (signature_id in signature_list) {
+    
+    # Extract signature score for this slide and signature
+    gene_expr <- seurat_meta[seurat_meta$sangerID == slide_id, signature_id]
+    
+    # Check for enough non-NA values
+    if (sum(!is.na(gene_expr)) >= 3) {  # Moran’s I requires at least 3 non-NA values
+      moran_i <- moran.test(gene_expr, listw)
+      slide_results[[signature_id]] <- moran_i$estimate[["Moran I statistic"]]
+    } else {
+      slide_results[[signature_id]] <- NA
+    }
+  }
+  
+  all_results[[slide_id]] <- slide_results
+}
+# Combine into a data frame
+moran_df <- do.call(cbind, all_results)  # rows = genes, cols = slides
+moran_df
+
+
+
+
+
+
+
+
+
+deg_list = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.lv.DEG.out", header = T, sep = "\t")
+deg_list = deg_list[deg_list$p_val_adj<0.05 & abs(deg_list$avg_log2FC)>0.25, ] %>%
+  group_by(cluster) %>% arrange(desc(pct.diff)) %>% ungroup()
+
+common_ec_list = c("Pecam1", "Egfl7")
+lv_ec_list = c("Nav3", "Ablim3", "Ccdc85a", "Ncald", "Nrp1", "Kitlg", "Dach1", "Arhgap18", "Ank3")
+
+common_ec_list = c()
+lv_ec_list = c()
+
+top_n = 20
+m0610_marker_list = c(deg_list[deg_list$cluster=="M0610", ]$gene[1:top_n], common_ec_list, lv_ec_list)
+m0610_marker_human = unique(r2h_ortho_all[r2h_ortho_all$gene_rodent %in% m0610_marker_list, ]$gene_human)
+
+m24_marker_list = c(deg_list[deg_list$cluster=="M24", ]$gene[1:top_n], common_ec_list, lv_ec_list)
+m24_marker_human = unique(r2h_ortho_all[r2h_ortho_all$gene_rodent %in% m24_marker_list, ]$gene_human)
+
+m5813_marker_list = c(deg_list[deg_list$cluster=="M5813", ]$gene[1:top_n], common_ec_list, lv_ec_list)
+m5813_marker_human = unique(r2h_ortho_all[r2h_ortho_all$gene_rodent %in% m5813_marker_list, ]$gene_human)
+
+c7_marker_list = c(deg_list[deg_list$cluster=="C7", ]$gene[1:top_n], common_ec_list, lv_ec_list)
+c7_marker_human = unique(r2h_ortho_all[r2h_ortho_all$gene_rodent %in% c7_marker_list, ]$gene_human)
+
+marker_list = list("M0610" = m0610_marker_human,
+                   "M24" = m24_marker_human,
+                   "M5813" = m5813_marker_human,
+                   "C7" = c7_marker_human)
+
+slide_ids <- unique(seurat$sangerID)
+signature_list = paste0(names(marker_list), c(1, 2, 3, 4))
+
+seurat@meta.data[, signature_list] <- 0
+for (slide in slide_ids) {
+  slide_cells <- WhichCells(seurat, expression = sangerID == slide)
+  slide_obj <- subset(seurat, cells = slide_cells)
+  
+  slide_obj <- AddModuleScore(
+    slide_obj,
+    features = marker_list,
+    name = names(marker_list),
+    slot = "data"
+  )
+  
+  # Store back or collect scores
+  seurat@meta.data[slide_cells, signature_list] <- slide_obj@meta.data[, signature_list] * rowSums(slide_obj@meta.data[, ec_prop_idx])
+}
+
+seurat_meta = seurat@meta.data
+
+all_results <- list()
+seurat_meta = seurat@meta.data
+for (slide_id in unique(seurat_meta$sangerID)) {
+  slide_results <- list()  # Store results for all signatures for this slide
+  
+  coords <- seurat_meta[seurat_meta$sangerID == slide_id, c("array_row", "array_col")]
+  
+  knn <- knearneigh(coords, k = 6)
+  nb <- knn2nb(knn)
+  listw <- nb2listw(nb, style = "W")
+  
+  for (signature_id in signature_list) {
+    
+    # Extract signature score for this slide and signature
+    gene_expr <- seurat_meta[seurat_meta$sangerID == slide_id, signature_id]
+    
+    # Check for enough non-NA values
+    if (sum(!is.na(gene_expr)) >= 3) {  # Moran’s I requires at least 3 non-NA values
+      moran_i <- moran.test(gene_expr, listw)
+      slide_results[[signature_id]] <- moran_i$estimate[["Moran I statistic"]]
+    } else {
+      slide_results[[signature_id]] <- NA
+    }
+  }
+  
+  all_results[[slide_id]] <- slide_results
+}
+# Combine into a data frame
+moran_df <- do.call(cbind, all_results)  # rows = genes, cols = slides
+moran_df
+
+FeaturePlot(seurat, "M06101", reduction = "spatial", split.by = "sangerID")
+
 
