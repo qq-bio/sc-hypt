@@ -729,3 +729,103 @@ seurat_object <- AddModuleScore_UCell(seurat_object, features = gene.sets)
 
 FeaturePlot(seurat_object, features = c("dflow_score_UCell"))
 FeaturePlot(seurat_object, features = c("sflow_score_UCell"))
+
+
+
+################################################################################
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+base_font_size = 12
+theme_set(theme_classic(base_size = base_font_size))
+
+
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+
+deg_long <- deg_merged %>%
+  filter(control_size >= 10 & treatment_size >= 10) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    hypertension = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive"),
+    significance = ifelse(p_val_adj < 0.05, "Significant", "Not significant"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = ifelse(p_val_adj < 0.05 & condition == "Treatment", paste0(cell_type, "-", strain), NA),
+    log2FC = -1 * avg_log2FC
+  )
+
+# Plot
+target_gene = "Klf2"
+target_gene = "Klf4"
+
+plot_data <- deg_long %>% filter(gene_name == target_gene) %>% arrange(desc(significance))
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  geom_text(
+    data = label_data,
+    aes(label = label),
+    hjust = 1.1,
+    size = 4
+  ) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Significant" = 1.2, "Not significant" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significance",
+    title = target_gene
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~hypertension)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
