@@ -254,6 +254,37 @@ ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = tissue, y = seurat_clusters
   )
 
 
+
+prop_data <- seurat_object@meta.data %>%
+  group_by(seurat_clusters, tissue) %>%
+  summarise(cell_count = n(), .groups = "drop") %>%
+  group_by(tissue) %>%
+  mutate(proportion = cell_count / sum(cell_count)) %>%
+  ungroup() %>%
+  # Compute expected proportion based on total cell distribution per tissue
+  left_join(
+    seurat_object@meta.data %>%
+      dplyr::count(seurat_clusters, name = "total_cells") %>%
+      mutate(expected_prop = total_cells / sum(total_cells)),
+    by = "seurat_clusters"
+  ) %>%
+  # Compute log(obs/exp) and adjust by variance
+  mutate(
+    log_obs_exp = log(proportion / expected_prop)
+  ) %>%
+  ungroup()
+
+ggplot(prop_data[prop_data$log_obs_exp>0, ], aes(x = tissue, y = seurat_clusters, fill = log_obs_exp)) +
+  geom_tile(color="black") +  # Heatmap-style visualization
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(x = "Tissue", y = "Cluster", fill = "log(obs/exp)") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+    axis.text.y = element_text(colour = 'black')
+  )
+
+
+
 marker_list= c("Nav3",'Ablim3',"Ccdc85a",'Ncald',"Nrp1",'Kitlg',"Dach1","Arhgap18",'Ank3',
                "Hdac9","Nrp2","Lamc1",'Ano4',
                "Nav2",'Diaph3',"Mki67","Rad51b","Sdk1",
@@ -445,10 +476,25 @@ hypoxia_genes <- c(
 
 # fatty acid transporter
 fatty_trans_genes <- c(
-  "Slc27a1",
-  "Slc27a4",
   "Cd36",
-  "Mfsd2a"
+  "Slc27a1",
+  "Slc27a2",
+  "Slc27a3",
+  "Slc27a4",
+  "Slc27a5",
+  "Slc27a6",
+  "Fabp1",
+  "Fabp2",
+  "Fabp3",
+  "Fabp4",
+  "Fabp5",
+  "Fabp6",
+  "Fabp7",
+  "Fabp8",
+  "Fabp9",
+  "Mfsd2a",
+  "Slc16a1",
+  "Slc5a8"
 )
 
 fatty_trans_nm <- c(
@@ -665,6 +711,20 @@ FeaturePlot(seurat_object, features = c("Mecom"))
 
 
 
+c14_so = subset(seurat_object, seurat_clusters %in% c("C14"))
+c20_so = subset(seurat_object, seurat_clusters %in% c("C20"))
+
+FeaturePlot(c14_so, features = c("Mfsd2a"), split.by = "tissue", order = T)
+FeaturePlot(c20_so, features = c("Mfsd2a"), split.by = "tissue", order = T)
+
+FeaturePlot(c14_so, features = c("Adgrl3"), split.by = "tissue", order = T)
+FeaturePlot(c20_so, features = c("Adgrl3"), split.by = "tissue", order = T)
+
+FeaturePlot(c14_so, features = c("Slc38a3"), split.by = "tissue", order = T)
+FeaturePlot(c20_so, features = c("Slc38a3"), split.by = "tissue", order = T)
+
+FeaturePlot(c14_so, features = c("Pfkfb3"), split.by = "tissue", order = T)
+FeaturePlot(c20_so, features = c("Pfkfb3"), split.by = "tissue", order = T)
 
 ################################################################################
 ###
