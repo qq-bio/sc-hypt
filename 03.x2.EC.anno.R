@@ -234,7 +234,7 @@ prop_data <- seurat_object@meta.data %>%
   # Compute expected proportion based on total cell distribution per tissue
   left_join(
     seurat_object@meta.data %>%
-      count(tissue, name = "total_cells") %>%
+      dplyr::count(tissue, name = "total_cells") %>%
       mutate(expected_prop = total_cells / sum(total_cells)),
     by = "tissue"
   ) %>%
@@ -568,6 +568,27 @@ seurat_object@meta.data %>%
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  # Create a bar plot with means
   geom_errorbar(aes(ymin = mean_proportion - sd_proportion, ymax = mean_proportion + sd_proportion),
                 position = position_dodge(width = 0.8), width = 0.2) +  # Add error bars
+  scale_y_continuous(labels = scales::percent) +  # Format the y-axis as percentages
+  # scale_fill_manual(values = lk_ec_col) +
+  labs(x = "Treatment", y = "Cell proportion") +  # Add labels and title
+  theme(    axis.text.y = element_text(colour = 'black'),
+            axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+            legend.position = "None"
+  ) +
+  facet_nested(seurat_clusters ~ hypt + strain, scales = "free") 
+
+
+# group-wise comparison (rm sample info)
+seurat_object@meta.data %>%
+  dplyr::mutate(hypt = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive")) %>%
+  filter(seurat_object$seurat_clusters %in% c("C22", "C9", "C7", "C1", "M5813", "C18", "M24", "M0610")) %>%
+  group_by(seurat_clusters, hypt, strain, treatment) %>%
+  dplyr::summarise(cell_count = n()) %>%
+  ungroup() %>% group_by(strain, treatment) %>% 
+  dplyr::mutate(proportion = cell_count / sum(cell_count)) %>% 
+  group_by(hypt, strain, treatment, seurat_clusters) %>%  # Group for mean and SD calculation
+  ggplot(aes(x = treatment, y = proportion, fill = seurat_clusters)) +  # Plot the results
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  # Create a bar plot with means
   scale_y_continuous(labels = scales::percent) +  # Format the y-axis as percentages
   # scale_fill_manual(values = lk_ec_col) +
   labs(x = "Treatment", y = "Cell proportion") +  # Add labels and title
