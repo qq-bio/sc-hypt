@@ -49,13 +49,27 @@ write.table(markers,file="/xdisk/mliang1/qqiu/project/multiomics-hypertension/cr
 
 
 
-lv_sub_genes <- c("Nrp2", "Col4a1", "Col4a2", "Nrp1", "Kdr", "Epas1", "Eng", "Smad6", "Efnb2", "Notch1", "Il1r1", "Calcrl", "Vwf", "Vegfc")
 
-DotPlot(seurat_lv, features = unique(lv_sub_genes)) +
+
+deg_ec <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+
+
+lv_sub_genes <- c("Nrp2", "Col4a1", "Col4a2", "Nrp1", "Kdr", "Epas1", "Eng", "Smad6", "Efnb2", "Notch1", "Il1r1", "Calcrl", "Vwf", "Vegfc") # "Piezo2"
+angio_in_m24 <- c("Cd34","Cd36","Sp1","Stab1","Tspan18") #Cd34 up in ss, Tsapn18 down in shr
+angio_in_c7 <- c("Cdh13","Col4a1","Col4a2","Col15a1","Notch1","Sat1","Nrp2","Rnf213","Emc10") # most are down in shr
+angio_in_m0610 <- c("Angpt2","Atp2b4","Cd36","Cdh5","Col4a2","Col4a3","Fyn","Pkm","Plcg1","Prkca","Slc12a2","Sp1","Sp100","Tgfbr2","Tie1","Nrp1","Emilin1","Plxnd1","Ppp1r16b","Adamts9","Rhoj","Tspan18","Emc10") # most are down in shr
+angio_in_m5813 <- c("Col4a2","Ednra","Rnf213","Emc10") #Rnf213 down in shr, up in SD
+
+gene_list <- c(angio_in_m24, angio_in_c7, angio_in_m0610, angio_in_m5813)
+gene_list <- angio_in_m24
+deg_ec[deg_ec$gene_name %in% gene_list & deg_ec$p_val_adj<0.05, ]
+DotPlot(seurat_lv, features = unique(gene_list)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(x="", y="")
 
 
 
 
+DotPlot(seurat_lv, features = unique(lv_sub_genes), split.by = "strain", cols = species_col) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(x="", y="")
 
 
