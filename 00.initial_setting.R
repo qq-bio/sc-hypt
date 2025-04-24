@@ -47,6 +47,7 @@ treatment_order = c("Saline 3d", "AngII 3d", "AngII 28d", "LS", "HS 3d", "HS 21d
 sxt_order = c("C57BL/6 - Saline 3d", "C57BL/6 - AngII 3d", "C57BL/6 - AngII 28d", 
               "SS - LS", "SS - HS 3d", "SS - HS 21d", "SD - LS", "SD - HS 3d",
               "SHR - 10w", "SHR - 26w", "WKY - 10w", "WKY - 26w")
+
 ################################################################################
 ### functions
 # png <- function(filename, width=480, height=480, dpi=300, ...) {
