@@ -229,13 +229,13 @@ ggplot(full_df, aes(x = Freq, y = new_idx, color = strain)) +
   geom_point(size=3, alpha=0.6) + 
   scale_color_manual(values = species_col) +
   labs(x = "Number of DEGs", y = "", color = "Strain") +
-  theme_classic() +
-  theme(
-    # axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black', size = 12),
-    axis.text.y = element_blank()
-  )
+  theme_classic() # +
+  # theme(
+  #   # axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black', size = 12),
+  #   axis.text.y = element_blank()
+  # )
 
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.deg.dotplot.png", width=262/96, height=359/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.deg.dotplot.with_label.png", width=272/96, height=359/96, dpi=300)
 
 
 ### pathway enrichment result of C14
@@ -322,7 +322,7 @@ deg_long <- deg_merged %>%
   )
 
 target_gene = "Klf2"
-target_gene = "Klf4"
+# target_gene = "Klf4"
 
 plot_data <- deg_long %>% filter(gene_name == target_gene) %>% arrange(desc(significance))
 label_data <- plot_data %>% filter(!is.na(label))
@@ -332,8 +332,9 @@ ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
   geom_point(size = 2) +
   geom_text(
     data = label_data,
+    x = -Inf,
     aes(label = label),
-    hjust = 1.1,
+    hjust = 0,
     vjust = 1, 
     size = 4
   ) +
@@ -355,9 +356,21 @@ ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
   ) +
   facet_grid(~hypertension)
 
-# ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.Klf2.dotplot.png", width=410/96, height=260/96, dpi=300)
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.Klf4.dotplot.png", width=410/96, height=260/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.Klf2.dotplot.png", width=410/96, height=260/96, dpi=300)
+# ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.Klf4.dotplot.png", width=410/96, height=260/96, dpi=300)
 
+
+
+
+gene_list <- c("Klf6", "Slc38a2", "Nr4a1", "Il15", "Esam", "Clu", "Emp1", "Adcy4", 
+               "Smg6", "Zyx", "Ptprj", "Zeb2", "Ubc", "Map3k3", "Hnrnph1", "Fosb", "Ddx5", "Il3ra")
+DotPlot(seurat_object, features = gene_list, group.by = "new_idx") +
+  scale_color_gradient(low = "white", high = "firebrick") +
+  labs(y="", x="", size = "Percent\nExpressed", colour ="Average\nExpression") +
+  theme(
+    # axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+    legend.position = "right"
+  ) + coord_flip()
 
 
 
@@ -437,6 +450,85 @@ cc_df_use %>%
   facet_grid2(EC_type~pathway_name) +
   coord_flip()
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.C3.cellchat.dotplot.png", width=800/96, height=165/96, dpi=300)
+
+
+
+
+
+
+
+### path enrichment results of LK ECs
+library(openxlsx)
+cell_type_list = c("C7", "M5813", "M0610", "M24")
+
+pathway_res_merged = c()
+for(i in cell_type_list){
+  
+  path_file = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/metascape/", i, "/metascape_result.xlsx")
+  pathway_res <- read.xlsx(path_file, sheet = 2)
+  # pathway_res <- pathway_res[grepl("Summary", pathway_res$GroupID), ]
+  pathway_res <- pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ]
+  pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
+  pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
+  pathway_res$cell_type <- i
+  pathway_res_merged <- rbind(pathway_res_merged, pathway_res)
+  
+}
+
+summary_list <- pathway_res_merged %>% group_by(cell_type) %>%
+  filter(grepl("Summary", GroupID)) %>% ungroup() %>% dplyr::select(pathway)
+
+
+pathway_res_use <- pathway_res_merged[pathway_res_merged$pathway %in% summary_list$pathway &
+                                        grepl("Member", pathway_res_merged$GroupID), ]
+
+ggplot(pathway_res_use, aes(x = pathway, y = cell_type, fill = -1 * `Log(q-value)`)) +
+  geom_tile(color="black") +  # Heatmap-style visualization
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(x = "", y = "", fill = "-log10(q-value)") +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black', size = 12)
+    # axis.text.y = element_blank()
+  )
+
+
+pathway_res_use[pathway_res_use$pathway=="aerobic respiration (GO)", ]
+
+
+
+
+
+
+
+cell_type_list = c("C7", "M5813", "M0610", "M24")
+
+# deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+pathway_res_use[pathway_res_use$pathway=="aerobic respiration (GO)", ]
+deg_merged[deg_merged$cell_type %in% cell_type_list & deg_merged$gene_name %in% c("Mt-co3", "mt-Co3"), ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
