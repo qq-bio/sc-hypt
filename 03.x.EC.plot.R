@@ -294,6 +294,153 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.C14.cellch
 
 
 
+### test Pdgfd, Pdgfrb
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+ligand_expr <- deg_merged[deg_merged$cell_type=="C14" & deg_merged$gene_name=="Pdgfd", ]
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+receptor_expr <- deg_merged[deg_merged$cell_type=="Pericyte" & deg_merged$gene_name=="Pdgfrb" & deg_merged$tissue=="HYP", ]
+
+ligand_long <- ligand_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Pdgfd\n(C10)",
+    log2FC = -1 * avg_log2FC
+  )
+
+receptor_long <- receptor_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Pdgfrb\n(pericyte)",
+    log2FC = -1 * avg_log2FC
+  )
+
+intersect_col <- intersect(colnames(ligand_long), colnames(receptor_long))
+plot_data <- rbind(ligand_long[, intersect_col], receptor_long[, intersect_col])
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = "PDGF signaling in\nhypertensive strains"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~label)
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/PDGF.ligand_receptor.expr.png", width=330/96, height=260/96, dpi=300)
+
+
+
+
+ligand_long <- ligand_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("SD", "WKY")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Pdgfd (C10)",
+    log2FC = -1 * avg_log2FC
+  )
+
+receptor_long <- receptor_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("SD", "WKY")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Pdgfrb (pericyte)",
+    log2FC = -1 * avg_log2FC
+  )
+
+intersect_col <- intersect(colnames(ligand_long), colnames(receptor_long))
+plot_data <- rbind(ligand_long[, intersect_col], receptor_long[, intersect_col])
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = "PDGF signaling\n(normotensive strains)"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~label)
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/PDGF.ligand_receptor.expr.normo.png", width=450/96, height=260/96, dpi=300)
+
+
+
+
+
+
+
 
 
 ### MSA result
@@ -392,6 +539,91 @@ ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-v
   scale_y_discrete(position = "right") + 
   scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.C19.path.barplot.png", width = 650 / 96, height = 420 / 96, dpi = 300)
+
+
+
+
+
+### tf-regulon and marker genes in C15
+library(data.table)
+library(stringr)
+regulonsfile <- "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/scenic/rat_scenic_res/rat_10k10k/reg.csv"
+regulons <- fread(regulonsfile, header = FALSE)
+regulons <- regulons[-c(1:3), ]
+colnames(regulons) <- c("TF","MotifID","AUC","NES","MotifSimilarityQvalue",
+                        "OrthologousIdentity","Annotation","Context","TargetGenes","RankAtMax")
+numeric_cols <- c("AUC", "NES", "MotifSimilarityQvalue", "OrthologousIdentity", "RankAtMax")
+regulons[, (numeric_cols) := lapply(.SD, as.numeric), .SDcols = numeric_cols]
+regulons[, TargetGeneList := str_extract_all(TargetGenes, "'(.*?)'")]
+regulons[, TargetGeneList := sapply(TargetGeneList, function(x) paste(gsub("'", "", x), collapse = ";"))]
+
+regulons_long <- regulons %>%
+  separate_rows(TargetGeneList, sep = ";") %>%
+  dplyr::select(Gene = TargetGeneList, TF, MotifID, AUC, NES)
+
+regulons_use <- regulons_long[regulons_long$TF %in% c("Klf2", "Klf4"), ]
+
+# load C15 marker genes
+# marker_list <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.cluster_wise.DEG.out", header = T)
+# marker_c19 <- marker_list[marker_list$cluster]
+
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+deg_c19 <- deg_merged[deg_merged$cell_type=="C19" & deg_merged$p_val_adj<0.05, ]
+deg_target <- unique(deg_c19[deg_c19$gene_name %in% regulons_use$Gene, ]$gene_name)
+
+
+TF_gene_pathway_all <- read.csv("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/scenic/rat_scenic_res/TF_gene_pathway_all.csv")
+klf_gene <- TF_gene_pathway_all[TF_gene_pathway_all$TF %in% c("Klf2", "Klf4") & TF_gene_pathway_all$data == "rat_10k10k", ]
+gene_list <- setdiff(unique(klf_gene$Gene), c("Klf2", "Klf4"))
+
+
+
+deg_long <- deg_merged %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         cell_type=="C19" & strain == "WKY",
+         gene_name %in% gene_list) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    hypertension = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive"),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = gene_name,
+    log2FC = -1 * avg_log2FC
+  )
+
+plot_data <- deg_long %>% arrange(desc(significance))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  # ) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = "Targets of Klf2/Klf4 in C15 (WKY)"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text.y = element_text(size = 10, angle = 0)
+  ) +
+  facet_wrap(~ label, scales = "fixed", ncol=3)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/Klf2_4.target.expr_change.png", width = 416 / 96, height = 593 / 96, dpi = 300)
+
 
 
 
