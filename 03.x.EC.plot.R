@@ -720,9 +720,11 @@ ggplot(pathway_res_use, aes(x = pathway, y = cell_type, fill = -1 * `Log(q-value
   labs(x = "", y = "", fill = "-log10(q-value)") +
   theme_classic() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black', size = 12)
-    # axis.text.y = element_blank()
-  )
+    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+    axis.text.y = element_text(colour = 'black', size = 12)
+  ) +
+  coord_flip() +
+  scale_x_discrete(position = "top")
 
 
 pathway_res_use[pathway_res_use$pathway=="aerobic respiration (GO)", ]
@@ -743,13 +745,78 @@ deg_merged[deg_merged$cell_type %in% cell_type_list & deg_merged$gene_name %in% 
 
 
 
+### individual 
+library(openxlsx)
+pathway_res <- read.xlsx("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/metascape/C7/metascape_result.xlsx", sheet = 2)
+pathway_res <- pathway_res[grepl("Summary", pathway_res$GroupID), ]
+pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
+pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
+
+ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-value)`, y = fct_reorder(pathway, -`Log(q-value)`), fill = -`Log(q-value)`)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  
+  labs(x = "-log10(q-value)", y = "", fill = "-log10(q-value)") +  
+  theme_classic() +
+  theme(
+    axis.text = element_text(colour = 'black'),
+    legend.position = "left"
+  ) + 
+  scale_y_discrete(position = "right") + 
+  scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.C7.path.barplot.png", width = 690 / 96, height = 300 / 96, dpi = 300)
 
 
+pathway_res <- read.xlsx("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/metascape/M5813/metascape_result.xlsx", sheet = 2)
+pathway_res <- pathway_res[grepl("Summary", pathway_res$GroupID), ]
+pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
+pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
+
+ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-value)`, y = fct_reorder(pathway, -`Log(q-value)`), fill = -`Log(q-value)`)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  
+  labs(x = "-log10(q-value)", y = "", fill = "-log10(q-value)") +  
+  theme_classic() +
+  theme(
+    axis.text = element_text(colour = 'black'),
+    legend.position = "left"
+  ) + 
+  scale_y_discrete(position = "right") + 
+  scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.M5813.path.barplot.png", width = 480 / 96, height = 200 / 96, dpi = 300)
 
 
+pathway_res <- read.xlsx("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/metascape/M0610/metascape_result.xlsx", sheet = 2)
+pathway_res <- pathway_res[grepl("Summary", pathway_res$GroupID), ]
+pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
+pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
+
+ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-value)`, y = fct_reorder(pathway, -`Log(q-value)`), fill = -`Log(q-value)`)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  
+  labs(x = "-log10(q-value)", y = "", fill = "-log10(q-value)") +  
+  theme_classic() +
+  theme(
+    axis.text = element_text(colour = 'black'),
+    legend.position = "left"
+  ) + 
+  scale_y_discrete(position = "right") + 
+  scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.M0610.path.barplot.png", width = 670 / 96, height = 300 / 96, dpi = 300)
 
 
+pathway_res <- read.xlsx("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/metascape/M24/metascape_result.xlsx", sheet = 2)
+pathway_res <- pathway_res[grepl("Summary", pathway_res$GroupID), ]
+pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
+pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
 
+ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-value)`, y = fct_reorder(pathway, -`Log(q-value)`), fill = -`Log(q-value)`)) + 
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  
+  labs(x = "-log10(q-value)", y = "", fill = "-log10(q-value)") +  
+  theme_classic() +
+  theme(
+    axis.text = element_text(colour = 'black'),
+    legend.position = "left"
+  ) + 
+  scale_y_discrete(position = "right") + 
+  scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.M24.path.barplot.png", width = 480 / 96, height = 200 / 96, dpi = 300)
 
 
 
