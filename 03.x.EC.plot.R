@@ -702,7 +702,7 @@ for(i in cell_type_list){
   pathway_res <- pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ]
   pathway_res$category <- sapply(strsplit(as.character(pathway_res$Category), " "), `[`, 1)
   pathway_res$pathway <- paste0(pathway_res$Description, " (", pathway_res$category, ")")
-  pathway_res$cell_type <- i
+  pathway_res$cell_type <- paste0("C", new_idx[i])
   pathway_res_merged <- rbind(pathway_res_merged, pathway_res)
   
 }
@@ -725,6 +725,7 @@ ggplot(pathway_res_use, aes(x = pathway, y = cell_type, fill = -1 * `Log(q-value
   ) +
   coord_flip() +
   scale_x_discrete(position = "top")
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.path.barplot.png", width = 830 / 96, height = 700 / 96, dpi = 300)
 
 
 pathway_res_use[pathway_res_use$pathway=="aerobic respiration (GO)", ]
@@ -817,6 +818,160 @@ ggplot(pathway_res[pathway_res$`Log(q-value)`< log10(0.05), ], aes(x = -`Log(q-v
   scale_y_discrete(position = "right") + 
   scale_fill_continuous(low = "white", high = "red", limits = c(0, 2), oob = scales::squish)
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/EC.M24.path.barplot.png", width = 480 / 96, height = 200 / 96, dpi = 300)
+
+
+
+
+
+
+
+
+### cell communication results
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+
+lv_ec_list = c("C7", "M5813", "M0610", "M24")
+lv_ec_list = c("C7", "M5813", "M0610", "M24", "C22", "C9", "C1", "C18")
+lv_ec_list = paste0("EC", lv_ec_list)
+
+cc_df_use <- cc_df_diff %>% 
+  filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(Strain = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))%>% 
+  filter(EC_type %in% lv_ec_list) %>% 
+  mutate(EC_type = paste("Cluster", new_idx[gsub("EC", "", EC_type)]))
+
+path_list = cc_df_use[abs(cc_df_use$value)>0.1, ] %>% arrange(desc(abs(value)))
+path_list = unique(path_list$pathway_name)[1:15]
+cc_df_use %>% 
+  group_by(EC_type) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(pathway_name %in% path_list) %>%
+  ggplot(aes(x = rank, y = value, colour = Strain)) +
+  geom_point(aes(size=factor(abs(value)>0.1))) +
+  geom_line() +
+  xlab("Rank") +
+  ylab("Differential communication score\n(treatment vs. control)") +
+  scale_y_continuous(
+    breaks = c(-0.1, 0, 0.1),
+    labels = c(-0.1, 0, 0.1)
+  ) +
+  scale_size_manual(values=c(1, 2.5)) +
+  facet_grid2(EC_type~pathway_name) +
+  coord_flip()
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.cellchat.dotplot.png", width=950/96, height=685/96, dpi=300)
+
+
+
+### test Nrg1, Erbb4
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+ligand_expr <- deg_merged[deg_merged$cell_type=="C22" & deg_merged$gene_name=="Nrg1", ]
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+receptor_expr <- deg_merged[deg_merged$cell_type=="CM" & deg_merged$gene_name=="Erbb4" & deg_merged$tissue=="LV", ]
+
+ligand_long <- ligand_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Nrg1\n(C18)",
+    log2FC = -1 * avg_log2FC
+  )
+
+receptor_long <- receptor_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Erbb4\n(cardiomyocyte)",
+    log2FC = -1 * avg_log2FC
+  )
+
+intersect_col <- intersect(colnames(ligand_long), colnames(receptor_long))
+plot_data <- rbind(ligand_long[, intersect_col], receptor_long[, intersect_col])
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = "NRG signaling in\nhypertensive strains"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~label)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/NRG.ligand_receptor.expr.png", width=450/96, height=260/96, dpi=300)
+
+
+
+
+lv_sub_genes <- c("Kdr", "Epas1", "Eng", "Nrp1", "Nrp2", "Col4a1", "Col4a2", "Il1r1", "Calcrl", "Vwf", "Vegfc", "Smad6", "Efnb2", "Notch1")
+lv_ec_list = c("C7", "M5813", "M0610", "M24")
+
+seurat_object_lv_sub <- subset(seurat_object, seurat_clusters %in% c("M0610", "M24", "C7", "M5813"))
+seurat_object_lv_sub$new_idx <- paste0("C", seurat_object_lv_sub$new_idx)
+DotPlot(seurat_object_lv_sub, features = lv_sub_genes, group.by = "new_idx") +
+  scale_color_gradient(low = "white", high = "firebrick") +
+  labs(y="", x="") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12)
+  )
+
+
+
+lv_sub_genes <- c("Nrg1")
+lv_ec_list = c("C7", "M5813", "M0610", "M24")
+lv_ec_list = c("C7", "M5813", "M0610", "M24", "C22", "C9", "C1", "C18")
+
+seurat_object_lv <- subset(seurat_object, seurat_clusters %in% c("C7", "M5813", "M0610", "M24", "C22", "C9", "C1", "C18"))
+seurat_object_lv$new_idx <- paste0("C", seurat_object_lv$new_idx)
+DotPlot(seurat_object_lv, features = lv_sub_genes, group.by = "new_idx") +
+  scale_color_gradient(low = "white", high = "firebrick") +
+  labs(y="", x="") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12)
+  )
+
+
+
+
+
+
+
+
+
 
 
 

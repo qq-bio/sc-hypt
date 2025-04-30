@@ -5,6 +5,50 @@ library(sceasy)
 library(dplyr)
 
 
+################################################################################
+### single-cell rna-seq
+Convert("/xdisk/mliang1/qqiu/data/HumanCellAtlas/adult_human_heart/c4a7112c-b61c-510a-9871-0651f51aefaa/hca_heart_global_ctl200723_freeze.h5ad", "/xdisk/mliang1/qqiu/data/HumanCellAtlas/adult_human_heart/c4a7112c-b61c-510a-9871-0651f51aefaa/hca_heart_global_ctl200723_freeze.h5seurat")
+seuart <- LoadH5Seurat("/xdisk/mliang1/qqiu/data/HumanCellAtlas/adult_human_heart/c4a7112c-b61c-510a-9871-0651f51aefaa/hca_heart_global_ctl200723_freeze.h5seurat", assay = "RNA", layers = "data" ,verbose =TRUE)
+
+sample_info <- read.table("/xdisk/mliang1/qqiu/data/HumanCellAtlas/adult_human_heart/c4a7112c-b61c-510a-9871-0651f51aefaa/hca_heart_global_ctl200723_sample_info.txt", sep = "\t", header = T)
+hypt_lv_samp_id <- sample_info[sample_info$Region=="LV" & sample_info$Hypertension=="Y" & !(grepl("H", sample_info$Donor)), ]$Sanger.ID
+norm_lv_samp_id <- sample_info[sample_info$Region=="LV" & sample_info$Hypertension=="N" & grepl("H", sample_info$Donor), ]$Sanger.ID
+
+seuart_lv <- subset(seuart, sample %in% c(hypt_lv_samp_id, norm_lv_samp_id))
+seuart_lv$Hypertension = ifelse(seuart_lv$sample %in% hypt_lv_samp_id, "Y", "N")
+
+FeaturePlot(seuart_lv, "NRG1", split.by = "Hypertension")
+FeaturePlot(seuart_lv, "NPR3", split.by = "Hypertension")
+
+
+FeaturePlot(seuart_lv, "NRP2", split.by = "Hypertension")
+
+
+
+VlnPlot(seuart_lv, "NPR3", split.by = "Hypertension", group.by = "cell_type")
+VlnPlot(seuart_lv, "NRG1", split.by = "Hypertension", group.by = "cell_type")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+### spatial data
 ### overall estimate
 seurat = sceasy::convertFormat("/xdisk/mliang1/qqiu/data/HeartCellAtlas/visium-OCT_LV_lognormalised.updated.h5ad", from = "anndata", to = "seurat")
 
@@ -33,11 +77,15 @@ for(i in ec_list){
 
 
 
-
 ### marker expression and cell abundance correlation
 marker_list = c("FHOD3", "UNC5C", "IL1R1", "HMCN1", "VWF", #m5813
                 "NEBL", "ST6GALNAC3", "MAYO10", "LRRC3B", "BTNL9", "KCNT2", "SMAD6", "RGS3" #c1,7,9
 )
+
+marker_list = c("KDR", "EPAS1", "ENG", "NRP1", "NRP2", "COL4A1", "COL4A2", "IL1R1", "CALCRL", "VWF", "VEGFC", "SMAD6", "EFNB2", "NOTCH1",
+                "NPR3", "NRG1"
+)
+
 marker_list_use = intersect(marker_list, rownames(seurat))
 
 expr_matrix = t(as.matrix(seurat@assays$RNA@data[marker_list_use, ]))
@@ -73,6 +121,46 @@ ggplot(cor_matrix_melted, aes(Var2, Var1, fill = value)) +
        x = "", y = "", fill = "Spearmam\ncorrelation") + 
   theme(axis.text = element_text(color = "black", size = 10),
         axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+seurat_st933 <- subset(seurat, sangerID=="HCAHeartST8795933")
+
+marker_list = c("KDR", "EPAS1", "ENG", "NRP1", "NRP2", "COL4A1", "COL4A2", "IL1R1", "CALCRL", "VWF", "VEGFC", "SMAD6", "EFNB2", "NOTCH1",
+                "NPR3", "NRG1"
+)
+
+marker_list_use = intersect(marker_list, rownames(seurat_st933))
+
+expr_matrix = t(as.matrix(seurat_st933@assays$RNA@data[marker_list_use, ]))
+cell_matrix = as.matrix(seurat_st933@meta.data[, c(18:89)])
+ec_matrix = as.matrix(seurat_st933@meta.data[, c(32:40, 88)])
+
+cor_cell_p <- cor(expr_matrix, cell_matrix, use="pairwise.complete.obs", method = "pearson")
+cor_cell_s <- cor(expr_matrix, cell_matrix, use="pairwise.complete.obs", method = "spearman")
+cor_ec_p <- cor(expr_matrix, ec_matrix, use="pairwise.complete.obs", method = "pearson")
+cor_ec_s <- cor(expr_matrix, ec_matrix, use="pairwise.complete.obs", method = "spearman")
+
+cor_mat = cor_ec_p
+cor_matrix_melted <- melt(cor_mat)
+ggplot(cor_matrix_melted, aes(Var2, Var1, fill = value)) + 
+  geom_tile() + 
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
+                       limits = c(min(cor_matrix_melted$value), max(cor_matrix_melted$value))) +
+  theme_minimal() +
+  labs(title = "Marker expression and cell abundance correlation", 
+       x = "", y = "", fill = "Pearson\ncorrelation") + 
+  theme(axis.text = element_text(color = "black", size = 10),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+FeaturePlot(seurat, "NRG1", reduction = "spatial", split.by = "sangerID")
+FeaturePlot(seurat, "EC7_endocardial", reduction = "spatial", split.by = "sangerID")
+
+
 
 
 
