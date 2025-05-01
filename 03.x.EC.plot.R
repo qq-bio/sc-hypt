@@ -850,16 +850,16 @@ cc_df_use %>%
   ggplot(aes(x = rank, y = value, colour = Strain)) +
   geom_point(aes(size=factor(abs(value)>0.1))) +
   geom_line() +
-  xlab("Rank") +
-  ylab("Differential communication score\n(treatment vs. control)") +
+  labs(x = "Rank", y = "Differential communication score\n(treatment vs. control)",
+       size = "|value|>0.1") +
   scale_y_continuous(
     breaks = c(-0.1, 0, 0.1),
     labels = c(-0.1, 0, 0.1)
   ) +
-  scale_size_manual(values=c(1, 2.5)) +
+  scale_size_manual(values=c(1, 2.5), labels = c("No", "Yes")) +
   facet_grid2(EC_type~pathway_name) +
   coord_flip()
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.cellchat.dotplot.png", width=950/96, height=685/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/LV.EC.cellchat.dotplot.png", width=900/96, height=685/96, dpi=300)
 
 
 
@@ -961,10 +961,344 @@ DotPlot(seurat_object_lv, features = lv_sub_genes, group.by = "new_idx") +
   scale_color_gradient(low = "white", high = "firebrick") +
   labs(y="", x="") +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 12)
+    axis.text.x = element_text(size = 12),
+    legend.box = "horizontal"
+  ) +
+  coord_flip()
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/NRG.expr.png", width=770/96, height=180/96, dpi=300)
+
+
+
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+
+cc_df_use <- cc_df_diff %>% 
+  filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  mutate(Strain = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))%>% 
+  filter(EC_type=="ECM24") %>% 
+  mutate(EC_type = paste("Cluster", new_idx[gsub("EC", "", EC_type)]))
+
+path_list = cc_df_use[abs(cc_df_use$value)>0.1, ] %>% arrange(desc(abs(value)))
+path_list = unique(path_list$pathway_name)[1:15]
+cc_df_use <- cc_df_use %>% 
+  group_by(EC_type) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup() %>%
+  filter(pathway_name %in% path_list)
+  
+
+
+
+
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+
+deg_long <- deg_merged %>%
+  filter(control_size >= 10 & treatment_size >= 10) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    hypertension = ifelse(strain %in% c("SD", "WKY"), "Normotensive", "Hypertensive"),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = ifelse(p_val_adj < 0.05 & condition == "Treatment", paste0("Cluster ", new_idx_name, "\n(", strain, ")"), NA),
+    log2FC = -1 * avg_log2FC
   )
 
+target_gene = "Lamc1"
+# target_gene = "Klf4"
 
+plot_data <- deg_long %>% filter(gene_name == target_gene) %>% arrange(desc(significance))
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  geom_text(
+    data = label_data,
+    x = -Inf,
+    aes(label = label),
+    hjust = 0,
+    vjust = 1, 
+    size = 4
+  ) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = target_gene
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~hypertension)
+
+
+
+
+
+
+
+
+### test LAMA2_ITGA1_ITGB1, LAMA2_ITGA6_ITGB1
+ec_deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+all_deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+
+ligand_expr <- deg_merged[deg_merged$cell_type=="C18" & deg_merged$gene_name=="Lama2", ]
+receptor_expr <- deg_merged[deg_merged$cell_type=="Fibroblast" & deg_merged$gene_name=="Itga1" & deg_merged$tissue=="LV", ]
+
+ligand_long <- ligand_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Nrg1\n(C18)",
+    log2FC = -1 * avg_log2FC
+  )
+
+receptor_long <- receptor_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Erbb4\n(cardiomyocyte)",
+    log2FC = -1 * avg_log2FC
+  )
+
+intersect_col <- intersect(colnames(ligand_long), colnames(receptor_long))
+plot_data <- rbind(ligand_long[, intersect_col], receptor_long[, intersect_col])
+label_data <- plot_data %>% filter(!is.na(label))
+
+ggplot(plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  geom_point(size = 2) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0) +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    color = "log2FC",
+    linewidth = "Significant",
+    title = "NRG signaling in\nhypertensive strains"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12)
+    
+  ) +
+  facet_grid(~label)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/NRG.ligand_receptor.expr.png", width=450/96, height=260/96, dpi=300)
+
+
+
+
+
+
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+
+cc_df_use <- cc_df_diff %>% 
+   filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+   filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+   mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+   mutate(Strain = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))%>% 
+    filter(EC_type %in% c("ECC7", "ECM5813", "ECM0610", "ECM24", "ECC22", "ECC9", "ECC1", "ECC18")) %>% 
+   mutate(EC_type = paste("Cluster", new_idx[gsub("EC", "", EC_type)]))
+path_list = cc_df_use[abs(cc_df_use$value)>0.1, ] %>% arrange(desc(abs(value)))
+path_list = unique(path_list$pathway_name)[1:15]
+cc_df_use = cc_df_use %>% 
+   group_by(EC_type) %>% arrange(value) %>%
+   mutate(rank = row_number()) %>% ungroup() %>%
+ filter(pathway_name %in% path_list)
+View(cc_df_use[cc_df_use$value>0.1,])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+### highlight NRG in SS (strain-wise plot)
+strain_order = c("C57BL/6", "SHR", "WKY", "SS", "SD")
+strain_col <- setNames(pal_jama()(5), c("C57BL/6", "SHR", "WKY", "SS", "SD"))
+
+
+cc_df_diff <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/cellchat/cross_organ.EC.refined.merged.cellchat.diff.out", sep = "\t", header = T)
+cc_df_use <- cc_df_diff %>% 
+  filter(grepl("^EC", source) | grepl("^EC", target)) %>%
+  filter(!(grepl("^EC", source) & grepl("^EC", target))) %>%
+  mutate(EC_type = ifelse(grepl("^EC", source), source, target)) %>% 
+  filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
+  mutate(Strain = ifelse(strain %in% c("C57BL/6", "SS", "SHR"), "Hypertensive", "Normotensive"))%>% 
+  filter(EC_type=="ECC22") %>% 
+  mutate(EC_type = paste("Cluster", new_idx[gsub("EC", "", EC_type)])) %>% 
+  filter(pathway_name == "NRG")%>% 
+  group_by(EC_type) %>% arrange(value) %>%
+  mutate(rank = row_number()) %>% ungroup()
+
+label_data <- cc_df_use %>% filter(strain=="SS")
+
+cc_df_use  %>%
+  ggplot(aes(x = rank, y = value, colour = Strain)) +
+  geom_linerange(aes(x=rank, ymax=value, ymin=0), color = "grey") +
+  geom_point(aes(color = strain), size=4) + # size=factor(abs(value)>0.1), 
+  geom_text(
+    data = label_data,
+    aes(x = rank, y = value, label = treatment),
+    hjust = 1,
+    vjust = 1.5, 
+    size = 4.5, color = "black"
+  ) +
+  labs(x = "", y = "Differential communication score\n(treatment vs. control)",
+       title = "NRG signaling") +
+  scale_y_continuous(
+    breaks = c(-0.1, 0, 0.1),
+    labels = c(-0.1, 0, 0.1)
+  ) +
+  geom_hline(yintercept=0) +
+  theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(),
+        axis.text.x = element_text(color="black"),
+        legend.box = "horizontal") +
+  # scale_size_manual(values=c(2, 4), labels = c("No", "Yes")) +
+  scale_color_manual(values = strain_col, name = "Strain") +
+  # facet_grid2(~Strain) +
+  coord_flip()
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/NRG.cellchat.strain_wise.png", width=380/96, height=180/96, dpi=300)
+
+
+
+
+
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cross-organ_EC/DEG/ec.scvi.gene_nb.hvg_1k.refined.merged.DEG_all.out")
+ligand_expr <- deg_merged[deg_merged$cell_type=="C22" & deg_merged$gene_name=="Nrg1", ]
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T)
+receptor_expr <- deg_merged[deg_merged$cell_type=="CM" & deg_merged$gene_name=="Erbb4" & deg_merged$tissue=="LV", ]
+
+ligand_long <- ligand_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4),
+    new_idx_name = new_idx[cell_type]
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Nrg1 (C18)",
+    log2FC = -1 * avg_log2FC
+  )
+
+receptor_long <- receptor_expr %>%
+  filter(control_size >= 10 & treatment_size >= 10,
+         strain %in% c("C57BL/6", "SHR", "SS")) %>%
+  mutate(
+    group = paste0(gene_name, "-", cell_type, "-", strain, "-", treatment),
+    significance = ifelse(p_val_adj < 0.05, "Yes", "No"),
+    linewidth = ifelse(p_val_adj < 0.05, 1.2, 0.4)
+  ) %>%
+  pivot_longer(
+    cols = c(pct.1, pct.2),
+    names_to = "condition",
+    values_to = "pct_expr"
+  ) %>%
+  mutate(
+    condition = recode(condition, "pct.1" = "Control", "pct.2" = "Treatment"),
+    label = "Erbb4 (cardiomyocyte)",
+    log2FC = -1 * avg_log2FC
+  )
+
+intersect_col <- intersect(colnames(ligand_long), colnames(receptor_long))
+plot_data <- rbind(ligand_long[, intersect_col], receptor_long[, intersect_col])
+plot_data$label <- factor(plot_data$label, levels = unique(plot_data$label))
+
+label_data <- plot_data %>% filter(condition=="Treatment", strain=="SS")
+
+ggplot(data = plot_data, aes(x = condition, y = pct_expr, group = group)) +
+  geom_point(aes(fill = strain),
+             size = 5, shape = 21, color = "white") +
+  scale_fill_manual(values = strain_col, name = "Strain") +
+  
+  geom_line(aes(color = log2FC, linewidth = significance)) +
+  scale_color_gradient2(low = "blue", mid = "gray90", high = "red", midpoint = 0, name = "log2FC") +
+  scale_linewidth_manual(values = c("Yes" = 1.2, "No" = 0.4)) +
+  
+  geom_text_repel(
+    data = label_data,
+    aes(x = condition, y = pct_expr, label = treatment),
+    hjust = 1,
+    vjust = 0.5, 
+    size = 4.5, color = "black"
+  ) +
+  
+  labs(
+    x = NULL,
+    y = "Percent Expressed",
+    # color = "log2FC",
+    linewidth = "Significant",
+    title = "NRG signaling in hypertensive strains"
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(size = 10, color = "black"), #angle = 45, hjust = 1, size = 12, 
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text = element_text(size = 12),
+    legend.box = "horizontal"
+  ) +
+  facet_wrap(~label)
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/NRG.ligand_receptor.expr.strain_wise.add_label.png", width=770/96, height=210/96, dpi=300)
 
 
 
