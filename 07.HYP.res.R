@@ -74,6 +74,7 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/HYP.shr.avp.e
 
 
 ### subcluster analysis
+### astrocyte
 hyp_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.astrocyte.subcluster.rds')
 hyp_ss = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.astrocyte.subcluster.rds')
 hyp_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.astrocyte.subcluster.rds')
@@ -81,6 +82,16 @@ hyp_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluste
 hyp_m$sxt = factor(paste0(hyp_m$species, " - ", hyp_m$treatment), levels = sxt_order)
 hyp_ss$sxt = factor(paste0(hyp_ss$species, " - ", hyp_ss$treatment), levels = sxt_order)
 hyp_shr$sxt = factor(paste0(hyp_shr$species, " - ", hyp_shr$treatment), levels = sxt_order)
+
+# calculate prop
+prop.table(table(hyp_m$subclass_level2, hyp_m$sxt), margin = 1)
+prop.table(table(hyp_ss$subclass_level2, hyp_ss$sxt), margin = 1)
+prop.table(table(hyp_shr$subclass_level2, hyp_shr$sxt), margin = 1)
+
+prop.table(table(hyp_m$subclass_level2, hyp_m$sxt), margin = 2)
+prop.table(table(hyp_ss$subclass_level2, hyp_ss$sxt), margin = 2)
+prop.table(table(hyp_shr$subclass_level2, hyp_shr$sxt), margin = 2)
+
 
 gene = c("Nlgn1", "Nrxn1", "Nrxn3", "Ncam1", "Ncam2", "Negr1")
 gene = c("Gfap", "Gphn", "Asic2", "Adgrl3", "Pitpnc1", "Atp1a2", "Msi2", "Cables1", "Itih3") # angii
@@ -92,7 +103,34 @@ hyp_m %>% FeaturePlot(., features = gene, split.by = "treatment")
 hyp_ss %>% FeaturePlot(., features = gene, split.by = "sxt")
 hyp_shr %>% FeaturePlot(., features = gene, split.by = "sxt")
 
+hyp_m %>% DimPlot(.)
+hyp_ss %>% DimPlot(.)
+hyp_shr %>% DimPlot(.)
 
+hyp_m_marker = FindAllMarkers(hyp_m)
+hyp_ss_marker = FindAllMarkers(hyp_ss)
+hyp_shr_marker = FindAllMarkers(hyp_shr)
+
+e <- new.env()
+assign("astrocyte_m_marker", hyp_m_marker, envir = e)
+assign("astrocyte_ss_marker", hyp_ss_marker, envir = e)
+assign("astrocyte_shr_marker", hyp_shr_marker, envir = e)
+saveRDS(e, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.HYP.astrocyte.marker.rds")
+
+
+hyp_m_marker = hyp_m_marker[hyp_m_marker$p_val_adj<0.05 & hyp_m_marker$avg_log2FC>0.25, ]
+hyp_ss_marker = hyp_ss_marker[hyp_ss_marker$p_val_adj<0.05 & hyp_ss_marker$avg_log2FC>0.25, ]
+hyp_shr_marker = hyp_shr_marker[hyp_shr_marker$p_val_adj<0.05 & hyp_shr_marker$avg_log2FC>0.25, ]
+
+hyp_m_marker$project = "angii"
+hyp_ss_marker$project = "ss"
+hyp_shr_marker$project = "shr"
+astro_marker_merged = rbind(hyp_m_marker, hyp_ss_marker, hyp_shr_marker)
+astro_marker_merged = astro_marker_merged %>%
+  group_by(gene) %>%
+  mutate(count_gene = n(),
+         count_proj = n_distinct(project)) %>%
+  ungroup()
 
 
 
