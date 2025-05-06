@@ -99,13 +99,14 @@ gene = c("Gfap", "Gphn", "Cdk8", "Scd2", "Gpm6a", "Map2", "Celf2", "Grm3", "Gria
 gene = c("Cntnap2", "Camk1d", "Ldb2", "Kcnn2", "Tmem117", "Map2", "Glis3", "Alk", "Phactr1", "Asic2") # ss
 gene = c("Gfap", "Ptprd", "Apoe", "Grik2", "Cst3", "Dlg2", "Fgf14", "Robo1", "Csmd3", "Grid2", "Kdelr3") # up-regulated in ss at astrocyte level
 gene = c("Cntnap2", "Camk1d", "Ldb2", "Kcnn2", "Temem117", "Map2", "Glis3", "Alk", "Phactr1", "Asic2") # sp
+gene = c("Itih3")
 hyp_m %>% FeaturePlot(., features = gene, split.by = "treatment")
 hyp_ss %>% FeaturePlot(., features = gene, split.by = "sxt")
 hyp_shr %>% FeaturePlot(., features = gene, split.by = "sxt")
 
-hyp_m %>% DimPlot(.)
-hyp_ss %>% DimPlot(.)
-hyp_shr %>% DimPlot(.)
+hyp_m %>% DimPlot(., label = T) + labs(title = "Ang II") + theme(legend.position = "none")
+hyp_ss %>% DimPlot(., label = T) + labs(title = "SS") + theme(legend.position = "none")
+hyp_shr %>% DimPlot(., label = T) + labs(title = "SHR") + theme(legend.position = "none")
 
 hyp_m_marker = FindAllMarkers(hyp_m)
 hyp_ss_marker = FindAllMarkers(hyp_ss)
@@ -117,6 +118,14 @@ assign("astrocyte_ss_marker", hyp_ss_marker, envir = e)
 assign("astrocyte_shr_marker", hyp_shr_marker, envir = e)
 saveRDS(e, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.HYP.astrocyte.marker.rds")
 
+
+
+
+e = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.HYP.astrocyte.marker.rds")
+
+hyp_m_marker = e$astrocyte_m_marker
+hyp_ss_marker = e$astrocyte_ss_marker
+hyp_shr_marker = e$astrocyte_shr_marker
 
 hyp_m_marker = hyp_m_marker[hyp_m_marker$p_val_adj<0.05 & hyp_m_marker$avg_log2FC>0.25, ]
 hyp_ss_marker = hyp_ss_marker[hyp_ss_marker$p_val_adj<0.05 & hyp_ss_marker$avg_log2FC>0.25, ]
@@ -133,7 +142,30 @@ astro_marker_merged = astro_marker_merged %>%
   ungroup()
 
 
+astro_marker_merged %>% filter(project=="angii", count_proj>1) %>%
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_m, return.seurat = TRUE), ., draw.lines = FALSE)
 
+astro_marker_merged %>% filter(project=="ss", count_proj>1) %>%
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_ss, return.seurat = TRUE), ., draw.lines = FALSE)
+
+astro_marker_merged %>% filter(project=="shr", count_proj>1) %>%
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_shr, return.seurat = TRUE), ., draw.lines = FALSE)
+
+
+
+### microglia
 hyp_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.microglia.subcluster.rds')
 hyp_ss = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.microglia.subcluster.rds')
 hyp_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.microglia.subcluster.rds')
