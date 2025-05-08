@@ -83,7 +83,7 @@ hyp_m$sxt = factor(paste0(hyp_m$species, " - ", hyp_m$treatment), levels = sxt_o
 hyp_ss$sxt = factor(paste0(hyp_ss$species, " - ", hyp_ss$treatment), levels = sxt_order)
 hyp_shr$sxt = factor(paste0(hyp_shr$species, " - ", hyp_shr$treatment), levels = sxt_order)
 
-hyp_m = subset(hyp_m, subclass_level2!="C3")
+hyp_m = subset(hyp_m, subclass_level2!="C3"); hyp_m = subset(hyp_m, RNA_snn_res.1 %in% c(0:5, 8, 9))
 hyp_ss = subset(hyp_ss, subclass_level2!="C5")
 hyp_shr = subset(hyp_shr, subclass_level2!="C9")
 
@@ -250,7 +250,7 @@ gene = c("Gfap", "Gphn", "Cdk8", "Scd2", "Gpm6a", "Map2", "Celf2", "Grm3", "Gria
 gene = c("Cntnap2", "Camk1d", "Ldb2", "Kcnn2", "Tmem117", "Map2", "Glis3", "Alk", "Phactr1", "Asic2") # ss
 gene = c("Gfap", "Ptprd", "Apoe", "Grik2", "Cst3", "Dlg2", "Fgf14", "Robo1", "Csmd3", "Grid2", "Kdelr3") # up-regulated in ss at astrocyte level
 gene = c("Cntnap2", "Camk1d", "Ldb2", "Kcnn2", "Temem117", "Map2", "Glis3", "Alk", "Phactr1", "Asic2") # sp
-gene = c("Itih3")
+gene = c("Syt1", "Mbp", "Aldh1l1", "Slc1a2", "Slc1a3", "Aqp4", "Gfap", "Sox9")
 hyp_m %>% FeaturePlot(., features = gene, split.by = "treatment")
 hyp_ss %>% FeaturePlot(., features = gene, split.by = "sxt")
 hyp_shr %>% FeaturePlot(., features = gene, split.by = "sxt")
@@ -318,7 +318,6 @@ astro_marker_merged %>% filter(project=="shr", count_proj>1) %>%
   DoHeatmap(AverageExpression(hyp_shr, return.seurat = TRUE), ., draw.lines = FALSE)
 
 
-
 hyp_m_marker = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.astro.res_1.out", header = T, sep = "\t")
 hyp_m_marker = hyp_m_marker[hyp_m_marker$p_val_adj<0.05 & hyp_m_marker$avg_log2FC>0.25, ]
 hyp_m_marker %>% 
@@ -337,11 +336,45 @@ hyp_m_marker %>%
 
 
 gene = hyp_m_marker %>% filter(cluster==2) %>% arrange(desc(avg_log2FC)) %>% slice(seq_len(10)) %>% pull(gene)
+gene = hyp_m_marker %>% filter(cluster==2) %>% mutate(pct.diff = pct.1 - pct.2) %>% arrange(desc(pct.diff)) %>% slice(seq_len(10)) %>% pull(gene)
+gene = hyp_m_marker %>% filter(cluster==2) %>% arrange(p_val_adj) %>% slice(seq_len(10)) %>% pull(gene)
+gene = c("Nrg2", "Tnfaip8", "Tshz2", "Otud7a", "Lrp1b", "Gm29683")
+hyp_m %>% FeaturePlot(., features = gene)
+hyp_m %>% VlnPlot(., features = gene, group.by = "RNA_snn_res.1", split.by = "treatment", ncol = 1)
+
 gene = hyp_m_marker %>% filter(cluster==6) %>% arrange(desc(avg_log2FC)) %>% slice(seq_len(10)) %>% pull(gene)
-hyp_m %>% FeaturePlot(., features = gene, order = T)
+gene = hyp_m_marker %>% filter(cluster==6) %>% arrange(p_val_adj) %>% slice(seq_len(20)) %>% pull(gene)
+hyp_m %>% VlnPlot(., features = gene, group.by = "RNA_snn_res.1", split.by = "treatment", ncol = 2)
+
+# check genes showing low abundance in other groups but high pct.diff
+hyp_m_marker %>% 
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>% filter(cluster==2, pct.diff>0, p_val_adj<0.05) %>% 
+  ggplot(., aes(x=pct.2, y=pct.diff, label=gene)) + 
+  geom_point() + geom_text_repel(hjust=0, vjust=0)
+  # geom_smooth(method='lm', formula= y~x)
 
 
+hyp_m_major = subset(hyp_m, RNA_snn_res.1 %in% c(0, 1, 2, 3, 4, 5, 8))
+hyp_m_marker = FindAllMarkers(hyp_m_major, group.by = "RNA_snn_res.1")
+write.table(hyp_m_marker, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.astro.res_1.major_cluster.out", col.names = T, sep = "\t")
 
+
+hyp_m_c2 = subset(hyp_m, RNA_snn_res.1==2)
+hyp_m_c2_deg_1 = FindMarkers(hyp_m_c2, ident.1 = "Saline 3d", ident.2 = "AngII 3d", group.by = "treatment")
+hyp_m_c2_deg_2 = FindMarkers(hyp_m_c2, ident.1 = "Saline 3d", ident.2 = "AngII 28d", group.by = "treatment")
+hyp_m_c2_deg_1$pct.diff = hyp_m_c2_deg_1$pct.2 - hyp_m_c2_deg_1$pct.1
+hyp_m_c2_deg_2$pct.diff = hyp_m_c2_deg_2$pct.2 - hyp_m_c2_deg_2$pct.1
+hyp_m_c2_deg_1$treatment = "AngII 3d"; hyp_m_c2_deg_1$gene = rownames(hyp_m_c2_deg_1)
+hyp_m_c2_deg_2$treatment = "AngII 28d"; hyp_m_c2_deg_2$gene = rownames(hyp_m_c2_deg_2)
+hyp_m_c2_deg = rbind(hyp_m_c2_deg_1, hyp_m_c2_deg_2)
+write.table(hyp_m_c2_deg, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.astro.res_1.c2.deg.out", col.names = T, sep = "\t")
+
+
+gene = c("Gphn")
+gene = hyp_m_c2_deg %>% arrange(desc(pct.diff)) %>% slice(seq_len(10)) %>% pull(gene) %>% unique()
+hyp_m %>% FeaturePlot(., features = gene) 
+hyp_m %>% VlnPlot(., features = gene, group.by = "RNA_snn_res.1", split.by = "treatment", ncol = 1)
 
 
 
@@ -353,6 +386,76 @@ hyp_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluste
 hyp_m$sxt = factor(paste0(hyp_m$species, " - ", hyp_m$treatment), levels = sxt_order)
 hyp_ss$sxt = factor(paste0(hyp_ss$species, " - ", hyp_ss$treatment), levels = sxt_order)
 hyp_shr$sxt = factor(paste0(hyp_shr$species, " - ", hyp_shr$treatment), levels = sxt_order)
+
+gene = c("Syt1", "Gad1", "Gad2", "Slc17a6", "Avp",
+                "Slc1a2", "Cx3cr1", "P2ry12", "Tgfbr1", "Cspg4", "Pdgfra","Mbp", "St18", 
+                "Col23a1", "Tmem212", "Flt1", "Pecam1", "Ebf1",
+                "Atp13a5", "Ptgds")
+hyp_m %>% DimPlot(., group.by = "RNA_snn_res.1", label = T)
+hyp_m %>% DotPlot(., features = gene, group.by = "RNA_snn_res.1") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+hyp_ss %>% DimPlot(., group.by = "RNA_snn_res.1", label = T)
+hyp_ss %>% DotPlot(., features = gene, group.by = "RNA_snn_res.1") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+hyp_shr %>% DimPlot(., group.by = "RNA_snn_res.1", label = T)
+hyp_shr %>% DotPlot(., features = gene, group.by = "RNA_snn_res.1") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+hyp_m = subset(hyp_m, RNA_snn_res.1 %in% c(0:2, 5))
+hyp_ss = subset(hyp_ss, RNA_snn_res.1 %in% c(0:6, 8:11))
+hyp_shr = subset(hyp_shr, RNA_snn_res.1 %in% c(0:7))
+
+hyp_m_marker = FindAllMarkers(hyp_m, group.by = "RNA_snn_res.1")
+hyp_ss_marker = FindAllMarkers(hyp_ss, group.by = "RNA_snn_res.1")
+hyp_shr_marker = FindAllMarkers(hyp_shr, group.by = "RNA_snn_res.1")
+
+e <- new.env()
+assign("microglia_m_marker", hyp_m_marker, envir = e)
+assign("microglia_ss_marker", hyp_ss_marker, envir = e)
+assign("microglia_shr_marker", hyp_shr_marker, envir = e)
+saveRDS(e, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.HYP.microglia.marker.rds")
+
+
+e = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.HYP.microglia.marker.rds")
+hyp_m_marker = e$astrocyte_m_marker
+hyp_ss_marker = e$astrocyte_ss_marker
+hyp_shr_marker = e$astrocyte_shr_marker
+
+hyp_m_marker = hyp_m_marker[hyp_m_marker$p_val_adj<0.05 & hyp_m_marker$avg_log2FC>0.25, ]
+hyp_ss_marker = hyp_ss_marker[hyp_ss_marker$p_val_adj<0.05 & hyp_ss_marker$avg_log2FC>0.25, ]
+hyp_shr_marker = hyp_shr_marker[hyp_shr_marker$p_val_adj<0.05 & hyp_shr_marker$avg_log2FC>0.25, ]
+
+hyp_m_marker$project = "angii"
+hyp_ss_marker$project = "ss"
+hyp_shr_marker$project = "shr"
+microglia_marker_merged = rbind(hyp_m_marker, hyp_ss_marker, hyp_shr_marker)
+
+
+# microglia_marker_merged %>% filter(project=="ss", count_proj>1) %>%
+#   mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+#   arrange(desc(pct.diff)) %>%
+#   slice(seq_len(10)) %>% ungroup() %>%
+#   pull(gene) %>%
+#   DoHeatmap(AverageExpression(hyp_shr, return.seurat = TRUE), ., draw.lines = FALSE)
+
+hyp_m_marker %>% 
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_m, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE)
+
+hyp_ss_marker %>% 
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_ss, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE)
+
+hyp_shr_marker %>% 
+  mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
+  arrange(desc(pct.diff)) %>%
+  slice(seq_len(10)) %>% ungroup() %>%
+  pull(gene) %>%
+  DoHeatmap(AverageExpression(hyp_shr, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE)
 
 gene = c("Marchf1", "Apba1", "Ptgds", "Cst3", "Cdk14", "B2m", "Apoe", "C1qb", "Cadm1")
 hyp_m %>% FeaturePlot(., features = gene, split.by = "treatment")
