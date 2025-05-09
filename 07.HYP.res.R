@@ -18,6 +18,108 @@ base_font_size = 12
 theme_set(theme_classic(base_size = base_font_size))
 
 
+################################################################################
+milo_mod = function(seurat_object, cell_type){
+  
+  meta_table = seurat_object@meta.data
+  
+  species_list = unique(meta_table$strain)
+  
+  for(si in species_list){
+    
+    seurat_object_use = subset(seurat_object, strain == si)
+    
+    if(si=="C57BL/6"){si = "mouse"}
+    
+    outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/",
+                     si, ".", cell_type, ".miloR.rds")
+    
+    reduced.dim = "HARMONY"
+    
+    # construct KNN graph -> representative neighbourhoods
+    sce = as.SingleCellExperiment(seurat_object_use, assay="RNA")
+    milo_object = Milo(sce)
+    milo_object = buildGraph(milo_object, k = 30, d = 30, reduced.dim = reduced.dim)
+    milo_object = makeNhoods(milo_object, prop = 0.2, k = 30, d=30, refined = TRUE, reduced_dims = reduced.dim,
+                             refinement_scheme="graph")
+    plotNhoodSizeHist(milo_object) # average neighbourhood size should be over 5 x N_samples/ 50-100
+    
+    milo_object <- countCells(milo_object, meta.data = seurat_object_use@meta.data, sample="orig.ident")
+    
+    milo_design <- seurat_object_use@meta.data[,c("orig.ident", "treatment")]
+    milo_design <- distinct(milo_design)
+    rownames(milo_design) <- milo_design$orig.ident
+    
+    milo_design$orig.ident = as.factor(milo_design$orig.ident)
+    milo_design$treatment = as.factor(milo_design$treatment)
+    
+    # computing neighbourhood connectivity
+    milo_object <- calcNhoodDistance(milo_object, d=30, reduced.dim = reduced.dim)
+    saveRDS(milo_object, outfile)
+    
+  }
+}
+
+
+milo_da_merged = function(input_file, cell_type, outfile, coldata_col="subclass_level2"){
+  
+  da_merge = c()
+  for( i in input_file ){
+    
+    reduced.dim = "HARMONY"
+    
+    milo_object = readRDS(i)
+    
+    milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
+    milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident")]
+    milo_design = distinct(milo_design)
+    rownames(milo_design) = milo_design$orig.ident
+    milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
+    milo_design$strain = as.factor(milo_design$strain)
+    
+    species_list = unique(milo_design$strain)
+    treatment_list = intersect(levels(colData(milo_object)$treatment), unique(milo_design$treatment))
+    treatment.new_list = gsub(" ", "", treatment_list)
+    
+    for( si in species_list ){
+      
+      for( j in 1:length(treatment.new_list[-1]) ){
+        
+        control.new = treatment.new_list[1]
+        treatment.new = treatment.new_list[j+1]
+        control = treatment_list[1]
+        treatment = treatment_list[j+1]
+        
+        model.contrasts = paste0("treatment.new", control.new, " - ", "treatment.new", treatment.new)
+        
+        da_tmp = try(testNhoods(milo_object, design = ~ 0 + treatment.new, design.df = milo_design,
+                                fdr.weighting="graph-overlap", reduced.dim = reduced.dim,
+                                model.contrasts = model.contrasts), silent = T)
+        
+        if(class(da_tmp) != "try-error"){
+          
+          da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = coldata_col)
+          da_tmp$subcluster = da_tmp[, coldata_col]
+          da_tmp$cell_type = cell_type
+          da_tmp$species = si
+          da_tmp$control = control
+          da_tmp$treatment = treatment
+          da_merge = rbind(da_merge, da_tmp)
+          
+        }else{
+          print(c(i, treatment))
+        }
+        
+      }
+      
+    }
+    
+  }
+  
+  write.table(da_merge, outfile, sep='\t', quote=F, col.names = T, row.names = F)
+  
+}
+
 
 ################################################################################
 # https://stackoverflow.com/questions/71986699/plotting-heatmap-with-triangular-split-tiles-of-more-than-one-categorical-variab
@@ -97,111 +199,10 @@ prop.table(table(hyp_ss$subclass_level2, hyp_ss$sxt), margin = 2)
 prop.table(table(hyp_shr$subclass_level2, hyp_shr$sxt), margin = 2)
 
 # load milo result
-milo_mod = function(seurat_object, cell_type){
-  
-  meta_table = seurat_object@meta.data
-  
-  species_list = unique(meta_table$strain)
-  
-  for(si in species_list){
-    
-    seurat_object_use = subset(seurat_object, strain == si)
-    
-    if(si=="C57BL/6"){si = "mouse"}
-    
-    outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/",
-                     si, ".", cell_type, ".miloR.rds")
-    
-    reduced.dim = "HARMONY"
-    
-    # construct KNN graph -> representative neighbourhoods
-    sce = as.SingleCellExperiment(seurat_object_use, assay="RNA")
-    milo_object = Milo(sce)
-    milo_object = buildGraph(milo_object, k = 30, d = 30, reduced.dim = reduced.dim)
-    milo_object = makeNhoods(milo_object, prop = 0.2, k = 30, d=30, refined = TRUE, reduced_dims = reduced.dim,
-                             refinement_scheme="graph")
-    plotNhoodSizeHist(milo_object) # average neighbourhood size should be over 5 x N_samples/ 50-100
-    
-    milo_object <- countCells(milo_object, meta.data = seurat_object_use@meta.data, sample="orig.ident")
-    
-    milo_design <- seurat_object_use@meta.data[,c("orig.ident", "treatment")]
-    milo_design <- distinct(milo_design)
-    rownames(milo_design) <- milo_design$orig.ident
-    
-    milo_design$orig.ident = as.factor(milo_design$orig.ident)
-    milo_design$treatment = as.factor(milo_design$treatment)
-    
-    # computing neighbourhood connectivity
-    milo_object <- calcNhoodDistance(milo_object, d=30, reduced.dim = reduced.dim)
-    saveRDS(milo_object, outfile)
-    
-  }
-}
-
 milo_mod(hyp_m, "astrocyte")
 milo_mod(hyp_ss, "astrocyte")
 milo_mod(hyp_shr, "astrocyte")
 
-
-
-milo_da_merged = function(input_file, cell_type, outfile){
-  
-  da_merge = c()
-  for( i in input_file ){
-    
-    reduced.dim = "HARMONY"
-    
-    milo_object = readRDS(i)
-    
-    milo_object = countCells(milo_object, meta.data = as.data.frame(colData(milo_object)), sample="orig.ident")
-    milo_design = data.frame(colData(milo_object))[,c("treatment", "strain", "orig.ident")]
-    milo_design = distinct(milo_design)
-    rownames(milo_design) = milo_design$orig.ident
-    milo_design$treatment.new = as.factor(gsub(" ", "", milo_design$treatment))
-    milo_design$strain = as.factor(milo_design$strain)
-    
-    species_list = unique(milo_design$strain)
-    treatment_list = intersect(levels(colData(milo_object)$treatment), unique(milo_design$treatment))
-    treatment.new_list = gsub(" ", "", treatment_list)
-    
-    for( si in species_list ){
-      
-      for( j in 1:length(treatment.new_list[-1]) ){
-        
-        control.new = treatment.new_list[1]
-        treatment.new = treatment.new_list[j+1]
-        control = treatment_list[1]
-        treatment = treatment_list[j+1]
-        
-        model.contrasts = paste0("treatment.new", control.new, " - ", "treatment.new", treatment.new)
-        
-        da_tmp = try(testNhoods(milo_object, design = ~ 0 + treatment.new, design.df = milo_design,
-                                fdr.weighting="graph-overlap", reduced.dim = reduced.dim,
-                                model.contrasts = model.contrasts), silent = T)
-        
-        if(class(da_tmp) != "try-error"){
-          
-          da_tmp <- annotateNhoods(milo_object, da_tmp, coldata_col = "subclass_level2")
-          da_tmp$subcluster = da_tmp$subclass_level2
-          da_tmp$cell_type = cell_type
-          da_tmp$species = si
-          da_tmp$control = control
-          da_tmp$treatment = treatment
-          da_merge = rbind(da_merge, da_tmp)
-          
-        }else{
-          print(c(i, treatment))
-        }
-        
-      }
-      
-    }
-    
-  }
-  
-  write.table(da_merge, outfile, sep='\t', quote=F, col.names = T, row.names = F)
-  
-}
 
 input_file = c(
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.astrocyte.miloR.rds",
@@ -210,7 +211,7 @@ input_file = c(
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.astrocyte.miloR.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.astrocyte.miloR.rds"
 )
-milo_da_merged(input_file, "astrocyte", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.astrocyte.milo.da_result.out")
+milo_da_merged(input_file, "astrocyte", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.astrocyte.milo.da_result.out", coldata_col="RNA_snn_res.1")
 
 
 da_results = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.astrocyte.milo.da_result.out", sep="\t", header = T)
@@ -294,7 +295,6 @@ astro_marker_merged = astro_marker_merged %>%
   mutate(count_gene = n(),
          count_proj = n_distinct(project)) %>%
   ungroup()
-
 
 astro_marker_merged %>% filter(project=="angii", count_proj>1) %>%
   mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
@@ -462,6 +462,52 @@ hyp_m %>% FeaturePlot(., features = gene, split.by = "treatment")
 hyp_ss %>% FeaturePlot(., features = gene, split.by = "sxt")
 hyp_shr %>% FeaturePlot(., features = gene, split.by = "sxt")
 
+
+
+milo_mod(hyp_m, "microglia")
+milo_mod(hyp_ss, "microglia")
+milo_mod(hyp_shr, "microglia")
+
+input_file = c(
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.microglia.miloR.rds"
+)
+milo_da_merged(input_file, "microglia", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.microglia.milo.da_result.out")
+
+
+da_results = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.microglia.milo.da_result.out", sep="\t", header = T)
+hyp_m_da = da_results[da_results$species=="C57BL/6", ]
+hyp_ss_da = da_results[da_results$species=="SS", ]
+hyp_shr_da = da_results[da_results$species=="SHR", ]
+
+hyp_m_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.microglia.miloR.rds")
+hyp_m_milo= buildNhoodGraph(hyp_m_milo)
+plotNhoodGraphDA(hyp_m_milo, hyp_m_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_ss_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.microglia.miloR.rds")
+hyp_ss_milo= buildNhoodGraph(hyp_ss_milo)
+plotNhoodGraphDA(hyp_ss_milo, hyp_ss_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_shr_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.microglia.miloR.rds")
+hyp_shr_milo= buildNhoodGraph(hyp_shr_milo)
+plotNhoodGraphDA(hyp_shr_milo, hyp_shr_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+
+hyp_sd_da = da_results[da_results$species=="SD", ]
+hyp_wky_da = da_results[da_results$species=="WKY", ]
+
+hyp_sd_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.microglia.miloR.rds")
+hyp_sd_milo= buildNhoodGraph(hyp_sd_milo)
+plotNhoodGraphDA(hyp_sd_milo, hyp_sd_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_wky_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.microglia.miloR.rds")
+hyp_wky_milo= buildNhoodGraph(hyp_wky_milo)
+plotNhoodGraphDA(hyp_wky_milo, hyp_wky_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_m %>% VlnPlot(., features = gene, group.by = "RNA_snn_res.1", split.by = "treatment", ncol = 1)
 
 
 
