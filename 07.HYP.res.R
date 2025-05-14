@@ -17,6 +17,8 @@ library(CSCORE)
 base_font_size = 12
 theme_set(theme_classic(base_size = base_font_size))
 
+source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/function/QC_harmony.R")
+
 
 ################################################################################
 milo_mod = function(seurat_object, cell_type){

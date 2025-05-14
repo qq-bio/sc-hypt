@@ -8,8 +8,8 @@ getPalette = colorRampPalette(brewer.pal(9, "Set1"))
 
 
 
-gene_m_h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.mouse2human.out", header=T, sep='\t')
-gene_r_h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.rat2human.out", header=T, sep='\t')
+gene_m_h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out", header=T, sep='\t')
+gene_r_h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out", header=T, sep='\t')
 
 gene_rm_h = unique(rbind(gene_m_h[gene_m_h$Human.gene.name!="", c(2, 4)],
                          gene_r_h[gene_r_h$Human.gene.name!="", c(2, 4)]))

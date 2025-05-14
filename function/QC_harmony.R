@@ -10,7 +10,7 @@ source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/function/cluster
 
 QC_harmony = function(seurat_object, 
                       nPC = 20, 
-                      reso = seq(0.1, 1, 0.1)){
+                      reso = c(seq(0.1, 1, 0.1), 1, 1.5, 2)){
   
   
   black_list = c(rownames(seurat_object)[grep("^Rp[sl][[:digit:]]", rownames(seurat_object))],
@@ -49,7 +49,7 @@ QC_harmony = function(seurat_object,
 
 QC_harmony_mo = function(seurat_object, 
                       nPC = 20, 
-                      reso = seq(0.1, 1, 0.1)){
+                      reso = c(seq(0.1, 1, 0.1), 1, 1.5, 2)){
 
   DefaultAssay(seurat_object) = "RNA"
   seurat_object = NormalizeData(seurat_object)
@@ -73,7 +73,7 @@ QC_harmony_mo = function(seurat_object,
                                           dims.list = list(1:nPC, 2:nPC))
   seurat_object = RunUMAP(seurat_object, nn.name = "weighted.nn", reduction.name = "wnn.umap.harmony", reduction.key = "wnnUMAPHarmony_")
   seurat_object = FindClusters(seurat_object, graph.name = "wsnn", algorithm = 3,
-                               resolution = c(seq(0.1, 1, 0.1), 1, 1.5, 2))
+                               resolution = reso)
   
   DefaultAssay(seurat_object) = "RNA"
   return(seurat_object)
