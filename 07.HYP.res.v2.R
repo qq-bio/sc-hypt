@@ -42,8 +42,8 @@ milo_mod = function(seurat_object, cell_type){
     # construct KNN graph -> representative neighbourhoods
     sce = as.SingleCellExperiment(seurat_object_use, assay="RNA")
     milo_object = Milo(sce)
-    milo_object = buildGraph(milo_object, k = 30, d = 30, reduced.dim = reduced.dim)
-    milo_object = makeNhoods(milo_object, prop = 0.2, k = 30, d=30, refined = TRUE, reduced_dims = reduced.dim,
+    milo_object = buildGraph(milo_object, k = 20, d = 20, reduced.dim = reduced.dim)
+    milo_object = makeNhoods(milo_object, prop = 0.1, k = 20, d=20, refined = TRUE, reduced_dims = reduced.dim,
                              refinement_scheme="graph")
     plotNhoodSizeHist(milo_object) # average neighbourhood size should be over 5 x N_samples/ 50-100
     
@@ -219,6 +219,9 @@ hyp_astro_shr_marker %>%
 
 
 
+saveRDS(hyp_astro_m, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.astrocyte.subcluster.rds")
+saveRDS(hyp_astro_ss, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.astrocyte.subcluster.rds")
+saveRDS(hyp_astro_shr, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.astrocyte.subcluster.rds")
 
 
 
@@ -297,6 +300,9 @@ hyp_micro_shr_marker %>%
   DoHeatmap(AverageExpression(hyp_micro_shr, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE) & coord_flip()
 
 
+saveRDS(hyp_micro_m, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.microglia.subcluster.rds")
+saveRDS(hyp_micro_ss, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.microglia.subcluster.rds")
+saveRDS(hyp_micro_shr, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.microglia.subcluster.rds")
 
 
 
@@ -358,14 +364,14 @@ hyp_ol_m_marker %>%
   arrange(desc(pct.diff)) %>%
   slice(seq_len(10)) %>% ungroup() %>%
   pull(gene) %>%
-  DoHeatmap(AverageExpression(hyp_ol_m, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE) + facet_wrap()
+  DoHeatmap(AverageExpression(hyp_ol_m, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE) & coord_flip()
 
 hyp_ol_ss_marker %>% 
   mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
   arrange(desc(pct.diff)) %>%
   slice(seq_len(10)) %>% ungroup() %>%
   pull(gene) %>%
-  DoHeatmap(AverageExpression(hyp_ol_ss, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE)
+  DoHeatmap(AverageExpression(hyp_ol_ss, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE) & coord_flip()
 
 # hyp_ol_shr_marker %>% 
 #   mutate(pct.diff = pct.1 - pct.2) %>% group_by(cluster) %>%
@@ -373,6 +379,181 @@ hyp_ol_ss_marker %>%
 #   slice(seq_len(10)) %>% ungroup() %>%
 #   pull(gene) %>%
 #   DoHeatmap(AverageExpression(hyp_ol_shr, return.seurat = TRUE, group.by = "RNA_snn_res.1"), ., draw.lines = FALSE)
+
+
+saveRDS(hyp_ol_m, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.myelinating_ol.subcluster.rds")
+saveRDS(hyp_ol_ss, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.myelinating_ol.subcluster.rds")
+
+
+
+
+
+################################################################################
+hyp_astro_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.astrocyte.subcluster.rds')
+hyp_astro_ss = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.astrocyte.subcluster.rds')
+hyp_astro_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.astrocyte.subcluster.rds')
+
+hyp_micro_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.microglia.subcluster.rds')
+hyp_micro_ss = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.microglia.subcluster.rds')
+hyp_micro_shr = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.HYP.microglia.subcluster.rds')
+
+hyp_ol_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.myelinating_ol.subcluster.rds')
+hyp_ol_ss = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.ss.HYP.myelinating_ol.subcluster.rds')
+
+hyp_astro_m$seurat_clusters = hyp_astro_m$RNA_snn_res.0.8
+hyp_astro_ss$seurat_clusters = hyp_astro_ss$RNA_snn_res.1
+hyp_astro_shr$seurat_clusters = hyp_astro_shr$RNA_snn_res.1
+
+milo_mod(hyp_astro_m, "astrocyte")
+milo_mod(hyp_astro_ss, "astrocyte")
+milo_mod(hyp_astro_shr, "astrocyte")
+
+input_file = c(
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.astrocyte.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.astrocyte.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.astrocyte.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.astrocyte.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.astrocyte.miloR.rds"
+)
+milo_da_merged(input_file, "astrocyte", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.astrocyte.milo.da_result.out", coldata_col="seurat_clusters")
+
+
+hyp_micro_m$seurat_clusters = hyp_micro_m$RNA_snn_res.1
+hyp_micro_ss$seurat_clusters = hyp_micro_ss$RNA_snn_res.1
+hyp_micro_shr$seurat_clusters = hyp_micro_shr$RNA_snn_res.1
+
+milo_mod(hyp_micro_m, "microglia")
+milo_mod(hyp_micro_ss, "microglia")
+milo_mod(hyp_micro_shr, "microglia")
+
+input_file = c(
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.microglia.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.microglia.miloR.rds"
+)
+milo_da_merged(input_file, "microglia", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.microglia.milo.da_result.out", coldata_col="seurat_clusters")
+
+
+hyp_ol_m$seurat_clusters = hyp_ol_m$RNA_snn_res.0.8
+hyp_ol_ss$seurat_clusters = hyp_ol_ss$RNA_snn_res.1
+
+milo_mod(hyp_ol_m, "myelinating_ol")
+milo_mod(hyp_ol_ss, "myelinating_ol")
+input_file = c(
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.myelinating_ol.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.myelinating_ol.miloR.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.myelinating_ol.miloR.rds"
+  # "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.myelinating_ol.miloR.rds",
+  # "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.myelinating_ol.miloR.rds"
+)
+milo_da_merged(input_file, "myelinating_ol", "/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.myelinating_ol.milo.da_result.out", coldata_col="seurat_clusters")
+
+
+
+
+
+################################################################################
+summarise_milo = function(da_object){
+  tbl = da_object %>% group_by(subcluster) %>%
+    summarise(n_cluster = dplyr::n(), 
+              n_up = sum(FDR<0.1 & logFC>0),
+              n_down = sum(FDR<0.1 & logFC<0),
+              pct_up = n_up/n_cluster, 
+              pct_down = n_down/n_cluster) %>%
+    ungroup()
+  
+  return(tbl)
+}
+
+
+da_results = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.astrocyte.milo.da_result.out", sep="\t", header = T)
+hyp_m_da = da_results[da_results$species=="C57BL/6", ]
+hyp_ss_da = da_results[da_results$species=="SS", ]
+hyp_shr_da = da_results[da_results$species=="SHR", ]
+
+hyp_m_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.astrocyte.miloR.rds")
+hyp_m_milo= buildNhoodGraph(hyp_m_milo)
+plotNhoodGraphDA(hyp_m_milo, hyp_m_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_ss_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.astrocyte.miloR.rds")
+hyp_ss_milo= buildNhoodGraph(hyp_ss_milo)
+plotNhoodGraphDA(hyp_ss_milo, hyp_ss_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_shr_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.astrocyte.miloR.rds")
+hyp_shr_milo= buildNhoodGraph(hyp_shr_milo)
+plotNhoodGraphDA(hyp_shr_milo, hyp_shr_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_sd_da = da_results[da_results$species=="SD", ]
+hyp_wky_da = da_results[da_results$species=="WKY", ]
+
+hyp_sd_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.astrocyte.miloR.rds")
+hyp_sd_milo= buildNhoodGraph(hyp_sd_milo)
+plotNhoodGraphDA(hyp_sd_milo, hyp_sd_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_wky_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.astrocyte.miloR.rds")
+hyp_wky_milo= buildNhoodGraph(hyp_wky_milo)
+plotNhoodGraphDA(hyp_wky_milo, hyp_wky_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+summarise_milo(hyp_m_da)
+summarise_milo(hyp_ss_da)
+summarise_milo(hyp_shr_da)
+summarise_milo(hyp_sd_da)
+summarise_milo(hyp_wky_da)
+
+
+da_results = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.microglia.milo.da_result.out", sep="\t", header = T)
+hyp_m_da = da_results[da_results$species=="C57BL/6", ]
+hyp_ss_da = da_results[da_results$species=="SS", ]
+hyp_shr_da = da_results[da_results$species=="SHR", ]
+
+hyp_m_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.microglia.miloR.rds")
+hyp_m_milo= buildNhoodGraph(hyp_m_milo)
+plotNhoodGraphDA(hyp_m_milo, hyp_m_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_ss_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.microglia.miloR.rds")
+hyp_ss_milo= buildNhoodGraph(hyp_ss_milo)
+plotNhoodGraphDA(hyp_ss_milo, hyp_ss_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_shr_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SHR.microglia.miloR.rds")
+hyp_shr_milo= buildNhoodGraph(hyp_shr_milo)
+plotNhoodGraphDA(hyp_shr_milo, hyp_shr_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_sd_da = da_results[da_results$species=="SD", ]
+hyp_wky_da = da_results[da_results$species=="WKY", ]
+
+hyp_sd_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.microglia.miloR.rds")
+hyp_sd_milo= buildNhoodGraph(hyp_sd_milo)
+plotNhoodGraphDA(hyp_sd_milo, hyp_sd_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_wky_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/WKY.microglia.miloR.rds")
+hyp_wky_milo= buildNhoodGraph(hyp_wky_milo)
+plotNhoodGraphDA(hyp_wky_milo, hyp_wky_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+
+
+
+
+da_results = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/hyp.myelinating_ol.milo.da_result.out", sep="\t", header = T)
+hyp_m_da = da_results[da_results$species=="C57BL/6", ]
+hyp_ss_da = da_results[da_results$species=="SS", ]
+
+hyp_m_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/mouse.myelinating_ol.miloR.rds")
+hyp_m_milo= buildNhoodGraph(hyp_m_milo)
+plotNhoodGraphDA(hyp_m_milo, hyp_m_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_ss_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SS.myelinating_ol.miloR.rds")
+hyp_ss_milo= buildNhoodGraph(hyp_ss_milo)
+plotNhoodGraphDA(hyp_ss_milo, hyp_ss_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+hyp_sd_da = da_results[da_results$species=="SD", ]
+
+hyp_sd_milo = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/miloR/SD.myelinating_ol.miloR.rds")
+hyp_sd_milo= buildNhoodGraph(hyp_sd_milo)
+plotNhoodGraphDA(hyp_sd_milo, hyp_sd_da, alpha=0.1) + theme(legend.direction = "horizontal")
+
+
 
 
 
