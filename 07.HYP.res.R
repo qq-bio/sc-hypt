@@ -595,7 +595,7 @@ ggplot(deg_use, aes(x = treatment, y = cell_type)) +
 ################################################################################
 ### top DEGs in each cell type
 deg_merged = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep='\t', header=T)
-deg_merged = deg_merged[deg_merged$tissue=="HYP", ]
+headdeg_merged = deg_merged[deg_merged$tissue=="HYP", ]
 
 deg_merged = deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.25, ]
 deg_merged$cell_type = factor(deg_merged$cell_type, levels = cell_order)
@@ -644,6 +644,93 @@ for(ci in cell_type){
   }
   
 }
+
+
+### measure consensus and directionality across tissues
+deg_obs <- deg_merged %>%
+  filter(p_val_adj < 0.05, abs(avg_log2FC)>0.5) %>%
+  mutate(direction = sign(avg_log2FC)) %>%
+  group_by(tissue, gene_name) %>%
+  summarise(
+    n_celltypes = n_distinct(cell_type),
+    consensus_score = mean(direction),
+    .groups = "drop"
+  ) %>%
+  left_join(
+    deg_merged %>% dplyr::count(tissue, cell_type) %>%
+      group_by(tissue) %>% summarise(n_total_celltypes = n(), .groups = "drop"),
+    by = "tissue"
+  ) %>%
+  mutate(prop_celltypes = n_celltypes / n_total_celltypes)
+
+
+shuffle_deg_table <- function(deg_data) {
+  deg_data %>%
+    group_by(tissue, cell_type) %>%
+    mutate(gene_name = sample(gene_name)) %>%
+    ungroup()
+}
+
+n_perm <- 1000
+perm_results <- vector("list", n_perm)
+
+set.seed(123)
+
+for (i in seq_len(n_perm)) {
+  shuffled <- shuffle_deg_table(deg_merged)
+  
+  perm_i <- shuffled %>%
+    filter(p_val_adj < 0.05, abs(avg_log2FC)>0.5) %>%
+    mutate(direction = sign(avg_log2FC)) %>%
+    group_by(tissue, gene_name) %>%
+    summarise(
+      n_celltypes = n_distinct(cell_type),
+      consensus_score = mean(direction),
+      .groups = "drop"
+    ) %>%
+    left_join(
+      deg_merged %>% dplyr::count(tissue, cell_type) %>%
+        group_by(tissue) %>% summarise(n_total_celltypes = n(), .groups = "drop"),
+      by = "tissue"
+    ) %>%
+    mutate(prop_celltypes = n_celltypes / n_total_celltypes,
+           perm_id = i)
+  
+  perm_results[[i]] <- perm_i
+}
+
+perm_all <- bind_rows(perm_results)
+
+
+compare_df <- left_join(
+  deg_obs,
+  perm_all,
+  by = c("tissue", "gene_name"),
+  suffix = c("_obs", "_perm")
+)
+
+pvals_empirical <- perm_all %>%
+  group_by(tissue, gene_name) %>%
+  summarise(
+    mean_score = mean(consensus_score, na.rm = TRUE),
+    sd_score = sd(consensus_score, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  left_join(deg_obs, by = c("tissue", "gene_name")) %>%
+  mutate(
+    z_score = (consensus_score - mean_score) / sd_score,
+    p_emp = pnorm(z_score, lower.tail = FALSE)
+  )
+
+
+ggplot(deg_obs, aes(x = prop_celltypes, y = consensus_score)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~ tissue) +
+  theme_minimal() +
+  labs(x = "Proportion of cell types where gene is DE",
+       y = "Directionality score (mean sign of logFC)",
+       title = "Consensus vs. Directionality of DEGs across cell types")
+
 
 
 ### consensus + bulk
