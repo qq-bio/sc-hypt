@@ -724,7 +724,8 @@ pvals_empirical <- perm_all %>%
 
 
 ggplot(deg_obs, aes(x = prop_celltypes, y = consensus_score)) +
-  geom_point(alpha = 0.5) +
+  # geom_point(alpha = 0.5) +
+  geom_density_2d_filled(alpha=0.8) +
   facet_wrap(~ tissue) +
   theme_minimal() +
   labs(x = "Proportion of cell types where gene is DE",
@@ -733,7 +734,6 @@ ggplot(deg_obs, aes(x = prop_celltypes, y = consensus_score)) +
 
 
 
-### consensus + bulk
 bulk = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/bulk/DEG_bulk.csv", header = T, sep = ",")
 bulk[bulk$project=="Spontaneous ", ]$project = "Spontaneous"
 deg_bulk <- deg_merged %>%
