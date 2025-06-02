@@ -597,7 +597,7 @@ ggplot(deg_use, aes(x = treatment, y = cell_type)) +
 deg_merged = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep='\t', header=T)
 headdeg_merged = deg_merged[deg_merged$tissue=="HYP", ]
 
-deg_merged = deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.25, ]
+deg_merged = deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.5, ]
 deg_merged$cell_type = factor(deg_merged$cell_type, levels = cell_order)
 deg_merged$treatment = factor(deg_merged$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "10w", "26w", "LS", "HS 3d", "HS 21d"))
 deg_merged$strain = factor(deg_merged$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
@@ -882,6 +882,16 @@ p = deg_merged %>%
 print(p)
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig2a.HYP.deg.dot.png", width=353/96, height=287/96, dpi=300)
 
+dat = deg_merged %>%
+  filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
+  group_by(gene_name) %>%
+  mutate(deg_num = n()) %>%
+  ungroup() %>%
+  dplyr::select(gene_name, deg_num) %>%
+  distinct()
+
+dim(dat[dat$deg_num>10,])
+$ [1] 160   2
 
 deg_merged %>%
   filter(strain %in% c("C57BL/6", "SS", "SHR"),
