@@ -126,6 +126,7 @@ snp_gene_df <- snp_gene_df %>%
 
 write.table(snp_gene_df, "snp_gene.evi_org.out", col.names = T, row.names = F, sep = "\t", quote=F)
 
+snp_gene_df_mod <- read.table("snp_gene.evi_org.out", sep = "\t", header = T)
 ### process expr data
 deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep = '\t', header = TRUE)
 deg_merged <- deg_merged[deg_merged$strain %in% c("C57BL/6", "SHR", "SS"), ]
@@ -143,11 +144,13 @@ set.seed(42)
 deg_use <- deg_use %>%
   mutate(condition = paste(strain, treatment, tissue, cell_type, sep = "_"))
 binary_matrix <- deg_use %>%
-  select(gene_name, condition) %>%
+  dplyr::select(gene_name, condition) %>%
   mutate(value = 1) %>%
   spread(key = condition, value = value, fill = 0)
+dim(binary_matrix)
+# [1] 1320  148
 row.names(binary_matrix) <- binary_matrix$gene_name
-binary_matrix <- binary_matrix %>% select(-gene_name) %>% as.matrix()
+binary_matrix <- binary_matrix %>% dplyr::select(-gene_name) %>% as.matrix()
 
 jaccard_dist_rows <- vegdist(binary_matrix, method = "jaccard")
 jaccard_dist_columns <- vegdist(t(binary_matrix), method = "jaccard")

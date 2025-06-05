@@ -39,6 +39,7 @@ analyze_deg_overlap_table <- function(data, group_var = "tissue",
   names(freq_obs) <- names(table(gene_group_table_obs))
   
   # Prepare for simulation
+  # all_genes <- unique(data$gene_name)
   all_genes <- unique(data$gene_name)
   
   # DEG counts per group
@@ -115,7 +116,7 @@ plot_df <- tibble(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.tsv", sep = "\t", col.names = T, row.names = F)
+# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
@@ -146,7 +147,7 @@ plot_df <- tibble(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.tsv", sep = "\t", col.names = T, row.names = F)
+# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
@@ -434,22 +435,43 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tis
 ################################################################################
 ### abundance matched 
 
-gene_abundance <- all_genes %>%
-  mutate(
-    weighted_sum = pct.1 * control_size + pct.2 * treatment_size,
-    total_size = control_size + treatment_size
-  ) %>%
-  group_by(gene_name, tissue) %>%
-  summarise(
-    total_weighted_sum = sum(weighted_sum, na.rm = TRUE),
-    total_size_sum = sum(total_size, na.rm = TRUE),
-    weighted_pct = total_weighted_sum / total_size_sum
-  ) %>%
-  ungroup() %>%
-  mutate(abundance_bin = ntile(weighted_pct, 3))
+deg_pseudo = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/pseudo.DEG.all.out", sep='\t', header=T)
+colnames(deg_pseudo)[12] = "strain"
+deg_pseudo$cell_type = factor(deg_pseudo$cell_type, levels = cell_order)
+deg_pseudo$tissue = factor(deg_pseudo$tissue, levels = c("HYP", "MCA", "LV", "LK", "MSA"))
+deg_pseudo$treatment = factor(deg_pseudo$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "10w", "26w", "LS", "HS 3d", "HS 21d"))
+deg_pseudo$strain = factor(deg_pseudo$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
+
+expr_all = unique(rbind(data.frame(unname(deg_pseudo[, c("pct.1", "avg_expr.1", "gene_name", "cell_type", "project", "strain", "tissue", "control")])),
+                        data.frame(unname(deg_pseudo[, c("pct.2", "avg_expr.2", "gene_name", "cell_type", "project", "strain", "tissue", "treatment")]))))
+names(expr_all) = c("pct", "avg_expr", "gene_name", "cell_type", "project", "strain", "tissue", "treatment")
+expr_all$cell_type = factor(expr_all$cell_type, levels = cell_order)
+expr_all$tissue = factor(expr_all$tissue, levels = c("HYP", "MCA", "LV", "LK", "MSA"))
+expr_all$treatment = factor(expr_all$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "10w", "26w", "LS", "HS 3d", "HS 21d"))
+expr_all$strain = factor(expr_all$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY", "Salt-sensitive", "Spontaneous"))
+
+
+
+gene_abundance <- expr_all %>%
+  group_by(gene_name, cell_type, tissue) %>%
+  summarise(pct_avg = mean(pct),
+            expr_avg = mean(avg_expr),
+            abundance_score = pct_avg * expr_avg,
+            .groups = "drop") %>%
+  group_by(cell_type, tissue) %>%
+  mutate(abundance_bin = ntile(abundance_score, 5)) %>%
+  ungroup()
+
+all_genes_by_bin_tissue <- gene_abundance %>%
+  distinct(gene_name, tissue, cell_type, abundance_bin) %>%
+  mutate(key = paste(tissue, cell_type, abundance_bin, sep = "___")) %>%
+  group_by(key) %>%
+  summarise(genes = list(gene_name), .groups = "drop") %>%
+  deframe()
 
 all_genes <- all_genes %>%
-  left_join(gene_abundance %>% dplyr::select(gene_name, tissue, weighted_pct, abundance_bin), by = c("gene_name", "tissue"))
+  left_join(gene_abundance %>% dplyr::select(gene_name, tissue, cell_type, abundance_bin), 
+            by = c("gene_name", "tissue", "cell_type"))
 
 
 analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue", 
@@ -475,37 +497,24 @@ analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue",
   
   # Step 3: Create abundance bins (already done previously — assumes `abundance_bin` column exists)
   gene_bin_map <- all_genes %>%
-    distinct(gene_name, tissue, abundance_bin)
+    distinct(gene_name, tissue, cell_type, abundance_bin)
   
   # Step 4: Count DEGs by group × abundance_bin
   deg_count_per_group_bin <- deg_filtered %>%
-    distinct(gene_name, !!group_var_sym, tissue) %>%
-    left_join(gene_bin_map, by = c("gene_name", "tissue")) %>%
-    dplyr::count(!!group_var_sym, tissue, abundance_bin)
+    dplyr::select(gene_name, !!group_var_sym, tissue, cell_type, abundance_bin) %>%
+    dplyr::count(!!group_var_sym, cell_type, tissue, abundance_bin)
   
-  # Step 5: Prepare all genes split by bin for simulation
-  all_genes_by_bin_tissue <- all_genes %>%
-    distinct(gene_name, tissue, abundance_bin) %>%
-    mutate(key = paste(tissue, abundance_bin, sep = "___")) %>%
-    group_by(key) %>%
-    summarise(genes = list(gene_name), .groups = "drop") %>%
-    deframe()
-  
-  # Step 6: Run permutations
+  # Step 5: Run permutations
   sim_freq_list <- replicate(n_sim, {
     sim_deg_gene_group <- deg_count_per_group_bin %>%
-      mutate(gene_name = pmap(list(n, tissue, abundance_bin), function(n_genes, tiss, bin) {
-        key <- paste(tiss, bin, sep = "___")
+      mutate(gene_name = pmap(list(n, tissue, cell_type, abundance_bin), function(n_genes, tiss, cell_type, bin) {
+        key <- paste(tiss, cell_type, bin,sep = "___")
         gene_pool <- all_genes_by_bin_tissue[[key]]
-        if (is.null(gene_pool) || length(gene_pool) < n_genes) {
-          # fallback: sample with replacement or NA if too few genes
-          sample(gene_pool, n_genes, replace = TRUE)
-        } else {
-          sample(gene_pool, n_genes)
-        }
+        sample(gene_pool, n_genes)
       })) %>%
       unnest(gene_name)
     
+    sim_deg_gene_group <- sim_deg_gene_group %>% distinct(gene_name, !!group_var_sym)
     gene_group_table_sim <- table(sim_deg_gene_group$gene_name)
     freq_sim <- table(gene_group_table_sim)
     
@@ -515,7 +524,7 @@ analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue",
     out
   }, simplify = "matrix")
   
-  # Step 7: Calculate statistics
+  # Step 6: Calculate statistics
   sim_freq_mean <- rowMeans(sim_freq_list)
   sim_freq_sd <- apply(sim_freq_list, 1, sd)
   z_scores <- (freq_obs - sim_freq_mean) / sim_freq_sd
@@ -572,7 +581,7 @@ plot_df <- tibble(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
+# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
@@ -603,7 +612,7 @@ plot_df <- tibble(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
+# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
