@@ -452,7 +452,7 @@ expr_all$strain = factor(expr_all$strain, levels = c("C57BL/6", "SS", "SD", "SHR
 
 
 
-gene_abundance <- expr_all %>%
+gene_abundance_tile <- expr_all %>%
   group_by(gene_name, cell_type, tissue) %>%
   summarise(pct_avg = mean(pct),
             expr_avg = mean(avg_expr),
@@ -462,17 +462,41 @@ gene_abundance <- expr_all %>%
   mutate(abundance_bin = ntile(abundance_score, 5)) %>%
   ungroup()
 
-all_genes_by_bin_tissue <- gene_abundance %>%
+gene_abundance_threshold <- expr_all %>%
+  group_by(gene_name, cell_type, tissue) %>%
+  summarise(pct_avg = mean(pct),
+            expr_avg = mean(avg_expr),
+            abundance_score = pct_avg * expr_avg,
+            .groups = "drop") %>%
+  group_by(cell_type, tissue) %>%
+  mutate(abundance_bin = case_when(
+    pct_avg <= 0.3 ~ "Low",
+    pct_avg <= 0.6 ~ "Medium",
+    pct_avg > 0.6  ~ "High"
+  )) %>%
+  ungroup()
+
+gene_abundance = gene_abundance_tile
+
+all_genes_by_bin_cell_type <- gene_abundance %>%
   distinct(gene_name, tissue, cell_type, abundance_bin) %>%
   mutate(key = paste(tissue, cell_type, abundance_bin, sep = "___")) %>%
   group_by(key) %>%
   summarise(genes = list(gene_name), .groups = "drop") %>%
   deframe()
 
+all_genes_by_bin_tissue <- gene_abundance %>%
+  distinct(gene_name, tissue, abundance_bin) %>%
+  mutate(key = paste(tissue, abundance_bin, sep = "___")) %>%
+  group_by(key) %>%
+  summarise(genes = list(gene_name), .groups = "drop") %>%
+  deframe()
+
+all_gene_by_bin = all_genes_by_bin_cell_type
+
 all_genes <- all_genes %>%
   left_join(gene_abundance %>% dplyr::select(gene_name, tissue, cell_type, abundance_bin), 
             by = c("gene_name", "tissue", "cell_type"))
-
 
 analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue", 
                                                   strain_filter = c("C57BL/6", "SS", "SHR"), 
@@ -492,24 +516,25 @@ analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue",
     distinct(gene_name, !!group_var_sym)
   
   gene_group_table_obs <- table(deg_gene_group$gene_name)
-  freq_obs <- as.vector(table(gene_group_table_obs))
-  names(freq_obs) <- names(table(gene_group_table_obs))
+  freq_obs <- table(gene_group_table_obs)
+  freq_obs_vec <- rep(0, max(as.integer(names(freq_obs))))
+  names(freq_obs_vec) <- as.character(seq_along(freq_obs_vec))
+  freq_obs_vec[names(freq_obs)] <- as.numeric(freq_obs)
   
-  # Step 3: Create abundance bins (already done previously — assumes `abundance_bin` column exists)
-  gene_bin_map <- all_genes %>%
-    distinct(gene_name, tissue, cell_type, abundance_bin)
+  # Normalize observed to relative proportions
+  prop_obs_vec <- freq_obs_vec / sum(freq_obs_vec)
   
-  # Step 4: Count DEGs by group × abundance_bin
+  # Step 3: Count DEGs by group × abundance_bin
   deg_count_per_group_bin <- deg_filtered %>%
-    dplyr::select(gene_name, !!group_var_sym, tissue, cell_type, abundance_bin) %>%
+    distinct(gene_name, !!group_var_sym, tissue, cell_type, abundance_bin) %>%
     dplyr::count(!!group_var_sym, cell_type, tissue, abundance_bin)
   
-  # Step 5: Run permutations
-  sim_freq_list <- replicate(n_sim, {
+  # Step 4: Simulate null distribution
+  sim_matrix_prop <- replicate(n_sim, {
     sim_deg_gene_group <- deg_count_per_group_bin %>%
-      mutate(gene_name = pmap(list(n, tissue, cell_type, abundance_bin), function(n_genes, tiss, cell_type, bin) {
-        key <- paste(tiss, cell_type, bin,sep = "___")
-        gene_pool <- all_genes_by_bin_tissue[[key]]
+      mutate(gene_name = pmap(list(n, tissue, cell_type, abundance_bin), function(n_genes, tiss, ct, bin) {
+        key <- paste(tiss, ct, bin, sep = "___")
+        gene_pool <- all_gene_by_bin[[key]]
         sample(gene_pool, n_genes)
       })) %>%
       unnest(gene_name)
@@ -518,23 +543,23 @@ analyze_deg_overlap_matched_abundance <- function(data, group_var = "tissue",
     gene_group_table_sim <- table(sim_deg_gene_group$gene_name)
     freq_sim <- table(gene_group_table_sim)
     
-    out <- rep(0, max(length(freq_obs), as.numeric(names(freq_sim)) %>% max()))
-    names(out) <- as.character(1:length(out))
-    out[names(freq_sim)] <- as.numeric(freq_sim)
-    out
+    sim_vec <- rep(0, length(freq_obs_vec))
+    names(sim_vec) <- names(freq_obs_vec)
+    sim_vec[names(freq_sim)] <- as.numeric(freq_sim)
+    sim_vec / sum(sim_vec)  # Normalize to proportion
   }, simplify = "matrix")
   
-  # Step 6: Calculate statistics
-  sim_freq_mean <- rowMeans(sim_freq_list)
-  sim_freq_sd <- apply(sim_freq_list, 1, sd)
-  z_scores <- (freq_obs - sim_freq_mean) / sim_freq_sd
+  # Step 5: Compute mean, sd, z-score from proportions
+  sim_mean <- rowMeans(sim_matrix_prop)
+  sim_sd <- apply(sim_matrix_prop, 1, sd)
+  z_scores <- (prop_obs_vec - sim_mean) / sim_sd
   
   list(
-    observed_counts = freq_obs,
-    sim_mean = sim_freq_mean,
-    sim_sd = sim_freq_sd,
+    observed_proportion = prop_obs_vec,
+    sim_mean = sim_mean,
+    sim_sd = sim_sd,
     z_score = z_scores,
-    sim_matrix = sim_freq_list
+    sim_matrix = sim_matrix_prop
   )
 }
 
@@ -552,7 +577,7 @@ result_strain$z_score
 
 
 result = result_tissue
-observed_kplus <- sum(result$observed_counts[names(result$observed_counts) >= 2])
+observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 2])
 sim_kplus <- colSums(result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 2, ])
 result$p_empirical <- mean(sim_kplus >= observed_kplus)
 result$p_text <- paste0("p-value = ", signif(result$p_empirical, 2), 
@@ -561,7 +586,7 @@ result_tissue=result
 
 
 result = result_strain
-observed_kplus <- sum(result$observed_counts[names(result$observed_counts) >= 2])
+observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 2])
 sim_kplus <- colSums(result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 2, ])
 result$p_empirical <- mean(sim_kplus >= observed_kplus)
 result$p_text <- paste0("p-value = ", signif(result$p_empirical, 2), 
@@ -572,16 +597,16 @@ result_strain=result
 
 result = result_tissue; group_type="tissues"
 plot_df <- tibble(
-  GroupCount = as.numeric(names(result$observed_counts)),
-  Observed = as.numeric(result$observed_counts),
-  Expected = result$sim_mean[1:length(result$observed_counts)],
-  SD = result$sim_sd[1:length(result$observed_counts)]
+  GroupCount = as.numeric(names(result$observed_proportion)),
+  Observed = as.numeric(result$observed_proportion),
+  Expected = result$sim_mean[1:length(result$observed_proportion)],
+  SD = result$sim_sd[1:length(result$observed_proportion)]
 ) %>%
   mutate(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
+write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.tissue.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
@@ -594,25 +619,25 @@ p1<-ggplot(plot_df, aes(x = GroupCount)) +
   geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
   geom_line(data = plot_long, aes(y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
-  annotate("text", x = x_pos, y = y_pos, label = p_val,
-           hjust = 1, vjust = 1, size = 4.2) +
+  # annotate("text", x = x_pos, y = y_pos, label = p_val,
+  #          hjust = 1, vjust = 1, size = 4.2) +
   labs(
     x = paste("Number of shared", group_type),
-    y = "Number of genes"
+    y = "Proportion of genes"
   )
 
 result = result_strain; group_type="strains"
 plot_df <- tibble(
-  GroupCount = as.numeric(names(result$observed_counts)),
-  Observed = as.numeric(result$observed_counts),
-  Expected = result$sim_mean[1:length(result$observed_counts)],
-  SD = result$sim_sd[1:length(result$observed_counts)]
+  GroupCount = as.numeric(names(result$observed_proportion)),
+  Observed = as.numeric(result$observed_proportion),
+  Expected = result$sim_mean[1:length(result$observed_proportion)],
+  SD = result$sim_sd[1:length(result$observed_proportion)]
 ) %>%
   mutate(
     Lower = Expected - SD,
     Upper = Expected + SD
   )
-# write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
+write.table(plot_df, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/deg.count.strain.obs_exp.expr_match.tsv", sep = "\t", col.names = T, row.names = F)
 plot_long <- plot_df %>%
   dplyr::select(GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
@@ -625,11 +650,11 @@ p2<-ggplot(plot_df, aes(x = GroupCount)) +
   geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
   geom_line(data = plot_long, aes(y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
-  annotate("text", x = x_pos, y = y_pos, label = p_val,
-           hjust = 1, vjust = 1, size = 4.2) +
+  # annotate("text", x = x_pos, y = y_pos, label = p_val,
+  #          hjust = 1, vjust = 1, size = 4.2) +
   labs(
     x = paste("Number of shared", group_type),
-    y = "Number of genes"
+    y = "Proportion of genes"
   )
 
 p1+p2
@@ -697,7 +722,6 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.obs
 
 
 
-
 analyze_deg_overlap_within_tissue_abundance <- function(data,
                                                         strain_filter = c("C57BL/6", "SS", "SHR"), 
                                                         pval_thresh = 0.05,
@@ -705,82 +729,65 @@ analyze_deg_overlap_within_tissue_abundance <- function(data,
                                                         n_sim = 1000,
                                                         seed = 42) {
   set.seed(seed)
-  
   tissue_list <- unique(data$tissue)
   result_list <- list()
   sim_matrix_list <- list()
   
-  # Get abundance_bin per gene_name (ensure 1-to-1)
-  gene_bin_map <- data %>%
-    distinct(gene_name, abundance_bin) %>%
-    group_by(gene_name) %>%
-    slice(1) %>%
-    ungroup()
-  
-  # Split all genes by abundance bin
-  all_genes_by_bin <- gene_bin_map %>%
-    group_by(abundance_bin) %>%
-    summarise(genes = list(gene_name)) %>%
-    deframe()
-  
   for (tissue in tissue_list) {
-    df <- data %>%
+    deg_filtered <- data %>%
       filter(tissue == !!tissue,
              p_val_adj < pval_thresh,
              abs(avg_log2FC) > logfc_thresh,
              strain %in% strain_filter)
     
-    gene_cell_table <- table(df$gene_name)
-    obs_freq <- table(gene_cell_table)
+    deg_gene_group <- deg_filtered %>%
+      distinct(gene_name, cell_type)
     
-    # DEG count per cell type × abundance bin
-    deg_count_by_bin <- df %>%
-      distinct(gene_name, cell_type) %>%
-      left_join(gene_bin_map, by = "gene_name") %>%
-      dplyr::count(cell_type, abundance_bin)
+    gene_group_table_obs <- table(deg_gene_group$gene_name)
+    freq_obs <- table(gene_group_table_obs)
+    freq_obs_vec <- rep(0, max(as.integer(names(freq_obs))))
+    names(freq_obs_vec) <- as.character(seq_along(freq_obs_vec))
+    freq_obs_vec[names(freq_obs)] <- as.numeric(freq_obs)
+    prop_obs_vec <- freq_obs_vec / sum(freq_obs_vec)
     
-    sim_matrix <- replicate(n_sim, {
-      sim_df <- deg_count_by_bin %>%
-        group_by(cell_type) %>%
-        mutate(gene_name = map2(n, abundance_bin, ~ {
-          candidates <- all_genes_by_bin[[as.character(.y)]]
-          sample(candidates, .x, replace = TRUE)
+    deg_count_per_bin <- deg_filtered %>%
+      distinct(gene_name, cell_type, tissue, abundance_bin) %>%
+      dplyr::count(cell_type, tissue, abundance_bin)
+    
+    sim_matrix_prop <- replicate(n_sim, {
+      sim_deg_gene_group <- deg_count_per_bin %>%
+        mutate(gene_name = pmap(list(n, tissue, cell_type, abundance_bin), function(n_genes, tiss, ct, bin) {
+          key <- paste(tiss, ct, bin, sep = "___")
+          gene_pool <- all_gene_by_bin[[key]]
+          sample(gene_pool, n_genes, replace = TRUE)
         })) %>%
-        unnest(gene_name) %>%
-        ungroup()
+        unnest(gene_name)
       
-      gene_cell_table_sim <- table(sim_df$gene_name)
-      sim_freq <- table(gene_cell_table_sim)
+      sim_deg_gene_group <- sim_deg_gene_group %>% distinct(gene_name, cell_type)
+      gene_group_table_sim <- table(sim_deg_gene_group$gene_name)
+      freq_sim <- table(gene_group_table_sim)
       
-      out <- rep(0, max(c(as.integer(names(obs_freq)), as.integer(names(sim_freq)))))
-      names(out) <- as.character(seq_along(out))
-      out[names(sim_freq)] <- sim_freq
-      out
+      sim_vec <- rep(0, length(freq_obs_vec))
+      names(sim_vec) <- names(freq_obs_vec)
+      sim_vec[names(freq_sim)] <- as.numeric(freq_sim)
+      sim_vec / sum(sim_vec)
     }, simplify = "matrix")
     
-    sim_mean <- rowMeans(sim_matrix)
-    sim_sd <- apply(sim_matrix, 1, sd)
-    obs_counts <- as.numeric(obs_freq)
-    names(obs_counts) <- names(obs_freq)
-    
-    n_bins <- max(length(obs_counts), length(sim_mean))
-    obs_counts <- `length<-`(obs_counts, n_bins)
-    sim_mean <- `length<-`(sim_mean, n_bins)
-    sim_sd <- `length<-`(sim_sd, n_bins)
-    
-    z_scores <- (obs_counts - sim_mean) / sim_sd
+    sim_mean <- rowMeans(sim_matrix_prop)
+    sim_sd <- apply(sim_matrix_prop, 1, sd)
+    z_scores <- (prop_obs_vec - sim_mean) / sim_sd
     
     result_df <- tibble(
       tissue = tissue,
       n_celltypes_shared = seq_along(z_scores),
       z_score = z_scores,
-      observed = obs_counts,
+      observed = prop_obs_vec,
       expected = sim_mean,
       sd = sim_sd
     )
     
     result_list[[tissue]] <- result_df
-    sim_matrix_list[[tissue]] <- sim_matrix
+    sim_matrix_list[[tissue]] <- sim_matrix_prop
   }
   
   return(list(
@@ -850,19 +857,19 @@ ggplot(plot_df, aes(x = factor(GroupCount))) +
   geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray80") +
   geom_line(data = plot_long, aes(x = as.numeric(GroupCount), y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray80")) +
-  geom_text(aes(y = Observed, label = Observed),
-            vjust = -0.5, size = 3, color = "black") +
-  geom_text(data = pval_positions,
-            aes(x = x_pos, y = y_pos, label = label),
-            inherit.aes = FALSE,
-            size = 3.5, hjust = 1) +
+  # geom_text(aes(y = Observed, label = Observed),
+  #           vjust = -0.5, size = 3, color = "black") +
+  # geom_text(data = pval_positions,
+  #           aes(x = x_pos, y = y_pos, label = label),
+  #           inherit.aes = FALSE,
+  #           size = 3.5, hjust = 1) +
   labs(
     x = "Number of shared cell types",
     y = "Number of genes"
   ) +
   facet_grid(~Tissue, scales = "free_x", space = "free")
 
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.obs_exp.png", width=1200/96, height=220/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
 
 
 
