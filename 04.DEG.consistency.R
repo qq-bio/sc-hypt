@@ -459,7 +459,7 @@ gene_abundance_tile <- expr_all %>%
             abundance_score = pct_avg * expr_avg,
             .groups = "drop") %>%
   group_by(cell_type, tissue) %>%
-  mutate(abundance_bin = ntile(abundance_score, 5)) %>%
+  mutate(abundance_bin = ntile(abundance_score, 3)) %>%
   ungroup()
 
 gene_abundance_threshold <- expr_all %>%
@@ -870,6 +870,244 @@ ggplot(plot_df, aes(x = factor(GroupCount))) +
   facet_grid(~Tissue, scales = "free_x", space = "free")
 
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
+
+
+
+result$label = ifelse(is.infinite(result$z_score),
+                      ifelse(result$z_score > 0, "Inf", "-Inf"),
+                      round(result$z_score, 1))
+result$y = ifelse(is.infinite(result$z_score),
+                  ifelse(result$z_score > 0, max(result$z_score[is.finite(result$z_score)], na.rm = TRUE) + 100,
+                         min(result$z_score[is.finite(result$z_score)], na.rm = TRUE) - 10),
+                  result$z_score)
+ggplot(result, aes(x = factor(n_celltypes_shared), y = z_score)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "lightgrey", fill = "lightgrey") +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  ylim(-50, 1400) +
+  labs(
+    x = "Number of shared cell types",
+    y = "Z-score of DEG sharing\n(obs/exp)",
+    fill = "Strain"
+  ) +
+  geom_text(data = result,
+            aes(label = label, y = y),
+            vjust = ifelse(result$z_score < 0, 1.1, -0.5),
+            size = 3) +
+  facet_grid(~tissue, scales = "free_x", space = "free")
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.zscore.barplot.expr_match.png", width=1100/96, height=260/96, dpi=300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+analyze_deg_overlap_within_tissue_abundance <- function(data,
+                                                        strain_filter = c("C57BL/6", "SS", "SHR"), 
+                                                        pval_thresh = 0.05,
+                                                        logfc_thresh = 0.5,
+                                                        n_sim = 1000,
+                                                        seed = 42) {
+  set.seed(seed)
+  tissue_list <- unique(data$tissue)
+  result_list <- list()
+  sim_matrix_list <- list()
+  
+  for (tissue in tissue_list) {
+    deg_filtered <- data %>%
+      filter(tissue == !!tissue,
+             p_val_adj < pval_thresh,
+             abs(avg_log2FC) > logfc_thresh,
+             strain %in% strain_filter)
+    
+    deg_gene_group <- deg_filtered %>%
+      distinct(gene_name, cell_type)
+    
+    gene_group_table_obs <- table(deg_gene_group$gene_name)
+    freq_obs <- table(gene_group_table_obs)
+    
+    # Collapse into 2 groups: 1 vs. 2+
+    group_labels <- ifelse(as.integer(names(freq_obs)) == 1, "1", "2+")
+    freq_obs_collapsed <- tapply(as.numeric(freq_obs), group_labels, sum)
+    prop_obs_vec <- freq_obs_collapsed / sum(freq_obs_collapsed)
+    
+    deg_count_per_bin <- deg_filtered %>%
+      distinct(gene_name, cell_type, tissue, abundance_bin) %>%
+      dplyr::count(cell_type, tissue, abundance_bin)
+    
+    sim_matrix_prop <- replicate(n_sim, {
+      sim_deg_gene_group <- deg_count_per_bin %>%
+        mutate(gene_name = pmap(list(n, tissue, cell_type, abundance_bin), function(n_genes, tiss, ct, bin) {
+          key <- paste(tiss, ct, bin, sep = "___")
+          gene_pool <- all_gene_by_bin[[key]]
+          sample(gene_pool, n_genes, replace = TRUE)
+        })) %>%
+        unnest(gene_name)
+      
+      sim_deg_gene_group <- sim_deg_gene_group %>% distinct(gene_name, cell_type)
+      gene_group_table_sim <- table(sim_deg_gene_group$gene_name)
+      freq_obs_sim <- table(gene_group_table_sim)
+      
+      group_labels_sim <- ifelse(as.integer(names(freq_obs_sim)) == 1, "1", "2+")
+      freq_sim_collapsed <- tapply(as.numeric(freq_obs_sim), group_labels_sim, sum)
+      prop_sim_vec <- freq_sim_collapsed / sum(freq_sim_collapsed)
+      
+      # Ensure the same order and length
+      out_vec <- prop_obs_vec
+      out_vec[names(prop_sim_vec)] <- prop_sim_vec
+      out_vec
+    }, simplify = "matrix")
+    
+    sim_mean <- rowMeans(sim_matrix_prop)
+    sim_sd <- apply(sim_matrix_prop, 1, sd)
+    z_scores <- (prop_obs_vec - sim_mean) / sim_sd
+    
+    result_df <- tibble(
+      tissue = tissue,
+      group = names(prop_obs_vec),
+      z_score = z_scores,
+      observed = prop_obs_vec,
+      expected = sim_mean,
+      sd = sim_sd
+    )
+    
+    result_list[[tissue]] <- result_df
+    sim_matrix_list[[tissue]] <- sim_matrix_prop
+  }
+  
+  return(list(
+    result = bind_rows(result_list),
+    sim_matrix = sim_matrix_list
+  ))
+}
+
+out <- analyze_deg_overlap_within_tissue_abundance(all_genes)
+
+
+sim_matrix_list <- out$sim_matrix
+result_within_tissue <- out$result
+
+pval_table <- map_df(names(sim_matrix_list), function(tissue) {
+  
+  # Get simulation matrix and observed values for this tissue
+  sim_mat <- sim_matrix_list[[tissue]]
+  obs_vals <- result_within_tissue %>%
+    filter(!(is.na(observed))) %>%
+    filter(tissue == !!tissue, group == "2+") %>%
+    pull(observed)
+  
+  observed_total <- sum(obs_vals)
+  
+  sim_totals <- colSums(sim_mat[rownames(sim_mat) == "2+", , drop = FALSE])
+  
+  p_emp <- mean(sim_totals >= observed_total)
+  
+  tibble(
+    tissue = tissue,
+    observed_shared_deg_ge2 = observed_total,
+    empirical_p = p_emp
+  )
+})
+
+pval_table
+
+result <- out$result
+plot_df <- tibble(
+  Tissue = result$tissue,
+  GroupCount = result$group,
+  Observed = as.numeric(result$observed),
+  Expected = as.numeric(result$expected),
+  SD = as.numeric(result$sd)
+) %>%
+  mutate(
+    Lower = Expected - SD,
+    Upper = Expected + SD,
+    GroupCount_num = ifelse(GroupCount == "1", 1, 2)
+  )
+
+pval_positions <- plot_df %>%
+  group_by(Tissue) %>%
+  summarise(
+    # x_pos = max(GroupCount_num, na.rm = TRUE)
+    x_pos = 2.5) %>%
+  left_join(pval_table, by = c("Tissue" = "tissue")) %>%
+  mutate(
+    label = paste0("p = ", formatC(empirical_p, format = "e", digits = 2)),
+    y_pos = max(plot_df$Expected)  # position the label above x=2
+  )
+
+plot_long <- plot_df %>%
+  dplyr::select(Tissue, GroupCount, Observed, Expected, Lower, Upper) %>%
+  pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value") %>%
+  mutate(GroupCount_num = ifelse(GroupCount == "1", 1, 2),
+         Lower = ifelse(Type == "Observed", NA, Lower),
+         Upper = ifelse(Type == "Observed", NA, Upper),
+         Type = factor(Type, levels = c("Observed", "Expected")))
+
+ggplot(plot_df, aes(x = GroupCount_num)) +
+  geom_col(aes(y = Observed), fill = "red", alpha = 0.3, width = 0.6) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
+  geom_line(data = plot_long, aes(x = GroupCount_num, y = Value, color = Type), size = 1.2) +
+  scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
+  geom_text(data = pval_positions,
+            aes(x = x_pos, y = y_pos, label = label),
+            inherit.aes = FALSE,
+            size = 3.5, hjust = 1) +
+  scale_x_continuous(
+    breaks = c(1, 2),
+    labels = c("1", "2+")
+  ) +
+  labs(
+    x = "Number of shared cell types",
+    y = "Number of genes"
+  ) +
+  facet_grid(~Tissue, scales = "free_x", space = "free")
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
+
+
+
+
+
+ggplot(plot_long, aes(x = GroupCount_num, y = Value, fill = Type)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_errorbar(
+    aes(x = GroupCount_num, ymin = Lower, ymax = Upper, group = Type),
+    position = position_dodge(width = 0.7),
+    width = 0.2,
+    color = "gray20"
+  ) +
+  scale_x_continuous(
+    breaks = c(1, 2),
+    labels = c("1", "2+")) +
+  scale_fill_manual(values = c("Observed" = "red", "Expected" = "gray80")) +
+  facet_grid(~ Tissue, scales = "free_x", space = "free") +
+  labs(
+    x = "Number of shared cell types",
+    y = "Proportion of genes"
+  ) +
+  geom_text(data = pval_positions,
+            aes(x = x_pos, y = y_pos, label = label),
+            inherit.aes = FALSE,
+            size = 3.5, hjust = 1)
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
+
 
 
 
