@@ -249,7 +249,7 @@ analyze_deg_overlap_within_tissue <- function(data,
              p_val_adj < pval_thresh,
              abs(avg_log2FC) > logfc_thresh,
              strain %in% strain_filter) # %>%
-      # distinct(gene_name, cell_type)
+      distinct(gene_name, cell_type)
     
     gene_cell_table <- table(df$gene_name)
     obs_freq <- table(gene_cell_table)
@@ -309,28 +309,6 @@ out <- analyze_deg_overlap_within_tissue(all_genes)
 sim_matrix_list <- out$sim_matrix
 result_within_tissue <- out$result
 
-pval_table <- map_df(names(sim_matrix_list), function(tissue) {
-  
-  # Get simulation matrix and observed values for this tissue
-  sim_mat <- sim_matrix_list[[tissue]]
-  obs_vals <- result_within_tissue %>%
-    filter(!(is.na(observed))) %>%
-    filter(tissue == !!tissue, n_celltypes_shared >= 2) %>%
-    pull(observed)
-  
-  observed_total <- sum(obs_vals)
-  
-  sim_totals <- colSums(sim_mat[as.integer(rownames(sim_mat)) >= 2, , drop = FALSE])
-  
-  p_emp <- mean(sim_totals >= observed_total)
-  
-  tibble(
-    tissue = tissue,
-    observed_shared_deg_ge2 = observed_total,
-    empirical_p = p_emp
-  )
-})
-
 pval_table
 
 pval_positions <- plot_df %>%
@@ -359,17 +337,17 @@ plot_long <- plot_df %>%
   dplyr::select(Tissue, GroupCount, Observed, Expected) %>%
   pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
 
-ggplot(plot_df, aes(x = factor(GroupCount))) +
+ggplot(plot_df, aes(x = GroupCount)) +
   geom_col(aes(y = Observed), fill = "red", alpha = 0.3, width = 0.6) +
-  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray80") +
-  geom_line(data = plot_long, aes(x = as.numeric(GroupCount), y = Value, color = Type), size = 1.2) +
+  # geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray80") +
+  # geom_line(data = plot_long, aes(x = as.numeric(GroupCount), y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray80")) +
   geom_text(aes(y = Observed, label = Observed),
             vjust = -0.5, size = 3, color = "black") +
-  geom_text(data = pval_positions,
-            aes(x = x_pos, y = y_pos, label = label),
-            inherit.aes = FALSE,
-            size = 3.5, hjust = 1) +
+  # geom_text(data = pval_positions,
+            # aes(x = x_pos, y = y_pos, label = label),
+            # inherit.aes = FALSE,
+            # size = 3.5, hjust = 1) +
   labs(
     x = "Number of shared cell types",
     y = "Number of genes"
@@ -577,20 +555,20 @@ result_strain$z_score
 
 
 result = result_tissue
-observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 2])
-sim_kplus <- colSums(result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 2, ])
+observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 3])
+sim_kplus <- colSums(result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 3, ])
 result$p_empirical <- mean(sim_kplus >= observed_kplus)
 result$p_text <- paste0("p-value = ", signif(result$p_empirical, 2), 
-                        "\n(1,000 perms)")
+                        "\n(≥3 groups,\n1,000 perms)")
 result_tissue=result
 
 
 result = result_strain
-observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 2])
-sim_kplus <- colSums(result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 2, ])
+observed_kplus <- sum(result$observed_proportion[names(result$observed_proportion) >= 3])
+sim_kplus <- result$sim_matrix[as.numeric(rownames(result$sim_matrix)) >= 3, ]
 result$p_empirical <- mean(sim_kplus >= observed_kplus)
 result$p_text <- paste0("p-value = ", signif(result$p_empirical, 2), 
-                        "\n(1,000 perms)")
+                        "\n(≥3 groups,\n1,000 perms)")
 result_strain=result
 
 
@@ -650,8 +628,9 @@ p2<-ggplot(plot_df, aes(x = GroupCount)) +
   geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
   geom_line(data = plot_long, aes(y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
-  # annotate("text", x = x_pos, y = y_pos, label = p_val,
-  #          hjust = 1, vjust = 1, size = 4.2) +
+  annotate("text", x = x_pos, y = y_pos, label = p_val,
+           hjust = 1, vjust = 1, size = 4) +
+  scale_x_continuous(breaks=c(1,2,3)) +
   labs(
     x = paste("Number of shared", group_type),
     y = "Proportion of genes"
@@ -660,6 +639,49 @@ p2<-ggplot(plot_df, aes(x = GroupCount)) +
 p1+p2
 
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.obs_exp.expr_match.png", width=793/96, height=220/96, dpi=300)
+
+
+
+
+### group >= 3 only
+result = result_tissue; group_type="tissues"
+plot_df <- tibble(
+  GroupCount = as.numeric(names(result$observed_proportion)),
+  Observed = as.numeric(result$observed_proportion),
+  Expected = result$sim_mean[1:length(result$observed_proportion)],
+  SD = result$sim_sd[1:length(result$observed_proportion)]
+) %>%
+  mutate(
+    Lower = Expected - SD,
+    Upper = Expected + SD
+  ) %>%
+  filter(GroupCount>2) 
+plot_long <- plot_df %>%
+  dplyr::select(GroupCount, Observed, Expected) %>%
+  pivot_longer(cols = c("Observed", "Expected"), names_to = "Type", values_to = "Value")
+x_pos <- max(plot_df$GroupCount) + 0.5
+y_pos <- max(plot_df$Observed)
+p_val <- result$p_text
+ggplot(plot_df, aes(x = GroupCount)) +
+  geom_col(aes(y = Observed), fill = "red", alpha = 0.3, width = 0.6) +
+  # geom_line(aes(y = Expected), color = "gray40", size = 1) +
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
+  geom_line(data = plot_long, aes(y = Value, color = Type), size = 1.2) +
+  scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
+  theme(legend.position = "None") +
+  scale_x_continuous(breaks=c(3, 4, 5)) +
+  annotate("text", x = x_pos, y = y_pos, label = p_val,
+           hjust = 1, vjust = 1, size = 4) +
+  labs(
+    x = "",
+    y = ""
+  )
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.obs_exp.expr_match.g_3.png", width=245/96, height=180/96, dpi=300)
+
+
+
+
+
 
 
 
@@ -857,8 +879,8 @@ ggplot(plot_df, aes(x = factor(GroupCount))) +
   geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray80") +
   geom_line(data = plot_long, aes(x = as.numeric(GroupCount), y = Value, color = Type), size = 1.2) +
   scale_color_manual(values = c("Observed" = "red", "Expected" = "gray80")) +
-  # geom_text(aes(y = Observed, label = Observed),
-  #           vjust = -0.5, size = 3, color = "black") +
+  geom_text(aes(y = Observed, label = Observed),
+            vjust = -0.5, size = 3, color = "black") +
   # geom_text(data = pval_positions,
   #           aes(x = x_pos, y = y_pos, label = label),
   #           inherit.aes = FALSE,
@@ -1047,8 +1069,9 @@ pval_positions <- plot_df %>%
     x_pos = 2.5) %>%
   left_join(pval_table, by = c("Tissue" = "tissue")) %>%
   mutate(
-    label = paste0("p = ", formatC(empirical_p, format = "e", digits = 2)),
-    y_pos = max(plot_df$Expected)  # position the label above x=2
+    label = paste0("p = ", formatC(empirical_p, format = "e", digits = 2),
+                   "\n(≥2 groups,\n1,000 perms)"),
+    y_pos = max(plot_df$Expected) * 0.8 # position the label above x=2
   )
 
 plot_long <- plot_df %>%
@@ -1058,30 +1081,6 @@ plot_long <- plot_df %>%
          Lower = ifelse(Type == "Observed", NA, Lower),
          Upper = ifelse(Type == "Observed", NA, Upper),
          Type = factor(Type, levels = c("Observed", "Expected")))
-
-ggplot(plot_df, aes(x = GroupCount_num)) +
-  geom_col(aes(y = Observed), fill = "red", alpha = 0.3, width = 0.6) +
-  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "gray40") +
-  geom_line(data = plot_long, aes(x = GroupCount_num, y = Value, color = Type), size = 1.2) +
-  scale_color_manual(values = c("Observed" = "red", "Expected" = "gray40")) +
-  geom_text(data = pval_positions,
-            aes(x = x_pos, y = y_pos, label = label),
-            inherit.aes = FALSE,
-            size = 3.5, hjust = 1) +
-  scale_x_continuous(
-    breaks = c(1, 2),
-    labels = c("1", "2+")
-  ) +
-  labs(
-    x = "Number of shared cell types",
-    y = "Number of genes"
-  ) +
-  facet_grid(~Tissue, scales = "free_x", space = "free")
-
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
-
-
-
 
 
 ggplot(plot_long, aes(x = GroupCount_num, y = Value, fill = Type)) +
@@ -1106,7 +1105,7 @@ ggplot(plot_long, aes(x = GroupCount_num, y = Value, fill = Type)) +
             inherit.aes = FALSE,
             size = 3.5, hjust = 1)
 
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.obs_exp.expr_match.png", width=1200/96, height=220/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.obs_exp.expr_match.png", width=1100/96, height=220/96, dpi=300)
 
 
 
@@ -1136,3 +1135,64 @@ ggplot(result, aes(x = factor(n_celltypes_shared), y = z_score)) +
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.zscore.barplot.expr_match.png", width=1100/96, height=260/96, dpi=300)
 
 
+
+
+
+
+
+
+analyze_deg_overlap_within_tissue <- function(data,
+                                              strain_filter = c("C57BL/6", "SS", "SHR"), 
+                                              pval_thresh = 0.05,
+                                              logfc_thresh = 0.5) {
+  tissue_list <- unique(data$tissue)
+  
+  result_list <- list()
+  
+  for (tissue in tissue_list) {
+    df <- data %>%
+      filter(tissue == !!tissue,
+             p_val_adj < pval_thresh,
+             abs(avg_log2FC) > logfc_thresh,
+             strain %in% strain_filter) %>%
+    distinct(gene_name, cell_type)
+    
+    gene_cell_table <- table(df$gene_name)
+    obs_freq <- table(gene_cell_table)
+    
+    result_df <- tibble(
+      tissue = tissue,
+      group = names(obs_freq),
+      observed = obs_freq
+    )
+    
+    result_list[[tissue]] <- result_df
+  }
+  
+  return(list(
+    result = bind_rows(result_list)
+  ))
+}
+
+out <- analyze_deg_overlap_within_tissue(all_genes)
+
+
+result <- out$result
+plot_df <- tibble(
+  Tissue = result$tissue,
+  GroupCount = as.factor(as.numeric(result$group)),
+  Observed = as.numeric(result$observed)
+)
+ggplot(plot_df, aes(x = GroupCount)) +
+  geom_col(aes(y = Observed), fill = "red", alpha = 0.3, width = 0.6) +
+  scale_color_manual(values = c("Observed" = "red", "Expected" = "gray80")) +
+  geom_text(aes(y = Observed, label = Observed),
+            vjust = -0.5, size = 3, color = "black") +
+  labs(
+    x = "Number of shared cell types",
+    y = "Number of genes"
+  ) +
+  ylim(0, 1300) +
+  facet_grid(~Tissue, scales = "free_x", space = "free")
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.png", width=1000/96, height=250/96, dpi=300)
