@@ -841,24 +841,56 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/HYP.sn_bulk.c
 
 
 
+
+deg_merged = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep='\t', header=T)
+deg_merged = deg_merged[deg_merged$tissue=="HYP", ]
+
+deg_merged = deg_merged[deg_merged$p_val_adj<0.05 & abs(deg_merged$avg_log2FC)>0.5, ]
+deg_merged$cell_type = factor(deg_merged$cell_type, levels = cell_order)
+deg_merged$treatment = factor(deg_merged$treatment, levels = c("Saline 3d", "AngII 3d", "AngII 28d", "10w", "26w", "LS", "HS 3d", "HS 21d"))
+deg_merged$strain = factor(deg_merged$strain, levels = c("C57BL/6", "SS", "SD", "SHR", "WKY"))
+
+
 selected_gene = c("Fth1", "Rora", "Apoe", "Ptgds", "Csmd1", "App", "Ncam1",
   "Hsp90ab1", "Zbtb16", "Lars2")
-p = deg_merged %>%
+dat = deg_merged %>%
   filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
+  distinct(gene_name, cell_type) %>%
   group_by(gene_name) %>%
-  mutate(deg_num = n()) %>%
+  dplyr::mutate(deg_num = n()) %>%
   ungroup() %>%
   dplyr::select(gene_name, deg_num) %>%
   distinct() %>%
-  arrange(desc(deg_num)) %>%
-  mutate(
+  arrange(desc(deg_num)) 
+
+# > dim(dat[dat$deg_num>=5,])
+# [1] 221   2
+# > dim(dat[dat$deg_num>=10,])
+# [1] 8 2
+
+dat = deg_merged %>%
+  filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
+  group_by(gene_name) %>%
+  dplyr::mutate(deg_num = n()) %>%
+  ungroup() %>%
+  dplyr::select(gene_name, deg_num) %>%
+  distinct() %>%
+  arrange(desc(deg_num)) 
+
+# > dim(dat[dat$deg_num>=5,])
+# [1] 393   2
+# > dim(dat[dat$deg_num>=10,])
+# [1] 117 2
+
+p = dat %>%
+  dplyr::mutate(
     index = row_number(),
     highlight = ifelse(gene_name %in% selected_gene, "Highlighted", "Normal")
   ) %>%
   # Reorder to make highlighted genes appear last (on top in the plot)
   arrange(desc(highlight)) %>%
   ggplot(aes(x = deg_num, y = index, color = highlight)) +
-  geom_point(size = 3) +  # Plot points
+  geom_point(size = 3, alpha = 0.8) +  # Plot points
   scale_color_manual(values = c("Highlighted" = "red", "Normal" = "black")) +  # Color the highlighted genes red
   scale_y_continuous(trans = "reverse") +  # Reverse the index ordering
   ggrepel::geom_label_repel(
@@ -878,6 +910,7 @@ p = deg_merged %>%
     strip.text = element_text(colour = 'black'),
     strip.background = element_rect(colour = "black", fill = NA)
   ) +
+  scale_x_continuous(breaks = seq(1:12)) +
   labs(x = "Number of DEG occurrence", y = "Rank of genes by DEG occurrence")
 print(p)
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig2a.HYP.deg.dot.png", width=353/96, height=287/96, dpi=300)

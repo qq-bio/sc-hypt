@@ -1196,3 +1196,81 @@ ggplot(plot_df, aes(x = GroupCount)) +
   facet_grid(~Tissue, scales = "free_x", space = "free")
 
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.count.tissue_wise.w_strain.png", width=1000/96, height=250/96, dpi=300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################################
+### re-organize deg table
+
+all_genes = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T, sep='\t')
+all_genes = all_genes[!(all_genes$tissue=="MCA" & all_genes$cell_type %in% c("Neuron", "Astrocyte", "OPC", "Myelinating OL")),]
+all_genes = all_genes[!(all_genes$tissue=="MCA" & all_genes$project %in% c("AngII", "Salt-sensitive")),]
+all_genes$comp = paste(all_genes$strain, all_genes$treatment,  sep="-")
+
+all_deg = all_genes[all_genes$p_val_adj<0.05 & abs(all_genes$avg_log2FC) > 0.5, ]
+
+all_deg_hypt = all_genes[all_genes$p_val_adj<0.05 & abs(all_genes$avg_log2FC) > 0.5 & all_genes$strain %in% c("C57BL/6", "SS", "SHR"), ]
+all_deg_norm = all_genes[all_genes$p_val_adj<0.05 & abs(all_genes$avg_log2FC) > 0.5 & all_genes$strain %in% c("SD", "WKY"), ]
+
+all_deg_hypt_tissue = all_deg_hypt %>% distinct(gene_name, tissue) %>% dplyr::count(gene_name, name = "n_tissues_DEG_hypt")
+all_deg_hypt_strain = all_deg_hypt %>% distinct(gene_name, strain) %>% dplyr::count(gene_name, name = "n_strains_DEG_hypt")
+all_deg_hypt_cell_type = all_deg_hypt %>% group_by(tissue) %>% distinct(gene_name, cell_type) %>% dplyr::count(gene_name, name = "n_cell_types_DEG_within_tissue_hypt") %>% ungroup()
+all_deg_hypt_cell_type_comp = all_deg_hypt %>% group_by(tissue, cell_type) %>% distinct(gene_name, comp) %>% dplyr::count(gene_name, name = "n_comparison_group_DEG_within_tissue_cell_type_hypt") %>% ungroup()
+
+all_deg_norm_tissue = all_deg_norm %>% distinct(gene_name, tissue) %>% dplyr::count(gene_name, name = "n_tissues_DEG_norm")
+all_deg_norm_strain = all_deg_norm %>% distinct(gene_name, strain) %>% dplyr::count(gene_name, name = "n_strains_DEG_norm")
+all_deg_norm_cell_type = all_deg_norm %>% group_by(tissue) %>% distinct(gene_name, cell_type) %>% dplyr::count(gene_name, name = "n_cell_types_DEG_within_tissue_norm") %>% ungroup()
+all_deg_norm_cell_type_comp = all_deg_norm %>% group_by(tissue, cell_type) %>% distinct(gene_name, comp) %>% dplyr::count(gene_name, name = "n_comparison_group_DEG_within_tissue_cell_type_norm") %>% ungroup()
+
+
+
+m2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out.txt", header = T, sep = "\t")
+m2h = unique(m2h[m2h[,4]==1, c("Gene.name", "Human.gene.name")])
+
+r2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out.txt", header = T, sep = "\t")
+r2h = unique(r2h[r2h[,5]==1, c("Gene.name", "Human.gene.name")])
+
+yong_list = read.table("/xdisk/mliang1/qqiu/data/gene_list/HYPT_2020_Yong_bp_physiology_gene_list.mod.txt", header = T, sep='\t')
+yong_list = unique(yong_list$Gene.name)
+helen_list = read.table("/xdisk/mliang1/qqiu/data/gene_list/NG_2024_Helen_bp_pred_gene_list.txt", header = T, sep='\t')
+helen_list = unique(helen_list$Gene)
+
+helen_list = unique(c(r2h[r2h$Human.gene.name %in% helen_list, ]$Gene.name,
+                  m2h[m2h$Human.gene.name %in% helen_list, ]$Gene.name))
+
+yong_list = unique(c(r2h[r2h$Human.gene.name %in% yong_list, ]$Gene.name,
+                      m2h[m2h$Human.gene.name %in% yong_list, ]$Gene.name))
+
+
+
+all_deg$GWAS_gene_list = ifelse(all_deg$gene_name %in% helen_list, TRUE, FALSE)
+all_deg$BP_physiology_gene_list = ifelse(all_deg$gene_name %in% yong_list, TRUE, FALSE)
+
+all_deg = all_deg %>% left_join(., all_deg_hypt_tissue, by = "gene_name")
+all_deg = all_deg %>% left_join(., all_deg_hypt_strain, by = "gene_name")
+all_deg = all_deg %>% left_join(., all_deg_hypt_cell_type, by = c("gene_name", "tissue"))
+all_deg = all_deg %>% left_join(., all_deg_hypt_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+
+all_deg = all_deg %>% left_join(., all_deg_norm_tissue, by = "gene_name")
+all_deg = all_deg %>% left_join(., all_deg_norm_strain, by = "gene_name")
+all_deg = all_deg %>% left_join(., all_deg_norm_cell_type, by = c("gene_name", "tissue"))
+all_deg = all_deg %>% left_join(., all_deg_norm_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+
+all_deg[is.na(all_deg)] <- 0
+
+write.table(all_deg, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.fig1g.add_count.out", sep = "\t", quote = F, col.names = T, row.names = F)
+
+
+
+
+
