@@ -2527,6 +2527,10 @@ p_value
 
 
 
-
+################################################################################
+### GWAS-SNP-gene table
+setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/bp.gwas_merged.txt")
+gwas_snp = read.table("bp.gwas_merged.txt", header = T, quote = "")
+snp_gene = read.table("snp_gene.evi_org.out", header = T, sep = "\t")
 
 

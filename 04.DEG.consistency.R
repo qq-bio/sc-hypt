@@ -1248,10 +1248,15 @@ helen_list = unique(helen_list$Gene)
 helen_list = unique(c(r2h[r2h$Human.gene.name %in% helen_list, ]$Gene.name,
                   m2h[m2h$Human.gene.name %in% helen_list, ]$Gene.name))
 
-yong_list = unique(c(r2h[r2h$Human.gene.name %in% yong_list, ]$Gene.name,
-                      m2h[m2h$Human.gene.name %in% yong_list, ]$Gene.name))
+# yong_list = unique(c(r2h[r2h$Human.gene.name %in% yong_list, ]$Gene.name,
+#                       m2h[m2h$Human.gene.name %in% yong_list, ]$Gene.name))
 
-
+# > length(unique(all_deg[all_deg$GWAS_gene_list==TRUE,]$gene_name))/length(unique(helen_list))
+# [1] 0.259915
+# > length(unique(all_deg[all_deg$BP_physiology_gene_list==TRUE,]$gene_name))/length(unique(yong_list))
+# [1] 0.2909836
+# > length(unique(all_deg$gene_name))/length(unique(all_genes$gene_name))
+# [1] 0.280466
 
 all_deg$GWAS_gene_list = ifelse(all_deg$gene_name %in% helen_list, TRUE, FALSE)
 all_deg$BP_physiology_gene_list = ifelse(all_deg$gene_name %in% yong_list, TRUE, FALSE)
