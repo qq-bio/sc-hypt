@@ -30,14 +30,14 @@ setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data")
 
 ################################################################################
 ### load reference files
-ensembl <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.GRCH38.out", sep = '\t', header=T)
+ensembl <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.GRCH38.out", sep = '\t', header=T)
 rownames(ensembl) = ensembl$Gene.stable.ID
 
 ### h2m
-r2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.rat2human.out.txt", sep = '\t', header=T)
+r2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out.txt", sep = '\t', header=T)
 colnames(r2h) = c("gene_id_rat", "gene_name_rat", "gene_id", "gene_name", "r2h_orthology_conf")
 r2h[r2h$gene_name_rat=="",]$gene_name_rat = r2h[r2h$gene_name_rat=="",]$gene_id_rat
-m2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.mouse2human.out.txt", sep = '\t', header=T)
+m2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out.txt", sep = '\t', header=T)
 colnames(m2h) = c("gene_id_mouse", "gene_id", "gene_name", "m2h_orthology_conf", "gene_name_mouse")
 m2h[m2h$gene_name_rat=="",]$gene_name_rat = m2h[m2h$gene_name_rat=="",]$gene_id_rat
 
@@ -71,12 +71,14 @@ fisher_test_df <- fisher_test_df %>%
 
 #### process snp-gene table
 gwas_merge <- read.table("gwas_merged.txt", header = TRUE, sep = '\t', quote = "")
+# > length(unique(gwas_merge_use$SNPS))
+# [1] 10325
 gwas_merge_use <- gwas_merge %>%
-  filter(grepl("rs", SNPS)) %>%
+  dplyr::filter(grepl("rs", SNPS)) %>%
   group_by(SNPS, trait) %>%
   arrange(P.VALUE) %>%
   slice_head(n = 1) %>%
-  select(SNPS, trait, P.VALUE)
+  dplyr::select(SNPS, trait, P.VALUE)
 
 proximal_merge <- read.table("gwas_snp_gene_merged.txt", header = TRUE, sep = '\t', quote = "")
 eqtl_merge <- read.table("eqtl_merged.txt", header = TRUE, sep = '\t')
@@ -85,13 +87,14 @@ e2g_merge <- read.table("e2g_merged.txt", header = TRUE, sep = '\t')
 proximal_merge = proximal_merge[grepl("rs", proximal_merge$SNP),]
 eqtl_merge = eqtl_merge[grepl("rs", eqtl_merge$SNP),]
 e2g_merge = e2g_merge[grepl("rs", e2g_merge$SNP),]
-
+# > length(unique(c(proximal_merge$SNP, eqtl_merge$SNP, e2g_merge$SNP)))
+# [1] 10253
 snp_gene_prox <- data.frame(SNP = proximal_merge$SNP, gene = proximal_merge$Gene_ID, proximal = "yes")
-snp_gene_eqtl <- eqtl_merge %>% select(SNP, gene_id_mod, tissue) %>%
+snp_gene_eqtl <- eqtl_merge %>% dplyr::select(SNP, gene_id_mod, tissue) %>%
   group_by(SNP, gene_id_mod) %>%
   summarise(expressional = paste(unique(tissue), collapse = ", ")) %>%
   rename(gene = gene_id_mod)
-snp_gene_e2g <- e2g_merge %>% select(SNP, gene, group) %>%
+snp_gene_e2g <- e2g_merge %>% dplyr::select(SNP, gene, group) %>%
   group_by(SNP, gene) %>%
   summarise(e2g = paste(unique(group), collapse = ", "))
 snp_gene_df <- full_join(snp_gene_prox, snp_gene_eqtl, by = c("SNP", "gene")) %>%
@@ -104,7 +107,10 @@ snp_gene_df <- snp_gene_df %>%
          evidence_summary = paste(na.omit(c(ifelse(proximal == "yes", "proximal", NA), 
                                             ifelse(expressional != "no", "expressional", NA), 
                                             ifelse(e2g != "no", "e2g", NA))), collapse = ", "))
-
+# > length(unique(snp_gene_df$SNP))
+# [1] 10253
+# > length(unique(snp_gene_df$gene))
+# [1] 10041
 r2h_agg <- r2h %>%
   group_by(gene_id) %>%
   summarise(gene_name_rat = paste(unique(gene_name_rat), collapse = ";"))
@@ -115,13 +121,13 @@ m2h_agg <- m2h %>%
 
 snp_gene_df <- snp_gene_df %>%
   mutate(pair = paste(SNP, gene, sep = "-")) %>%
-  left_join(ensembl, by = c("gene" = "Gene.stable.ID")) %>%
+  left_join(ensembl[, c("Gene.stable.ID", "Gene.name")], by = c("gene" = "Gene.stable.ID")) %>%
   left_join(r2h_agg, by = c("gene" = "gene_id")) %>%
   left_join(m2h_agg, by = c("gene" = "gene_id")) %>%
   rowwise() %>%
   mutate(
     combined_gene_name = coalesce(gene_name_rat, gene_name_mouse)) %>%
-  select(SNP, gene, Gene.name, combined_gene_name, proximal, expressional, e2g, evidence_summary) %>%
+  dplyr::select(SNP, gene, Gene.name, combined_gene_name, proximal, expressional, e2g, evidence_summary) %>%
   unique()
 
 write.table(snp_gene_df, "snp_gene.evi_org.out", col.names = T, row.names = F, sep = "\t", quote=F)

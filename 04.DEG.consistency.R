@@ -1251,29 +1251,77 @@ helen_list = unique(c(r2h[r2h$Human.gene.name %in% helen_list, ]$Gene.name,
 # yong_list = unique(c(r2h[r2h$Human.gene.name %in% yong_list, ]$Gene.name,
 #                       m2h[m2h$Human.gene.name %in% yong_list, ]$Gene.name))
 
-# > length(unique(all_deg[all_deg$GWAS_gene_list==TRUE,]$gene_name))/length(unique(helen_list))
-# [1] 0.259915
-# > length(unique(all_deg[all_deg$BP_physiology_gene_list==TRUE,]$gene_name))/length(unique(yong_list))
-# [1] 0.2909836
-# > length(unique(all_deg$gene_name))/length(unique(all_genes$gene_name))
-# [1] 0.280466
-
 all_deg$GWAS_gene_list = ifelse(all_deg$gene_name %in% helen_list, TRUE, FALSE)
 all_deg$BP_physiology_gene_list = ifelse(all_deg$gene_name %in% yong_list, TRUE, FALSE)
 
-all_deg = all_deg %>% left_join(., all_deg_hypt_tissue, by = "gene_name")
-all_deg = all_deg %>% left_join(., all_deg_hypt_strain, by = "gene_name")
-all_deg = all_deg %>% left_join(., all_deg_hypt_cell_type, by = c("gene_name", "tissue"))
-all_deg = all_deg %>% left_join(., all_deg_hypt_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+all_deg_hypt$GWAS_gene_list = ifelse(all_deg_hypt$gene_name %in% helen_list, TRUE, FALSE)
+all_deg_hypt$BP_physiology_gene_list = ifelse(all_deg_hypt$gene_name %in% yong_list, TRUE, FALSE)
 
-all_deg = all_deg %>% left_join(., all_deg_norm_tissue, by = "gene_name")
-all_deg = all_deg %>% left_join(., all_deg_norm_strain, by = "gene_name")
-all_deg = all_deg %>% left_join(., all_deg_norm_cell_type, by = c("gene_name", "tissue"))
-all_deg = all_deg %>% left_join(., all_deg_norm_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+# > length(unique(all_deg_hypt[all_deg_hypt$GWAS_gene_list==TRUE,]$gene_name))/length(helen_list[helen_list %in% all_genes$gene_name])
+# [1] 0.2393617
+# > length(unique(all_deg_hypt[all_deg_hypt$BP_physiology_gene_list==TRUE,]$gene_name))/length(yong_list[yong_list %in% all_genes$gene_name])
+# [1] 0.3289474
+# > length(unique(all_deg_hypt$gene_name))/length(unique(all_genes$gene_name))
+# [1] 0.2202952
 
-all_deg[is.na(all_deg)] <- 0
 
-write.table(all_deg, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.fig1g.add_count.out", sep = "\t", quote = F, col.names = T, row.names = F)
+all_deg_norm$GWAS_gene_list = ifelse(all_deg_norm$gene_name %in% helen_list, TRUE, FALSE)
+all_deg_norm$BP_physiology_gene_list = ifelse(all_deg_norm$gene_name %in% yong_list, TRUE, FALSE)
+
+# > length(unique(all_deg_norm[all_deg_norm$GWAS_gene_list==TRUE,]$gene_name))/length(helen_list[helen_list %in% all_genes$gene_name])
+# [1] 0.1870567
+# > length(unique(all_deg_norm[all_deg_norm$BP_physiology_gene_list==TRUE,]$gene_name))/length(yong_list[yong_list %in% all_genes$gene_name])
+# [1] 0.2763158
+# > length(unique(all_deg_norm$gene_name))/length(unique(all_genes$gene_name))
+# [1] 0.1474813
+
+
+deg_overlap_tbl = data.frame(Gene_name = unique(all_genes$gene_name))
+deg_overlap_tbl$Overlap_with_BP_list = "No"
+deg_overlap_tbl[deg_overlap_tbl$Gene_name %in% helen_list, ]$Overlap_with_BP_list = "BP GWAS list (Keaton JM, et al.)"
+deg_overlap_tbl[deg_overlap_tbl$Gene_name %in% yong_list, ]$Overlap_with_BP_list = "BP physiology list (Mishra MK, et al.)"
+deg_overlap_tbl[deg_overlap_tbl$Gene_name %in% intersect(yong_list, helen_list), ]$Overlap_with_BP_list = "BP physiology list (Mishra MK, et al.), BP GWAS list (Keaton JM, et al.)"
+deg_overlap_tbl$DEG_in_hypertensive_strains = "No"
+deg_overlap_tbl[deg_overlap_tbl$Gene_name %in% all_deg_hypt$gene_name, ]$DEG_in_hypertensive_strains = "Yes"
+deg_overlap_tbl$DEG_in_normotensive_strains = "No"
+deg_overlap_tbl[deg_overlap_tbl$Gene_name %in% all_deg_norm$gene_name, ]$DEG_in_normotensive_strains = "Yes"
+
+# > dim(deg_overlap_tbl)
+# [1] 15107     4
+# > dim(deg_overlap_tbl[deg_overlap_tbl$DEG_in_hypertensive_strains=="Yes",])
+# [1] 3328    4
+# > dim(deg_overlap_tbl[deg_overlap_tbl$DEG_in_normotensive_strains=="Yes",])
+# [1] 2228    4
+# > dim(deg_overlap_tbl[deg_overlap_tbl$DEG_in_normotensive_strains=="Yes" | deg_overlap_tbl$DEG_in_hypertensive_strains=="Yes",])
+# [1] 4237    4
+
+write.table(deg_overlap_tbl, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.fig1h.out", col.names = T, row.names = F, sep = "\t", quote = F)
+
+
+
+# > dim(all_deg)
+# [1] 14245    17
+# > length(unique(all_deg$gene_name))
+# [1] 4237
+
+all_deg_count = all_deg %>% left_join(., all_deg_hypt_tissue, by = "gene_name")
+all_deg_count = all_deg_count %>% left_join(., all_deg_hypt_strain, by = "gene_name")
+all_deg_count = all_deg_count %>% left_join(., all_deg_hypt_cell_type, by = c("gene_name", "tissue"))
+all_deg_count = all_deg_count %>% left_join(., all_deg_hypt_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+
+all_deg_count = all_deg_count %>% left_join(., all_deg_norm_tissue, by = "gene_name")
+all_deg_count = all_deg_count %>% left_join(., all_deg_norm_strain, by = "gene_name")
+all_deg_count = all_deg_count %>% left_join(., all_deg_norm_cell_type, by = c("gene_name", "tissue"))
+all_deg_count = all_deg_count %>% left_join(., all_deg_norm_cell_type_comp, by = c("gene_name", "tissue", "cell_type"))
+
+all_deg_count[is.na(all_deg_count)] <- 0
+
+# > dim(all_deg_count)
+# [1] 14245    25
+# > length(unique(all_deg_count$gene_name))
+# [1] 4237
+
+write.table(all_deg_count, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.fig1g.add_count.out", sep = "\t", quote = F, col.names = T, row.names = F)
 
 
 

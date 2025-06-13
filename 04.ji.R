@@ -798,6 +798,27 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/deg.prop.png"
 ################################################################################
 ### pie chart
 
+all_genes = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", header = T, sep='\t')
+all_genes = all_genes[!(all_genes$tissue=="MCA" & all_genes$cell_type %in% c("Neuron", "Astrocyte", "OPC", "Myelinating OL")),]
+all_genes = all_genes[!(all_genes$tissue=="MCA" & all_genes$project %in% c("AngII", "Salt-sensitive")),]
+
+
+m2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out.txt", header = T, sep = "\t")
+m2h = unique(m2h[m2h[,4]==1, c("Gene.name", "Human.gene.name")])
+
+r2h = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out.txt", header = T, sep = "\t")
+r2h = unique(r2h[r2h[,5]==1, c("Gene.name", "Human.gene.name")])
+
+yong_list = read.table("/xdisk/mliang1/qqiu/data/gene_list/HYPT_2020_Yong_bp_physiology_gene_list.mod.txt", header = T, sep='\t')
+yong_list = unique(yong_list$Gene.name)
+helen_list = read.table("/xdisk/mliang1/qqiu/data/gene_list/NG_2024_Helen_bp_pred_gene_list.txt", header = T, sep='\t')
+helen_list = unique(helen_list$Gene)
+
+helen_list = unique(c(r2h[r2h$Human.gene.name %in% helen_list, ]$Gene.name,
+                      m2h[m2h$Human.gene.name %in% helen_list, ]$Gene.name))
+
+
+
 library(plotly)
 library(htmlwidgets)
 op <- options()
@@ -810,7 +831,7 @@ deg_list = unique(all_genes[all_genes$p_val_adj<0.05 & abs(all_genes$avg_log2FC)
 ref_df <- data.frame(Gene = yong_list[yong_list %in% all_genes$gene_name])
 result_df <- ref_df %>%
   mutate(Status = ifelse(Gene %in% deg_list, "DEG", "Non-DEG")) %>%
-  count(Status) %>%
+  dplyr::count(Status) %>%
   mutate(Proportion = n / sum(n))
 
 fig1 <- plot_ly(result_df, labels = ~Status, values = ~Proportion, marker = list(colors=col_tmp), type = 'pie', pull = c(0, 0.2), rotation = 180)
@@ -829,7 +850,7 @@ fig1 %>% htmlwidgets::onRender(
 ref_df <- data.frame(Gene = helen_list[helen_list %in% all_genes$gene_name])
 result_df <- ref_df %>%
   mutate(Status = ifelse(Gene %in% deg_list, "DEG", "Non-DEG")) %>%
-  count(Status) %>%
+  dplyr::count(Status) %>%
   mutate(Proportion = n / sum(n))
 
 fig2 <- plot_ly(result_df, labels = ~Status, values = ~Proportion, marker = list(colors=col_tmp), type = 'pie', pull = c(0, 0.2), rotation = 90)

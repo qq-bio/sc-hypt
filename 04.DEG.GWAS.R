@@ -411,7 +411,12 @@ write.table(e2g_merged, "e2g_merged.txt", col.names = T, row.names = F, quote = 
 
 ################################################################################
 ### venn plot and enrichment
-SNPS = read.table("gwas_catalog_bp_relevant.snp.txt", header=T, sep='\t')
+SNPS = read.table("gwas_catalog_bp_relevant.snp.txt", header=T, sep='\t') 
+# > length(unique(SNPS$SNP))
+# [1] 10740
+# > length(unique(SNPS[grepl("rs", SNPS$SNP), ]$SNP))
+# [1] 10329
+
 bp_SNPS = read.table("gwas_catalog_bp.snp.txt", header=T, sep='\t')
 nb_SNPS = read.table("gwas_catalog_non-bp.snp.txt", header=T, sep='\t')
 
@@ -424,6 +429,9 @@ e2g_merge = read.table("e2g_merged.txt", header=T, sep='\t')
 proximal_merge = proximal_merge[grepl("rs", proximal_merge$SNP),]
 eqtl_merge = eqtl_merge[grepl("rs", eqtl_merge$SNP),]
 e2g_merge = e2g_merge[grepl("rs", e2g_merge$SNP),]
+
+# > length(unique(c(proximal_merge$SNP, eqtl_merge$SNP, e2g_merge$SNP)))
+# [1] 10253
 
 proximal_merge_bp = proximal_merge[proximal_merge$SNP %in% bp_SNPS$x, ]
 # gwas_merge_bp = gwas_merge[gwas_merge$SNPS %in% bp_SNPS$x, ]
@@ -2529,8 +2537,39 @@ p_value
 
 ################################################################################
 ### GWAS-SNP-gene table
-setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/bp.gwas_merged.txt")
-gwas_snp = read.table("bp.gwas_merged.txt", header = T, quote = "")
+setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/")
+gwas_snp = read.table("gwas_merged.txt", header = T, quote = "\"", sep = "\t")
+# > length(unique(gwas_snp[gwas_snp$P.VALUE<5e-8,]$SNPS))
+# [1] 10736
 snp_gene = read.table("snp_gene.evi_org.out", header = T, sep = "\t")
+length(unique(snp_gene$SNP)) # 10253
+length(unique(snp_gene$gene)) # 10041
+
+snp_gene[!(snp_gene$SNP %in% gwas_snp$SNPS), ]
+
+gwas_snp = gwas_snp[gwas_snp$SNPS %in% snp_gene$SNP, ]
+
+gwas_snp_reform = gwas_snp %>% 
+  dplyr::select(SNPS, trait, PUBMEDID, STUDY.ACCESSION) %>%
+  group_by(SNPS) %>%
+  summarise(
+    TRAITS = paste(unique(trait), collapse = ", "),
+    PUBMEDID = paste(unique(PUBMEDID), collapse = ", "),
+    STUDY.ACCESSION = paste(unique(STUDY.ACCESSION), collapse = ", "),
+    .groups = "drop"
+  )
+
+gwas_snp_gene = merge(gwas_snp_reform, bp_snp_gene, by.x="SNPS", by.y="SNP")
+
+colnames(gwas_snp_gene) = c("SNP", "Trait", "PubMed_ID", "GWAS_Catalog_study_accession", "Gene_ID_Human", "Gene_symbol_Human",
+                            "Gene_symbol_Mouse_Rat", "Proximal_evidence", "Expression_evidence", "Regulatory_evidence", "Evidence_summary")
+
+write.table(gwas_snp_gene, "/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/gwas_snp_gene.summary.out", col.names = T, row.names = F, sep = "\t", quote = F)
+
+# > length(unique(gwas_snp_gene$SNPS))
+# [1] 10247
+# > length(unique(gwas_snp_gene$gene))
+# [1] 10040
+
 
 
