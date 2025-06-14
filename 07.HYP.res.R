@@ -868,14 +868,14 @@ dat = deg_merged %>%
 # > dim(dat[dat$deg_num>=10,])
 # [1] 8 2
 
-dat = deg_merged %>%
-  filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
-  group_by(gene_name) %>%
-  dplyr::mutate(deg_num = n()) %>%
-  ungroup() %>%
-  dplyr::select(gene_name, deg_num) %>%
-  distinct() %>%
-  arrange(desc(deg_num)) 
+# dat = deg_merged %>%
+#   filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%
+#   group_by(gene_name) %>%
+#   dplyr::mutate(deg_num = n()) %>%
+#   ungroup() %>%
+#   dplyr::select(gene_name, deg_num) %>%
+#   distinct() %>%
+#   arrange(desc(deg_num)) 
 
 # > dim(dat[dat$deg_num>=5,])
 # [1] 393   2
@@ -911,9 +911,9 @@ p = dat %>%
     strip.background = element_rect(colour = "black", fill = NA)
   ) +
   scale_x_continuous(breaks = seq(1:12)) +
-  labs(x = "Number of DEG occurrence", y = "Rank of genes by DEG occurrence")
+  labs(x = "Number of cell types", y = "Rank of genes by number of\ncell types with DEGs")
 print(p)
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig2a.HYP.deg.dot.png", width=353/96, height=287/96, dpi=300)
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig2a.HYP.deg.dot.png", width=363/96, height=287/96, dpi=300)
 
 dat = deg_merged %>%
   filter(strain %in% c("C57BL/6", "SS", "SHR")) %>%

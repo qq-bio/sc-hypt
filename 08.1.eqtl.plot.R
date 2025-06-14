@@ -76,9 +76,26 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/allele_specif
 
 
 
+length(unique(consistent_result_plot$SNPS))
+# 1331
+length(unique(consistent_result_plot[consistent_result_plot$effect_direction=="Adverse effect to trait",]$SNPS))
+# 697
+length(unique(consistent_result_plot[consistent_result_plot$effect_direction=="Protective effect to trait",]$SNPS))
+# 672
+table(consistent_result_plot$effect_direction, consistent_result_plot$expr_trend)
+# Decrease Increase
+# Adverse effect to trait         372      583
+# Protective effect to trait      387      530
+consistent_result_plot$snp_gene = paste0(consistent_result_plot$SNPS, "-", consistent_result_plot$gene_id_mod)
+length(unique(consistent_result_plot[consistent_result_plot$effect_direction=="Adverse effect to trait",]$snp_gene))
+# 804
+length(unique(consistent_result_plot[consistent_result_plot$effect_direction=="Protective effect to trait",]$snp_gene))
+# 780
 
 
-
+gwas_snp_gene = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/gwas_snp_gene.summary.out", header = T, sep = "\t")
+length(unique(gwas_snp_gene[grepl("expressional", gwas_snp_gene$Evidence_summary), ]$SNP))
+# 4914
 
 
 p = ggplot(consistent_result_plot, aes(x = -avg_log2FC, y = -log10(P.VALUE), fill = expr_effect)) +
