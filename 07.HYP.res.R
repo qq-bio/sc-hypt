@@ -177,6 +177,39 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/HYP.shr.avp.e
 
 
 
+subset_data_m = hyp_m %>% subset(subcluster == "Avp+ neurons")
+subset_data_m_deg_1 = FindMarkers(subset_data_m, group.by = "sxt", ident.1 = "C57BL/6 - Saline 3d", ident.2 = "C57BL/6 - AngII 3d")
+subset_data_m_deg_2 = FindMarkers(subset_data_m, group.by = "sxt", ident.1 = "C57BL/6 - Saline 3d", ident.2 = "C57BL/6 - AngII 28d")
+# > subset_data_m_deg_1["Avp", ]
+# p_val avg_log2FC pct.1 pct.2    p_val_adj
+# Avp 2.472888e-23  -1.089178 0.184 0.633 5.979937e-19
+# > subset_data_m_deg_2["Avp", ]
+# p_val avg_log2FC pct.1 pct.2    p_val_adj
+# Avp 1.627134e-10  0.1398607 0.184 0.493 3.934736e-06
+
+subset_data_ss = hyp_ss %>% subset(subcluster=="GABA-10")
+subset_data_ss_deg_1 = FindMarkers(subset_data_ss, group.by = "sxt", ident.1 = "SS - LS", ident.2 = "SS - HS 3d")
+subset_data_ss_deg_2 = FindMarkers(subset_data_ss, group.by = "sxt", ident.1 = "SS - LS", ident.2 = "SS - HS 21d")
+# > subset_data_ss_deg_1["Avp", ]
+# p_val avg_log2FC pct.1 pct.2 p_val_adj
+# Avp 4.90374e-05  -2.140203 0.309 0.479 0.9903103
+# > subset_data_ss_deg_2["Avp", ]
+# p_val avg_log2FC pct.1 pct.2 p_val_adj
+# Avp 0.1349163  0.2016279 0.309 0.223         1
+
+subset_data_ss = hyp_ss %>% subset(subcluster=="Glu-15")
+subset_data_ss_deg_1 = FindMarkers(subset_data_ss, group.by = "sxt", ident.1 = "SS - LS", ident.2 = "SS - HS 3d")
+subset_data_ss_deg_2 = FindMarkers(subset_data_ss, group.by = "sxt", ident.1 = "SS - LS", ident.2 = "SS - HS 21d")
+
+subset_data_ss_deg_1["Avp", ]
+subset_data_ss_deg_2["Avp", ]
+
+
+
+
+
+
+
 ### subcluster analysis
 ### astrocyte
 hyp_m = readRDS('/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/mouse.HYP.astrocyte.subcluster.rds')
