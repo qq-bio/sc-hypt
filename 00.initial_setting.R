@@ -48,6 +48,51 @@ sxt_order = c("C57BL/6 - Saline 3d", "C57BL/6 - AngII 3d", "C57BL/6 - AngII 28d"
               "SS - LS", "SS - HS 3d", "SS - HS 21d", "SD - LS", "SD - HS 3d",
               "SHR - 10w", "SHR - 26w", "WKY - 10w", "WKY - 26w")
 
+ec_order <- c("C15","C19","C12","C23","C21",
+              "C20","C14",
+              "M0610","M24","M5813","C1","C7","C9","C18","C22","C16",
+              "C3","C11","C17")
+
+ec_colors <- c(
+  "C15" = "#D73027",
+  "C19" = "#F46D43",
+  "C12" = "#FDAE61",
+  "C23" = "#FDD49E",
+  "C21" = "#FEC44F",
+  
+  "C20" = "#4575B4",
+  "C14" = "#74ADD1",
+  
+  "M0610" = "#66C2A5",
+  "M24"   = "#41B6C4",
+  "M5813" = "#1D91C0",
+  "C1"    = "#A6DBA0",
+  "C7"    = "#74C476",
+  "C9"    = "#31A354",
+  "C18"   = "#006D2C",
+  "C22"   = "#B8E186",
+  "C16"   = "#7FC97F",
+  
+  "C3"  = "#B3B3B3",
+  "C11" = "#9E9AC8",
+  "C17" = "#807DBA"
+)
+
+blank_theme <- theme(
+  axis.line = element_blank(),
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  legend.position = "none",
+  panel.background = element_blank(),
+  panel.border = element_rect(colour = "black"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  plot.background = element_blank()
+)
+
 ################################################################################
 ### functions
 # png <- function(filename, width=480, height=480, dpi=300, ...) {
