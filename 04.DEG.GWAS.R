@@ -1004,6 +1004,155 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/cell_type.gwa
 
 
 ################################################################################
+### map deg-celltype enrichment back to snp sets
+fisher_test_df = read.table("trait.fisher.snp_gene.0712.fc_0.25.permut_norm.out", header = T, sep = "\t", comment.char = "")
+snp_gene_df = read.table("gwas_snp_gene.summary.out", header = T, sep = "\t")
+all_gene_list =   snp_gene_df %>%
+  pull(Gene_symbol_Mouse_Rat) %>%
+  str_replace_all('c\\(|\\)|\\"', '') %>%
+  str_split(",\\s*") %>%
+  unlist() %>%
+  unique()
+
+
+extract_gene_list <- function(trait_list, tissue_list, cell_type_list, strain_list) {
+  fisher_test_df %>%
+    filter(trait %in% trait_list, tissue == tissue_list, cell_type_list %in% cell_type_list, strain %in% strain_list) %>%
+    pull(gene_list) %>%
+    str_replace_all('c\\(|\\)|\\"', '') %>%
+    str_split(",\\s*") %>%
+    unlist() %>%
+    unique()
+}
+
+# ang, shr co-enrichment
+l1 <- extract_gene_list("diastolic_bp", "HYP", "Astrocyte", c("C57BL/6", "SHR"))
+l2 <- extract_gene_list("systolic_bp", "HYP", "Microglia", c("C57BL/6", "SHR"))
+l3 <- extract_gene_list(c("systolic_bp", "pulse_pressure", "CAD"),
+                        "LV", "Fibroblast", c("C57BL/6", "SHR"))
+length(l1) #687
+length(l2) #796
+length(l3) #505
+
+# ss, shr co-enrichment
+l4 <- extract_gene_list("BUN", "LK", "TAL", c("SS", "SHR"))
+l5 <- extract_gene_list(c("diastolic_bp", "systolic_bp"), "LK", "EC", c("SS", "SHR"))
+l6 <- extract_gene_list(c("diastolic_bp", "systolic_bp", "pulse_pressure"),
+                        "LV", "CM", c("SS", "SHR"))
+length(l4) #85
+length(l5) #410
+length(l6) #490
+
+l1_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l1, ]$SNP)
+l2_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l2, ]$SNP)
+l3_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l3, ]$SNP)
+l4_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l4, ]$SNP)
+l5_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l5, ]$SNP)
+l6_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% l6, ]$SNP)
+
+table(table(c(l1_snp, l2_snp, l3_snp, l4_snp, l5_snp, l6_snp)))
+
+ang_shr_snps = unique(c(l1_snp, l2_snp, l3_snp))
+ss_shr_snps = unique(c(l4_snp, l5_snp, l6_snp))
+
+observed_overlap <- length(intersect(ang_shr_snps, ss_shr_snps))
+
+# > table(table(c(ang_shr_list, ss_shr_list)))
+# 1    2 
+# 1292 6708 
+# > 1292 / (1292 + 6708)
+# [1] 0.1615
+# > length(setdiff(ang_shr_list, ss_shr_list))
+# [1] 946
+# > length(setdiff(ss_shr_list, ang_shr_list))
+# [1] 346
+
+
+# permutation
+set.seed(123) 
+sizes <- c(length(l1), length(l2), length(l3), length(l4), length(l5), length(l6))
+n_perm <- 1000
+perm_overlaps <- numeric(n_perm)
+
+for (i in seq_len(n_perm)) {
+  # Sample random gene sets of matching size
+  rand_l1 <- sample(all_gene_list, sizes[1])
+  rand_l2 <- sample(all_gene_list, sizes[2])
+  rand_l3 <- sample(all_gene_list, sizes[3])
+  rand_l4 <- sample(all_gene_list, sizes[4])
+  rand_l5 <- sample(all_gene_list, sizes[5])
+  rand_l6 <- sample(all_gene_list, sizes[6])
+  
+  # Get corresponding SNPs
+  rand_ang_shr_snps <- unique(snp_gene_df$SNP[snp_gene_df$Gene_symbol_Mouse_Rat %in% c(rand_l1, rand_l2, rand_l3)])
+  rand_ss_shr_snps  <- unique(snp_gene_df$SNP[snp_gene_df$Gene_symbol_Mouse_Rat %in% c(rand_l4, rand_l5, rand_l6)])
+  
+  # Store overlap
+  perm_overlaps[i] <- length(intersect(rand_ang_shr_snps, rand_ss_shr_snps))
+}
+
+# Compute empirical p-value
+p_value <- mean(perm_overlaps >= observed_overlap)
+
+cat("Observed SNP overlap:", observed_overlap, "\n")
+cat("Empirical p-value:", p_value, "\n")
+
+
+
+# unique snp-gene enrichment in each model
+fisher_test_df$tissue_cell_type_trait = paste(fisher_test_df$tissue, fisher_test_df$cell_type, fisher_test_df$trait, sep = "-")
+fisher_test_df_use = fisher_test_df %>% 
+  filter(p.adj<0.05) %>% 
+  group_by(tissue_cell_type_trait) %>% 
+  mutate(tissue_cell_type_trait_count = n()) %>%
+  ungroup() %>%
+  filter(tissue_cell_type_trait_count==1)
+
+mouse_list = fisher_test_df_use %>%
+  filter(strain=="C57BL/6") %>%
+  pull(gene_list) %>%
+  str_replace_all('c\\(|\\)|\\"', '') %>%
+  str_split(",\\s*") %>%
+  unlist() %>%
+  unique()
+
+ss_list = fisher_test_df_use %>%
+  filter(strain=="SS") %>%
+  pull(gene_list) %>%
+  str_replace_all('c\\(|\\)|\\"', '') %>%
+  str_split(",\\s*") %>%
+  unlist() %>%
+  unique()
+
+shr_list = fisher_test_df_use %>%
+  filter(strain=="SHR") %>%
+  pull(gene_list) %>%
+  str_replace_all('c\\(|\\)|\\"', '') %>%
+  str_split(",\\s*") %>%
+  unlist() %>%
+  unique()
+
+
+mouse_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% mouse_list, ]$SNP)
+ss_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% ss_list, ]$SNP)
+shr_snp <- unique(snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat %in% shr_list, ]$SNP)
+
+
+table(table(c(mouse_snp, ss_snp, shr_snp)))
+
+mouse_uniq <- setdiff(mouse_snp, c(ss_snp, shr_snp))
+ss_uniq <- setdiff(ss_snp, c(mouse_snp, shr_snp))
+shr_uniq <- setdiff(shr_snp, c(ss_snp, mouse_snp))
+
+
+length(mouse_uniq)/length(mouse_snp) # 0.5623902
+length(ss_uniq)/length(ss_snp) # 0.1170396
+length(shr_uniq)/length(shr_snp) # 0.3137354
+
+
+
+
+################################################################################
 ### highlight cell type-trait pairs
 
 combine_pvalues <- function(pvalues) {
