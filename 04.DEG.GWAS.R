@@ -1007,6 +1007,123 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/cell_type.gwa
 ### map deg-celltype enrichment back to snp sets
 fisher_test_df = read.table("trait.fisher.snp_gene.0712.fc_0.25.permut_norm.out", header = T, sep = "\t", comment.char = "")
 snp_gene_df = read.table("gwas_snp_gene.summary.out", header = T, sep = "\t")
+
+snp_gene_use = snp_gene_df[snp_gene_df$Gene_symbol_Mouse_Rat!="", ]
+snp_gene_use$SNP_trait = paste0(snp_gene_use$SNP, "-", snp_gene_use$Trait)
+
+snp_gene_mod = unique(snp_gene_use[, c("SNP_trait", "Gene_symbol_Mouse_Rat")]) # possible that one snp-trait to multiple symbols
+
+fisher_test_df = fisher_test_df %>% 
+  rowwise() %>%
+  mutate(
+    SNP_trait_list = {
+      genes <- str_split(gene_list, ",\\s*")[[1]]  # split by comma + optional space
+      snps <- snp_gene_mod %>%
+        filter(Gene_symbol_Mouse_Rat %in% genes) %>%
+        pull(SNP_trait)
+      if (length(snps) > 0) {
+        paste(unique(snps), collapse = "; ")
+      } else {
+        NA_character_
+      }
+    }
+  ) %>%
+  ungroup()
+
+
+expanded_df <- fisher_test_df %>%
+  filter(p.adj<0.05) %>%
+  separate_rows(SNP_trait_list, sep = ";\\s*")
+
+expanded_df <- expanded_df %>%
+  mutate(enrichment_id = paste(trait, strain, treatment, tissue, cell_type, sep = "_"))
+
+snp_trait_summary <- expanded_df %>%
+  group_by(SNP_trait_list) %>%
+  summarise(
+    Enrichment_list = Enrichment_list <- enrichment_id %>% unique() %>% paste(collapse = "; "),
+    Strain_list = Strain_list <- strain %>% unique() %>% paste(collapse = "; "),
+    N_enrichments = n_distinct(enrichment_id),
+    N_strains = n_distinct(strain),
+    .groups = "drop"
+  ) %>%
+  rename(SNP_trait = SNP_trait_list)
+
+
+write.table(snp_trait_summary, "snp_trait.enrichment_count.out", col.names = T, row.names = F, sep = "\t")
+
+# > table(snp_trait_summary$Strain_list)
+# 
+# C57BL/6     C57BL/6; SHR C57BL/6; SHR; SS      C57BL/6; SS C57BL/6; SS; SHR              SHR     SHR; C57BL/6 SHR; C57BL/6; SS          SHR; SS 
+# 1532              935             1186              446               75              684               13                3              340 
+# SHR; SS; C57BL/6               SS      SS; C57BL/6 SS; C57BL/6; SHR          SS; SHR 
+# 4              181               15                1               92 
+
+
+### visualize by library(ComplexUpset)
+library(ComplexUpset)
+
+strain_matrix <- snp_trait_summary %>%
+  dplyr::select(SNP_trait, Strain_list) %>%
+  mutate(Strain_list = str_split(Strain_list, ";\\s*")) %>%
+  unnest(Strain_list) %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = Strain_list, values_from = value, values_fill = 0)
+
+# Optional: save SNP_trait separately for rownames
+rownames(strain_matrix) <- strain_matrix$SNP_trait
+strain_matrix_binary <- strain_matrix %>% dplyr::select(-SNP_trait)
+
+# Step 2: Make strain names prettier if needed
+# colnames(strain_matrix_binary) <- colnames(strain_matrix_binary) %>%
+#   gsub("C57BL/6", "C57", .)
+
+# Step 3: Plot with ComplexUpset
+size = ComplexUpset::get_size_mode("exclusive_intersection")
+
+p <- ComplexUpset::upset(
+  strain_matrix_binary,
+  intersect = colnames(strain_matrix_binary),
+  name = "Strains",
+  base_annotations = list(
+    'Number of SNPs\nlinked to DEGs in\nenriched traits' = ComplexUpset::intersection_size(
+      text_mapping = aes(
+        label = paste0(!!size),
+        y = !!size
+      ) ,
+      text = list(
+        color = "black",  # place inside the bar for small bars
+        size = 3.5     # slightly larger text
+      )
+    ) + ylim(c(0, 1800))  # adjust based on your data
+  ),
+  set_sizes = (
+    ComplexUpset::upset_set_size() +
+      geom_text(aes(label=..count..), hjust=1.1, stat='count', size = 3.5) +
+      theme(axis.text.x=element_blank()) + 
+      expand_limits(y=6800)
+  ),
+  min_size = 40,  # adjust threshold if too many combinations
+  width_ratio=0.25,
+  stripes = c('grey90', 'white')
+) & 
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank()
+  )
+
+print(p)
+
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/gwas_snp.strain_wise_count.png", width=600/96, height=254/96, dpi=300)
+
+
+
+
+
+
+
+
 all_gene_list =   snp_gene_df %>%
   pull(Gene_symbol_Mouse_Rat) %>%
   str_replace_all('c\\(|\\)|\\"', '') %>%
