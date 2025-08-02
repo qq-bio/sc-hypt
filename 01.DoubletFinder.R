@@ -9,6 +9,7 @@ library(dplyr)
 library(purrr)
 library(DoubletFinder)
 library(parallel)
+library(scCustomize)
 
 
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder")
@@ -40,7 +41,10 @@ for(sample_id in sample_list){
   
   
   if(!file.exists(outfile)){
-    counts = Read10X_h5(h5_file)
+    # counts = Read10X_h5(h5_file)
+    
+    counts = Read_CellBender_h5_Mat(h5_file)
+    
     # if(grepl('LK', sample_id)){
     #   seurat_object = CreateSeuratObject(counts = counts$`Gene Expression`,
     #                                      project = sample_id)
