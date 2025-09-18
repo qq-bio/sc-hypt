@@ -1,8 +1,7 @@
-dyn.load("/opt/ohpc/pub/apps/gdal/3.3.2/lib/libgdal.so.29")
-dyn.load("/opt/ohpc/pub/apps/proj/7.2.1/lib/libproj.so.19")
-dyn.load("/opt/ohpc/pub/libs/gnu8/hdf5/1.10.5/lib/libhdf5_hl.so.100")
+# dyn.load("/opt/ohpc/pub/apps/gdal/3.3.2/lib/libgdal.so.29")
+# dyn.load("/opt/ohpc/pub/apps/proj/7.2.1/lib/libproj.so.19")
+# dyn.load("/opt/ohpc/pub/libs/gnu8/hdf5/1.10.5/lib/libhdf5_hl.so.100")
 
-library(Seurat)
 library(dplyr)
 library(ggplot2)
 library(RColorBrewer)

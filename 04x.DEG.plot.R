@@ -14,7 +14,7 @@ base_font_size = 12
 theme_set(theme_classic(base_size = base_font_size))
 
 
-mouse2human = read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.mouse2human.out.txt", header = T, sep = "\t")
+mouse2human = read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.mouse2human.out.txt", header = T, sep = "\t")
 mouse2human = unique(mouse2human[, c("Human.gene.name", "Gene.name")])
 
 
@@ -79,6 +79,18 @@ gene_name_list = c("Bin1", "Fgfr2", "Grb10", "Fubp1", "Pcnx", "Ube3c", "Trim33",
 gene_name_list = c("Shox2", "H19", "Mrpl23", "Tnnt3", "Igf2", "Lsp1", "Syt8", "Cd81", "Ctsd")
 gene_name_list = c("Kcne2", "Slc5a3")
 gene_name_list = c("Fdft1")
+
+# glia-neuron ratio
+proliferation_list = c("Mki67", "Pcna", "Top2a", "Ccnb1", "Ccnb2", 'Cdk1', "Ube2c", "Cenpa", "Cenpf")
+astrocyte_reac_lisst = c("Gfap", "Vim", "Serpina3n", "Lcn2", "S100a10", "S100b")
+micro_act_list = c("Csf1r", "Csf1", "Trem2", "Tyrobp", "C1qa", "C1qb", "C1qc", "Aif1", "Iba1")
+OPC_prog_list = c("Pdgfra", "Cspg4", "Sox10", "Olig2")
+
+apoptosis_list = c("Casp3", "Casp9", "Bax", "Bad", "Cycs", "Bcl2l11")
+stress_list = c("Hspa1a", "Hspa1b", "Atf4", "Ddit3", "Chop", "Fos", "Jun", "Socs3")
+axon_injury_list = c("Nefl", "Nefm", "Map2", "Syp")
+
+gene_name_list = axon_injury_list
 for(gene_name in gene_name_list){
   
   if(gene_name %in% expr_all$gene_name){

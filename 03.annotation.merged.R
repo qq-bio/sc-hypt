@@ -990,3 +990,41 @@ FeaturePlot(ss_hyp, features = "Cd74") + labs(title = title)
 sp_hyp = readRDS("/xdisk/mliang1/qqiu/project/multiomics-hypertension/cluster/rat.sp.HYP.RNA.anno.v2.rds")
 title = paste0("Cd74 (", unique(sp_hyp$project), " - ", unique(sp_hyp$tissue), ")")
 FeaturePlot(sp_hyp, features = "Cd74") + labs(title = title)
+
+
+
+FeaturePlot(mouse_hyp, features = "Cd74")
+FeaturePlot(ss_hyp, features = "Cd74", split.by = "strain")
+FeaturePlot(sp_hyp, features = "Cd74", split.by = "strain")
+
+
+ss_hyp$strain_treatment = paste0(ss_hyp$strain, "-", ss_hyp$treatment)
+FeaturePlot(ss_hyp, features = "Cd74", split.by = "strain_treatment")
+
+ss_hyp_prop = t(apply(table(ss_hyp$subclass_level1, ss_hyp$strain_treatment), 1, function(x) x/table(ss_hyp$strain_treatment)))
+
+ss_hyp_microglia = ss_hyp@meta.data[ss_hyp$subclass_level1 %in% c("Microglia", "Activated microglia"), ]
+ss_hyp_microglia$subclass_level1 <- factor(ss_hyp_microglia$subclass_level1, levels = c("Microglia", "Activated microglia"))
+ss_hyp_microglia_prop = t(apply(table(ss_hyp_microglia$subclass_level1, ss_hyp_microglia$strain_treatment), 1, function(x) x/table(ss_hyp_microglia$strain_treatment)))
+ss_hyp_microglia_relative_prop = t(apply(table(ss_hyp_microglia$subclass_level1, ss_hyp_microglia$strain_treatment), 2, function(x) x[2]/x[1]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
