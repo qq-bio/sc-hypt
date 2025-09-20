@@ -746,6 +746,8 @@ marker_list = c("Syt1", "Gad1", "Gad2", "Slc17a6", "Avp",
                 "Slc1a2", "Cx3cr1", "P2ry12", "Tgfbr1", "Cspg4", "Pdgfra","Mbp", "St18", 
                 "Col23a1", "Tmem212", "Flt1", "Pecam1", "Ebf1",
                 "Atp13a5", "Ptgds")
+marker_list = c("Ncam1", "Ncam2", "Negr1", "Nrxn1", "Nrxn3", "Nlgn1")
+marker_list = c("Rbfox3", "Sox9", "Olig2", "Spi1")
 title = paste0(unique(seurat_object$project), " - ", unique(seurat_object$tissue))
 DotPlot(seurat_object, features = marker_list, group.by = "subclass_level1") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(x="", y="", title = title)
@@ -862,7 +864,8 @@ marker_list = c("Nphs1", "Nphs2",
                 "Lrp2", "Slc5a12", # "Slc22a6", "Slc7a13", "Slc13a3", "Slc16a9",
                 "Cryab", 
                 "Slc12a1", "Slc12a3", "Slc8a1", "Aqp2", 
-                "Atp6v0d2", "Kit", "Slc26a4", "Pecam1", 
+                "Atp6v0d2", "Kit", "Slc26a4", 
+                "Pecam1", 
                 "Myh11", "Notch3", "Fbln5", "Pdgfra", # "Ren1", "Robo1", 
                 # "Ncam1", 
                 "Ptprc"
@@ -875,6 +878,10 @@ marker_list = c("Nphs1", "Nphs2",
                 # c("Cd3d", "Cd4", "Cd8a"), # T cells
                 # c("Cd19", "Ms4a1", "Cd79a") # B cells
 )
+marker_list = c("Slc12a1", "Umod", "Aqp2",
+                "Pecam1", "Erg"
+)
+
 marker_list = unique(marker_list)
 title = paste0(unique(seurat_object$project), " - ", unique(seurat_object$tissue))
 DotPlot(seurat_object, features = marker_list, group.by = "subclass_level1") + 
@@ -898,6 +905,9 @@ marker_list = c("Nphs1", "Nphs2",
                 # c("Flt3", "Cd74"), # DC
                 # c("Ncr1", "Klrb1c", "Gzmb", "Ccl5"), # NK cells
                 # c("Cd3e", "Cxcr6") # NKT
+)
+marker_list = c("Slc12a1", "Umod", "Aqp2",
+                "Pecam1", "Erg"
 )
 marker_list = unique(marker_list)
 title = paste0(unique(seurat_object$project), " - ", unique(seurat_object$tissue))
