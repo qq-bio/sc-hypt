@@ -748,6 +748,7 @@ marker_list = c("Syt1", "Gad1", "Gad2", "Slc17a6", "Avp",
                 "Atp13a5", "Ptgds")
 marker_list = c("Ncam1", "Ncam2", "Negr1", "Nrxn1", "Nrxn3", "Nlgn1")
 marker_list = c("Rbfox3", "Sox9", "Olig2", "Spi1")
+marker_list = c("Pecam1", "Mfsd2a", "Pdgfd", "Pdgfrb")
 title = paste0(unique(seurat_object$project), " - ", unique(seurat_object$tissue))
 DotPlot(seurat_object, features = marker_list, group.by = "subclass_level1") + 
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(x="", y="", title = title)
@@ -879,7 +880,7 @@ marker_list = c("Nphs1", "Nphs2",
                 # c("Cd19", "Ms4a1", "Cd79a") # B cells
 )
 marker_list = c("Slc12a1", "Umod", "Aqp2",
-                "Pecam1", "Erg"
+                "Pecam1", "Erg", "Mecom"
 )
 
 marker_list = unique(marker_list)
