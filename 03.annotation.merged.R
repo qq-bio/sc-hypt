@@ -22,6 +22,10 @@ source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/function/panglao
 source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/function/cluster_sample_sum.R")
 source("/xdisk/mliang1/qqiu/project/multiomics-hypertension/src/function/plots.R")
 
+
+
+
+
 input_file = c(
 "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cluster/mouse.HYP.RNA.cluster.rds",
 "/xdisk/mliang1/qqiu/project/multiomics-hypertension/cluster/mouse.LV.RNA.cluster.rds",
@@ -120,7 +124,7 @@ for(i in input_file){
 
 
 
-# 
+
 # ################################################################################
 # ### immune cell annotation using singleR
 # ################################################################################
@@ -334,8 +338,6 @@ for(i in input_file){
 #                "rat.sp.immune_cell.cluster.rds")
 # 
 # mimd.sc <- celldex::ImmGenData()
-# # merged_levels = c("Microglia", "Monocytes", "Macrophages", "DC", "Neutrophils",
-# #                                       "NK cells", "NKT", "T cells", "B cells")
 # 
 # i = input_file[1]
 # seurat_object = readRDS(i)
@@ -346,7 +348,8 @@ for(i in input_file){
 # main.group$labels = c(main.group$labels)
 # seurat_object$subclass_level1 = main.group$labels[seurat_object$seurat_clusters]
 # DimPlot(seurat_object, label = T, group.by = "subclass_level1")
-# FeaturePlot(seurat_object, c("Ptprc", "Mrc1"))
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# # seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:2, 5:12))
 # saveRDS(seurat_object, outfile)
 # 
 # 
@@ -358,8 +361,8 @@ for(i in input_file){
 # main.group <- SingleR(method = "cluster", sc_data = seurat_object@assays$RNA@data, ref = mimd.sc@assays@data$logcounts, types = mimd.sc$label.main, clusters=seurat_object$seurat_clusters)
 # seurat_object$subclass_level1 = main.group$labels[seurat_object$seurat_clusters]
 # DimPlot(seurat_object, label = T, group.by = "subclass_level1")
-# FeaturePlot(seurat_object, c("Ptprc", "Mrc1"))
-# seurat_object@meta.data[seurat_object$subclass_level1=="Endothelial cells", ]$subclass_level1 = "Macrophages"
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:3, 5:12))
 # saveRDS(seurat_object, outfile)
 # 
 # 
@@ -371,9 +374,48 @@ for(i in input_file){
 # main.group <- SingleR(method = "cluster", sc_data = seurat_object@assays$RNA@data, ref = mimd.sc@assays@data$logcounts, types = mimd.sc$label.main, clusters=seurat_object$seurat_clusters)
 # seurat_object$subclass_level1 = main.group$labels[seurat_object$seurat_clusters]
 # DimPlot(seurat_object, label = T, group.by = "subclass_level1")
-# FeaturePlot(seurat_object, c("Ptprc", "Mrc1"))
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
 # seurat_object@meta.data[seurat_object$subclass_level1=="Endothelial cells", ]$subclass_level1 = "Macrophages"
 # saveRDS(seurat_object, outfile)
+
+
+
+
+# input_file = c("mouse.immune_cell.anno.rds",
+#                "rat.ss.immune_cell.anno.rds",
+#                "rat.sp.immune_cell.anno.rds")
+# 
+# 
+# i = input_file[1]
+# seurat_object = readRDS(i)
+# outfile = gsub("anno.rds", "anno.v2.rds", i)
+# DimPlot(seurat_object, label = T, group.by = c("RNA_snn_res.1"))
+# DimPlot(seurat_object, label = T, group.by = c("subclass_level1"))
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:2, 5:12))
+# saveRDS(seurat_object, outfile)
+# 
+# 
+# i = input_file[2]
+# seurat_object = readRDS(i)
+# outfile = gsub("anno.rds", "anno.v2.rds", i)
+# DimPlot(seurat_object, label = T, group.by = c("RNA_snn_res.1"))
+# DimPlot(seurat_object, label = T, group.by = c("subclass_level1"))
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:3, 5:12))
+# saveRDS(seurat_object, outfile)
+# 
+# 
+# i = input_file[3]
+# seurat_object = readRDS(i)
+# outfile = gsub("anno.rds", "anno.v2.rds", i)
+# DimPlot(seurat_object, label = T, group.by = c("RNA_snn_res.1"))
+# DimPlot(seurat_object, label = T, group.by = c("subclass_level1"))
+# FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:2, 4:12))
+# saveRDS(seurat_object, outfile)
+
+
 
 
 
