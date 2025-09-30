@@ -220,6 +220,25 @@ saveRDS(merged_object, "rat.sp.immune_cell.cluster.rds")
 
 
 
+
+################################################################################
+# save reference into h5ad
+library(SingleCellExperiment)
+library(sceasy)
+library(reticulate)
+use_condaenv('/groups/mliang1/qqiu/micromamba/envs/popv')
+loompy <- reticulate::import('loompy')
+
+mimd.sc <- celldex::ImmGenData()
+
+mimd.sc <- as(mimd.sc, "SingleCellExperiment")
+
+sceasy::convertFormat(mimd.sc, from="sce", to="anndata",
+                      outFile="/groups/mliang1/qqiu/reference/ImmGenData.singleR.h5ad")
+
+
+
+
 ################################################################################
 ### immune cell annotation using singleR
 
