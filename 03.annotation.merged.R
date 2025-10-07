@@ -789,7 +789,7 @@ marker_list = c("Syt1", "Gad1", "Gad2", "Slc17a6", "Avp",
                 "Col23a1", "Tmem212", "Flt1", "Pecam1", "Ebf1",
                 "Atp13a5", "Ptgds")
 marker_list = c("Ncam1", "Ncam2", "Negr1", "Nrxn1", "Nrxn3", "Nlgn1")
-marker_list = c("Rbfox3", "Sox9", "Olig2", "Spi1")
+marker_list = c("Rbfox3", "Lhx2", "Sox9", "Olig2", "Spi1")
 marker_list = c("Pecam1", "Mfsd2a", "Pdgfd", "Pdgfrb")
 title = paste0(unique(seurat_object$project), " - ", unique(seurat_object$tissue))
 DotPlot(seurat_object, features = marker_list, group.by = "subclass_level1") + 
