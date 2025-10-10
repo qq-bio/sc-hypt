@@ -7,7 +7,7 @@ library(ggplot2)
 library(RColorBrewer)
 library(ggsci)
 base_font_size = 12
-theme_set(theme_classic(base_size = base_font_size))
+theme_set(theme_classic(base_size = base_font_size, base_family = "Arial"))
 
 ################################################################################
 ### variables
@@ -19,9 +19,19 @@ cell_order = c(
   c("CM"),
   c("POD", "PT", "TL", "TAL", "DCT", "CT", "CD", "IC"),
   c("EC", "VSMC", "E/P transition cell", "Pericyte", "Fibroblast", "Adipocyte"),
-  c("Microglia", "Activated microglia", "Monocytes", "Macrophages", "DC", "Neutrophils",
-    "NK cells", "NKT", "T cells", "B cells")
+  c("Microglia", "Activated microglia", "Immune cell")
 )
+# cell_order = c(
+#   c("Inhibitory neuron", "Excitatory neuron", "Avp+ neuron", 
+#     "Astrocyte", # "Microglia", "Activated microglia", 
+#     "OPC", "NFO", "Premyelinating OL", "Myelinating OL", 
+#     "Tanycyte", "Ependymal cell", "Pars tuberalis cell"),
+#   c("CM"),
+#   c("POD", "PT", "TL", "TAL", "DCT", "CT", "CD", "IC"),
+#   c("EC", "VSMC", "E/P transition cell", "Pericyte", "Fibroblast", "Adipocyte"),
+#   c("Microglia", "Activated microglia", "Monocytes", "Macrophages", "DC", "Neutrophils",
+#     "NK cells", "NKT", "T cells", "B cells")
+# )
 
 getPalette = colorRampPalette(brewer.pal(12, "Paired"))
 cell_col = getPalette(length(cell_order))
