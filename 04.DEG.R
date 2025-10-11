@@ -43,14 +43,14 @@ input_file = c(
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/subcluster/rat.sp.LK.EC.anno.rds"
 )
 
-cluster = "subclass_level2"
+cluster = "subclass_level1"
 
 for(i in input_file){
 
   deg_merged = c()
 
   outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/",
-                   gsub("anno.rds", "DEG_all.out", basename(i)))
+                   gsub("anno.rds", "DEG_all.v5.2.out", basename(i)))
 
   seurat_object = readRDS(i)
   dataset = gsub("\\.[RNA|multiomics|EC]+.anno.rds", "", basename(i), perl = T)

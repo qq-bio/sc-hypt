@@ -74,7 +74,7 @@ print(adata)
 ### Training
 scvi$model$SCVI$setup_anndata(adata, batch_key="strain",
                               categorical_covariate_keys=list("assays"), 
-                              continuous_covariate_keys=list("nCount_RNA", "nFeature_RNA", "percent.mt"))
+                              continuous_covariate_keys=list("nCount_RNA", "nFeature_RNA"))
 
 # model = scvi$model$SCVI(adata, n_layers =2)
 # model <- scvi$model$SCVI(adata) # ec.scvi.rds
