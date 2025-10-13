@@ -38,7 +38,7 @@ cell_col = getPalette(length(cell_order))
 names(cell_col) = cell_order
 
 strain_order = c("C57BL/6", "SHR", "WKY", "SS", "SD")
-species_col <- setNames(pal_jama()(5), c("C57BL/6", "SHR", "WKY", "SS", "SD"))
+strain_col <- setNames(pal_jama()(5), c("C57BL/6", "SHR", "WKY", "SS", "SD"))
 
 class_order = c("neurons", "glial cells", "muscle cells", "epithelial cells", "endothelial cells", "stromal cells", "immune cells", "adipocytes", "endocrine cells")
 getPalette = colorRampPalette(brewer.pal(12, "Paired"))
