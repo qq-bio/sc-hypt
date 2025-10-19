@@ -20,6 +20,7 @@ sample_list = c( paste0("MLK", c(1:6)),  paste0("RLK", c(1:7, 10:13)), "RLK82", 
                  paste0("RLKS", c(1:4)), paste0("RLKW", c(1:4)))
 
 sample_list = c("RMCA7SN", "RMCA8SN")
+sample_list = c("RLK4", "RLKN4")
 
 para_list = data.frame(sample_ID = character(),
                        n_cell = numeric(),
@@ -37,7 +38,7 @@ for(sample_id in sample_list){
   
   # fragment_file = paste0("/scratch/g/mliang/snRNA_vs_multi/analysis/CellRanger/", sample_id, "/outs/atac_fragments.tsv.gz")
   # outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_cb.pc40.DoubletFinder.rds")
-  outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_doubletfinder.rds")
+  outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_v2_doubletfinder.rds")
   
   
   if(!file.exists(outfile)){
@@ -80,7 +81,7 @@ for(sample_id in sample_list){
       
       pc = pc_list[pci]
       ## pK identification
-      sweep.list = paramSweep_v3(seurat_object, PCs = 1:pc, num.cores = detectCores() - 1)
+      sweep.list = paramSweep(seurat_object, PCs = 1:pc, num.cores = detectCores() - 1)
       sweep.stats = summarizeSweep(sweep.list)
       bcmvn = find.pK(sweep.stats)
       
@@ -104,7 +105,7 @@ for(sample_id in sample_list){
       nExp.poi.adj = round(nExp.poi * (1 - homotypic.prop))
       
       # run DoubletFinder
-      seurat_object = doubletFinder_v3(seu = seurat_object, 
+      seurat_object = doubletFinder(seu = seurat_object, 
                                        PCs = 1:pc, 
                                        pK = optimal.pk,
                                        nExp = nExp.poi.adj)
