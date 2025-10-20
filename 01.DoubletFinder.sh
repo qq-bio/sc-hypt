@@ -1,15 +1,16 @@
 #!/bin/bash
 #SBATCH --account=mliang1
 #SBATCH --partition=standard
-#SBATCH --time=5:00:00
+#SBATCH --time=24:00:00
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=10
-#SBATCH --mem-per-cpu=10gb
+#SBATCH --cpus-per-task=20
+#SBATCH --mem-per-cpu=5gb
 #SBATCH --job-name=LK.doubletFinder
 #SBATCH --output=/xdisk/mliang1/qqiu/project/multiomics-hypertension/_log/LK.doubletFinder\-%j.out
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=qqiu@arizona.edu
 
+module load hdf5
 module load R/4.2.2
 
 cd /xdisk/mliang1/qqiu/project/multiomics-hypertension/src

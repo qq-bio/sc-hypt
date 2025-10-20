@@ -1,10 +1,10 @@
-dyn.load("/opt/ohpc/pub/libs/gnu8/hdf5/1.10.5/lib/libhdf5_hl.so.100")
+# dyn.load("/opt/ohpc/pub/libs/gnu8/hdf5/1.10.5/lib/libhdf5_hl.so.100")
 
 library(Seurat)
-library(SeuratDisk)
+# library(SeuratDisk)
 library(rtracklayer)
-library(ggplot2)
-library(cowplot)
+# library(ggplot2)
+# library(cowplot)
 library(dplyr)
 library(purrr)
 library(DoubletFinder)
@@ -21,6 +21,10 @@ sample_list = c( paste0("MLK", c(1:6)),  paste0("RLK", c(1:7, 10:13)), "RLK82", 
 
 sample_list = c("RMCA7SN", "RMCA8SN")
 sample_list = c("RLK4", "RLKN4")
+
+sample_list = c( paste0("MLK", c(1:6)),  paste0("RLK", c(1:3, 5:7, 10:13)), "RLK82", "RLK92",
+                 paste0("RLKS", c(1:4)), paste0("RLKW", c(1:4)))
+
 
 para_list = data.frame(sample_ID = character(),
                        n_cell = numeric(),
