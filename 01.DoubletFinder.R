@@ -25,6 +25,10 @@ sample_list = c("RLK4", "RLKN4")
 sample_list = c( paste0("MLK", c(1:6)),  paste0("RLK", c(1:3, 5:7, 10:13)), "RLK82", "RLK92",
                  paste0("RLKS", c(1:4)), paste0("RLKW", c(1:4)))
 
+sample_list = c("MLV5SN", "MLV6SN", "RLVW1SN", "RLVW2SN", "RLVW3SN", "RLVW4SN")
+
+sample_list = c("MLKN1", "MLKN2", "MLKN3", 
+                "RLKN1", "RLKN2", "RLKN3", "RLKN5")
 
 para_list = data.frame(sample_ID = character(),
                        n_cell = numeric(),
@@ -42,7 +46,7 @@ for(sample_id in sample_list){
   
   # fragment_file = paste0("/scratch/g/mliang/snRNA_vs_multi/analysis/CellRanger/", sample_id, "/outs/atac_fragments.tsv.gz")
   # outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_cb.pc40.DoubletFinder.rds")
-  outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_v2_doubletfinder.rds")
+  outfile = paste0("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DoubletFinder/", sample_id, "_doubletfinder.rds")
   
   
   if(!file.exists(outfile)){
