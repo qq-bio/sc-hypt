@@ -37,7 +37,7 @@ FeaturePlot(LV_object, features = "Ptprc")
 LK_object@active.ident <- factor(LK_object@active.ident)
 names(LK_object@active.ident) <- colnames(LK_object)
 LK_immune = subset(LK_object, wsnn_res.0.5 %in% c(12, 17, 18))
-LV_immune = subset(LV_object, RNA_snn_res.0.1 %in% c(2))
+LV_immune = subset(LV_object, RNA_snn_res.0.2 %in% c(2, 8))
 MCA_object@active.ident <- factor(MCA_object@active.ident)
 names(MCA_object@active.ident) <- colnames(MCA_object)
 MCA_immune = subset(MCA_object, RNA_snn_res.0.5 %in% c(18))
@@ -176,7 +176,7 @@ FeaturePlot(LV_object, features = "Ptprc")
 LK_object@active.ident <- factor(LK_object@active.ident)
 names(LK_object@active.ident) <- colnames(LK_object)
 LK_immune = subset(LK_object, wsnn_res.0.4 %in% c(12))
-LV_immune = subset(LV_object, RNA_snn_res.0.1 %in% c(4))
+LV_immune = subset(LV_object, RNA_snn_res.0.1 %in% c(4, 5))
 MCA_immune = subset(MCA_object, RNA_snn_res.0.5 %in% c(5, 18))
 MSA_immune = subset(MSA_object, RNA_snn_res.0.4 %in% c(7))
 
@@ -301,13 +301,29 @@ mimd.sc <- celldex::ImmGenData()
 
 i = input_file[1]
 seurat_object = readRDS(i)
-DimPlot(seurat_object, label = T, group.by = c("subclass_level1"))
-main.group <- SingleR(method = "cluster", sc_data = seurat_object@assays$RNA@data, ref = mimd.sc@assays@data$logcounts, types = mimd.sc$label.main, clusters=as.factor(seurat_object$subclass_level1))
+seurat_object = JoinLayers(seurat_object)
+norm_data = seurat_object@assays$RNA@layers$data
+rownames(norm_data) <- rownames(seurat_object@assays$RNA@features)
+
+outfile = gsub("cluster.rds", "anno.rds", i)
+DimPlot(seurat_object, label = T, group.by = c("RNA_snn_res.1"))
+seurat_object$seurat_clusters = seurat_object$RNA_snn_res.1
+main.group <- SingleR(method = "cluster", test = norm_data, ref = mimd.sc@assays@data$logcounts, labels = mimd.sc$label.main, clusters=seurat_object$seurat_clusters)
+main.group$labels = c(main.group$labels)
+seurat_object$subclass_level1 = main.group$labels[seurat_object$seurat_clusters]
+DimPlot(seurat_object, label = T, group.by = "subclass_level1")
+FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+# seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:2, 5:12))
 
 score_mtx <- main.group$scores
-score_mtx_melted <- melt(score_mtx) %>%
-  group_by(Var1) %>%
-  mutate(annotation = if_else(value == max(value), "*", ""))
+mm <- melt(score_mtx)
+dt <- as.data.table(mm)
+dt[, row_id := as.integer(Var1)]
+labs <- main.group$labels
+dt[, annotation := fifelse(
+  !is.na(labs[row_id]) & as.character(Var2) == labs[row_id],
+  "*", ""
+)]
 
 ggplot(score_mtx_melted, aes(Var2, Var1, fill = value)) + 
   geom_tile() + 
@@ -321,6 +337,7 @@ ggplot(score_mtx_melted, aes(Var2, Var1, fill = value)) +
        fill = "Score") + 
   theme(axis.text = element_text(color = "black", size = 10),
         axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/mouse.immune.singler.png", width=494/96, height=357/96)
 
 
 
@@ -351,15 +368,30 @@ ggplot(score_mtx_melted, aes(Var2, Var1, fill = value)) +
 
 i = input_file[3]
 seurat_object = readRDS(i)
-DimPlot(seurat_object, label = T, group.by = c("subclass_level1"))
-main.group <- SingleR(method = "cluster", sc_data = seurat_object@assays$RNA@data, ref = mimd.sc@assays@data$logcounts, types = mimd.sc$label.main, clusters=as.factor(seurat_object$subclass_level1))
+seurat_object = JoinLayers(seurat_object)
+norm_data = seurat_object@assays$RNA@layers$data
+rownames(norm_data) <- rownames(seurat_object@assays$RNA@features)
 
-score_mtx <- main.group$scores
-score_mtx_melted <- melt(score_mtx) %>%
-  group_by(Var1) %>%
-  mutate(annotation = if_else(value == max(value), "*", ""))
+outfile = gsub("cluster.rds", "anno.rds", i)
+DimPlot(seurat_object, label = T, group.by = "RNA_snn_res.0.5")
+seurat_object$seurat_clusters = seurat_object$RNA_snn_res.0.5
+main.group <- SingleR(method = "cluster", test = norm_data, ref = mimd.sc@assays@data$logcounts, labels = mimd.sc$label.main, clusters=seurat_object$seurat_clusters)
+seurat_object$subclass_level1 = main.group$labels[seurat_object$seurat_clusters]
+DimPlot(seurat_object, label = T, group.by = "subclass_level1")
+FeaturePlot(seurat_object, c("Ptprc", "Mrc1", "Cdh5", "Kdr", "Esam", "Klf2", "Klf4", "Vwf"))
+seurat_object <- subset(seurat_object, subset = RNA_snn_res.1 %in% c(0:2, 4:12))
 
-ggplot(score_mtx_melted, aes(Var2, Var1, fill = value)) + 
+score_mtx <- main.group$scores[-4, ]
+mm <- melt(score_mtx)
+dt <- as.data.table(mm)
+dt[, row_id := as.integer(Var1)]
+labs <- main.group$labels[-4]
+dt[, annotation := fifelse(
+  !is.na(labs[row_id]) & as.character(Var2) == labs[row_id],
+  "*", ""
+)]
+
+ggplot(dt, aes(Var2, Var1, fill = value)) + 
   geom_tile() + 
   geom_text(aes(label = annotation)) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0.3, 
@@ -371,6 +403,7 @@ ggplot(score_mtx_melted, aes(Var2, Var1, fill = value)) +
        fill = "Score") + 
   theme(axis.text = element_text(color = "black", size = 10),
         axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/rat.sp.immune.singler.png", width=494/96, height=357/96)
 
 
 ################################################################################

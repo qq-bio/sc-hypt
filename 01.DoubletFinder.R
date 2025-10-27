@@ -30,7 +30,7 @@ sample_list = c("MLV5SN", "MLV6SN", "RLVW1SN", "RLVW2SN", "RLVW3SN", "RLVW4SN")
 sample_list = c("MLKN1", "MLKN2", "MLKN3", 
                 "RLKN1", "RLKN2", "RLKN3", "RLKN5")
 
-sample_list = c( paste0("RLK", c(10:13)))
+sample_list = c( paste0("RLK", c(8:9)))
 
 para_list = data.frame(sample_ID = character(),
                        n_cell = numeric(),
