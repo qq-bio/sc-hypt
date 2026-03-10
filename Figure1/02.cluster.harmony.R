@@ -15,6 +15,7 @@ input_file <- c(
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.ss.HYP.RNA.merged.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.ss.LV.RNA.merged.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.ss.MSA.RNA.merged.rds",
+  "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.ss.PBMC.RNA.merged.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.sp.HYP.RNA.merged.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.sp.LV.RNA.merged.rds",
   "/xdisk/mliang1/qqiu/project/multiomics-hypertension/QC/rat.sp.MSA.RNA.merged.rds",
@@ -43,16 +44,12 @@ for(i in input_file){
   seurat_object <- RunPCA(seurat_object, features = VariableFeatures(seurat_object))
   seurat_object <- RunHarmony(seurat_object, group.by.vars = "orig.ident")
   
-  seurat_object <- RunUMAP(seurat_object, reduction = "harmony", dims = 1:30)
   seurat_object <- FindNeighbors(seurat_object, reduction = "harmony", dims = 1:30)
   seurat_object <- FindClusters(seurat_object, resolution = seq(0.1, 1, 0.1))
+  seurat_object <- RunUMAP(seurat_object, reduction = "harmony", dims = 1:30)
   
   seurat_meta <- seurat_object@meta.data
   clustree(seurat_meta, prefix = "RNA_snn_res.")
-  
-  reso_para <- paste0('wsnn_res.', 0.4)
-  seurat_object@active.ident <- seurat_object@meta.data[, reso_para]
-  seurat_object$seurat_clusters <- seurat_object@meta.data[, reso_para]
   
   saveRDS(seurat_object, gsub(".merged.rds", ".cluster.rds", i))
   

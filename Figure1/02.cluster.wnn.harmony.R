@@ -56,13 +56,6 @@ seurat_object <- RunUMAP(seurat_object, nn.name = "weighted.nn", reduction.name 
 seurat_object <- FindClusters(seurat_object, graph.name = "wsnn", algorithm = 3, 
                               resolution = seq(0.1, 1, 0.1))
 
-seurat_meta <- seurat_object@meta.data
-clustree(seurat_meta, prefix = "RNA_snn_res.")
-
-reso_para <- paste0('wsnn_res.', 0.4)
-seurat_object@active.ident <- seurat_object@meta.data[, reso_para]
-seurat_object$seurat_clusters <- seurat_object@meta.data[, reso_para]
-
 saveRDS(seurat_object, gsub(".merged.rds", ".cluster.rds", infile))
 
 

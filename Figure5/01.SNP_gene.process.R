@@ -7,7 +7,7 @@ library(dplyr)
 ################################################################################
 ### load reference files
 ### h2m
-r2h <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt.gene.rat2human.out.txt", sep = '\t', header=T)
+r2h <- read.table("/xdisk/mliang1/qqiu/reference/biomaRt/biomaRt.gene.rat2human.out.txt", sep = '\t', header=T)
 colnames(r2h) <- c("gene_id_rat", "gene_name_rat", "gene_id", "gene_name", "r2h_orthology_conf")
 r2h[r2h$gene_name_rat=="",]$gene_name_rat <- r2h[r2h$gene_name_rat=="",]$gene_id_rat
 
@@ -420,6 +420,32 @@ write.table(snp_gene_df, "snp_gene.evi_org.out", col.names = TRUE, row.names = F
 
 
 
+gwas_snp = read.table("gwas_merged.txt", header = T, quote = "\"", sep = "\t")
+snp_gene = read.table("snp_gene.evi_org.out", header = T, sep = "\t")
+
+snp_gene[!(snp_gene$SNP %in% gwas_snp$SNPS), ]
+
+gwas_snp = gwas_snp[gwas_snp$SNPS %in% snp_gene$SNP, ]
+
+gwas_snp_reform = gwas_snp %>% 
+  dplyr::select(SNPS, trait, PUBMEDID, STUDY.ACCESSION) %>%
+  group_by(SNPS) %>%
+  summarise(
+    TRAITS = paste(unique(trait), collapse = ", "),
+    PUBMEDID = paste(unique(PUBMEDID), collapse = ", "),
+    STUDY.ACCESSION = paste(unique(STUDY.ACCESSION), collapse = ", "),
+    .groups = "drop"
+  )
+
+gwas_snp_gene = merge(gwas_snp_reform, bp_snp_gene, by.x="SNPS", by.y="SNP")
+
+colnames(gwas_snp_gene) = c("SNP", "Trait", "PubMed_ID", "GWAS_Catalog_study_accession", "Gene_ID_Human", "Gene_symbol_Human",
+                            "Gene_symbol_Mouse_Rat", "Proximal_evidence", "Expression_evidence", "Regulatory_evidence", "Evidence_summary")
+
+write.table(gwas_snp_gene, "gwas_snp_gene.summary.out", col.names = T, row.names = F, sep = "\t", quote = F) # equals to ST12
+
+
+
 
 ################################################################################
 ### Venn Diagram and Enrichment Analysis (Figure 4a)
@@ -427,31 +453,18 @@ write.table(snp_gene_df, "snp_gene.evi_org.out", col.names = TRUE, row.names = F
 library(ggVennDiagram)
 
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data")
-SNPS <- read.table("gwas_catalog_bp_relevant.snp.txt", header = TRUE, sep = '\t')
+snp_gene_df = read.table("gwas_snp_gene.summary.out", header = T, sep = "\t", comment.char = "")
 
-# Load SNP-gene relationship data for different categories
-proximal_merge <- read.table("gwas_snp_gene_merged.txt", header = TRUE, sep = '\t')
-eqtl_merge <- read.table("eqtl_merged.txt", header = TRUE, sep = '\t')
-e2g_merge <- read.table("e2g_merged.txt", header = TRUE, sep = '\t')
+snp_gene_prox = unique(snp_gene_df[snp_gene_df$Proximal_evidence=="yes",]$Gene_ID_Human)
+snp_gene_eqtl = unique(snp_gene_df[snp_gene_df$Expression_evidence!="no",]$Gene_ID_Human)
+snp_gene_e2g = unique(snp_gene_df[snp_gene_df$Regulatory_evidence!="no",]$Gene_ID_Human)
 
-# Filter valid SNP entries with "rs" prefix
-proximal_merge <- proximal_merge[grepl("^rs", proximal_merge$SNP),]
-eqtl_merge <- eqtl_merge[grepl("^rs", eqtl_merge$SNP),]
-e2g_merge <- e2g_merge[grepl("^rs", e2g_merge$SNP),]
+x = list("Proximal"=snp_gene_prox, 
+         "Expressional"=snp_gene_eqtl,
+         "Regulatory"=snp_gene_e2g)
 
-# Unique SNP-gene pairs for each category
-snp_gene_prox <- unique(na.omit(paste(proximal_merge$SNP, proximal_merge$Gene_ID, sep = "-")))
-snp_gene_eqtl <- unique(na.omit(paste(eqtl_merge$SNP, eqtl_merge$gene_id_mod, sep = "-")))
-snp_gene_e2g <- unique(na.omit(paste(e2g_merge$SNP, e2g_merge$gene, sep = "-")))
-
-# Prepare list for Venn Diagram
-snp_gene_list <- list("Proximal" = snp_gene_prox, 
-                      "Expressional" = snp_gene_eqtl,
-                      "Regulatory" = snp_gene_e2g)
-
-ggVennDiagram(snp_gene_list, label = "both", label_alpha = 0) +
-  scale_fill_gradient(low = "white", high = "red", name = "Number of\nSNP-gene\npairs") +
-  theme(legend.position = "right")
+ggVennDiagram(x, category.names = "", label="count", label_alpha = 0) +
+  scale_fill_gradient("Number of genes", low="white",high = "red")
 
 
 

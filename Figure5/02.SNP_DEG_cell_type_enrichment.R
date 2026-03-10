@@ -28,47 +28,15 @@ colnames(m2h) <- c("gene_id_mouse", "gene_id", "gene_name", "m2h_orthology_conf"
 
 
 ################################################################################
-### DEG Analysis for Each Trait (Figure 4b and S13a)
+### DEG Analysis for Each Trait (Figure 4b)
 ################################################################################
+gwas_merge <- read.table("gwas_merged.txt", header = TRUE, sep = '\t', quote = "")
+snp_gene_df <- read.table("gwas_snp_gene.summary.out", header = T, sep = "\t")
+snp_gene_df <- snp_gene_df %>% tidyr::separate_rows(., Gene_symbol_Mouse_Rat, sep=";")
 
-# Define function for one-sided z-test
-one_sided_z_test <- function(proportion_hit_genes, proportion_background, n_snp_gene_list) {
-  z_score <- (proportion_hit_genes - proportion_background) / sqrt(proportion_background * (1 - proportion_background) / n_snp_gene_list)
-  p_value <- pnorm(z_score, lower.tail = FALSE)  # one-sided greater test
-  return(p_value)
-}
-
-# Load necessary data files
-gwas_merge <- read.table("gwas_catalog_bp_relevant.snp_gene.txt", header = TRUE, sep = '\t', quote = "")
-proximal_merge <- read.table("gwas_snp_gene_merged.txt", header = TRUE, sep = '\t', quote = "")
-eqtl_merge <- read.table("eqtl_merged.txt", header = TRUE, sep = '\t')
-e2g_merge <- read.table("e2g_merged.txt", header = TRUE, sep = '\t')
-background_500k <- read.table("proximal_merged.500k.txt", header = TRUE, sep = '\t')
-
-proximal_merge <- proximal_merge[grepl("rs", proximal_merge$SNP),]
-eqtl_merge <- eqtl_merge[grepl("rs", eqtl_merge$SNP),]
-e2g_merge <- e2g_merge[grepl("rs", e2g_merge$SNP),]
-background_500k <- background_500k[grepl("rs", background_500k$SNP),]
-
-# Unique SNP-gene pairs for each dataset
-snp_gene_prox <- data.frame(SNP = proximal_merge$SNP, gene = proximal_merge$Gene_ID)
-snp_gene_eqtl <- data.frame(SNP = eqtl_merge$SNP, gene = eqtl_merge$gene_id_mod)
-snp_gene_e2g <- data.frame(SNP = e2g_merge$SNP, gene = e2g_merge$gene)
-
-snp_gene_df <- unique(rbind(snp_gene_prox, snp_gene_eqtl, snp_gene_e2g))
-snp_gene_500k <- data.frame(SNP = background_500k$SNP, gene = background_500k$Gene_ID)
-background_df <- unique(rbind(snp_gene_500k, snp_gene_eqtl, snp_gene_e2g))
-
-# Merge SNP-gene with ensembl data
-snp_gene_df <- base::merge(snp_gene_df, ensembl[snp_gene_df$gene, c("Gene.stable.ID", "Gene.name")], by.x = "gene", by.y = "Gene.stable.ID", all.x = TRUE)
-snp_gene_df <- base::merge(snp_gene_df, r2h[r2h$gene_id %in% snp_gene_df$gene, ], by.x = "gene", by.y = "gene_id", all.x = TRUE)
-snp_gene_df <- base::merge(snp_gene_df, m2h[m2h$gene_id %in% snp_gene_df$gene, ], by.x = "gene", by.y = "gene_id", all.x = TRUE)
-
-# Load DEG data and filter by tissue and strain
-deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep = '\t', header = TRUE)
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.L1.all.out", header = TRUE)
 deg_merged <- deg_merged[deg_merged$strain %in% c("C57BL/6", "SHR", "SS"), ]
 
-# Define DEG thresholds
 thresholds <- list(
   "p.adj < 0.05" = deg_merged %>% filter(p_val_adj < 0.05),
   "p.adj < 0.05 & |log2(FC)| > 0.25" = deg_merged %>% filter(p_val_adj < 0.05 & abs(avg_log2FC) > 0.25),
@@ -76,32 +44,23 @@ thresholds <- list(
   "p.adj < 0.05 & |log2(FC)| > 1" = deg_merged %>% filter(p_val_adj < 0.05 & abs(avg_log2FC) >1)
 )
 
-# Analysis loop for each trait
 results <- data.frame()
 for (trait in unique(gwas_merge$trait)) {
   SNPS <- unique(gwas_merge[gwas_merge$trait == trait, ]$SNPS)
   
-  snp_gene_df_use <- unique(snp_gene_df[snp_gene_df$SNP %in% SNPS, ])
-  snp_gene_list <- unique(snp_gene_df_use$gene)
+  snp_gene_df_use = unique(snp_gene_df[snp_gene_df$SNP %in% SNPS,])
+  snp_gene_list = unique(snp_gene_df_use$Gene_ID_Human)
   
   for (threshold_name in names(thresholds)) {
     deg_filtered <- thresholds[[threshold_name]]
-    mapped_gene_list <- unique(c(snp_gene_df_use[!is.na(snp_gene_df_use$gene_name_mouse), ]$gene_name_mouse,
-                                 snp_gene_df_use[!is.na(snp_gene_df_use$gene_name_rat), ]$gene_name_rat))
-    mapped_gene_list <- setdiff(mapped_gene_list, "")
+    mapped_gene_list <- unique(c(snp_gene_df_use$Gene_symbol_Mouse_Rat))
+    mapped_gene_list = setdiff(mapped_gene_list, "")
     deg_list <- unique(deg_filtered$gene_name)
-    
-    background_gene_list <- unique(c(m2h[m2h$gene_id %in% background_df$gene, ]$gene_name_mouse,
-                                     r2h[r2h$gene_id %in% background_df$gene, ]$gene_name_rat))
-    proportion_background <- length(intersect(background_gene_list, deg_list)) / length(unique(background_df$gene))
     
     hit_genes <- intersect(mapped_gene_list, deg_list)
     num_hit_genes <- length(hit_genes)
     proportion_hit_genes <- num_hit_genes / length(snp_gene_list)
-    num_DEG_snps <- length(unique(snp_gene_df_use[(!is.na(snp_gene_df_use$gene_name_mouse) & snp_gene_df_use$gene_name_mouse %in% deg_list) | 
-                                                    (!is.na(snp_gene_df_use$gene_name_rat) & snp_gene_df_use$gene_name_rat %in% deg_list), ]$SNP))
-    
-    p_value <- one_sided_z_test(proportion_hit_genes, proportion_background, length(snp_gene_list))
+    num_DEG_snps = length(unique(snp_gene_df_use[snp_gene_df_use$Gene_symbol_Mouse_Rat %in% deg_list, ]$SNP))
     
     results <- rbind(results, data.frame(
       trait = trait,
@@ -112,91 +71,39 @@ for (trait in unique(gwas_merge$trait)) {
       DEGs = num_hit_genes,
       DEG_SNPS = num_DEG_snps,
       proportion_DEG = proportion_hit_genes,
-      proportion_background = proportion_background,
-      proportion_SNP = num_DEG_snps / length(unique(snp_gene_df_use$SNP)),
-      p_value = p_value
+      proportion_SNP = num_DEG_snps/length(unique(snp_gene_df_use$SNP))
     ))
     
   }
 }
 
-# Adjust p-values and add labels
-results$p.adj <- p.adjust(results$p_value, method = "BH")
 results$label <- paste(results$DEGs, 
                        "(", round(results$proportion_DEG * 100, 2), "%)", 
                        ifelse(results$p.adj < 0.05, "*", ""), sep = "")
 
-results$threshold <- factor(results$threshold, levels = rev(names(thresholds)))
-
-write.table(results, "trait.deg_prop.z_test.out", sep = ",", col.names = TRUE, row.names = FALSE, quote = FALSE)
+write.table(results, "trait.deg_prop.out", sep = ",", col.names = T, row.names = F, quote = F)
 
 
+results_use = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/trait.deg_prop.out", sep = ",", header=T)
+results_use$threshold = gsub("& ", "&\n", results_use$threshold)
+threshold_col = RColorBrewer::brewer.pal(5, "Blues")[2:5]
+names(threshold_col) = unique(results_use$threshold)
 
+results_use = results_use[results_use$threshold=="p.adj < 0.05 &\n|log2(FC)| > 0.5",]
+results_use$trait <- factor(results_use$trait, levels = results_use %>% group_by(trait) %>% dplyr::summarise(total_hits = sum(proportion_SNP)) %>% arrange(total_hits) %>% pull(trait))
 
-### visualize DEG-hit results
-results_use <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/trait.deg_prop.z_test.out", sep = ",", header = TRUE)
-
-# Update threshold labels for better text wrapping in plots
-results_use$threshold <- gsub("& ", "&\n", results_use$threshold)
-threshold_col <- RColorBrewer::brewer.pal(5, "Blues")[2:5]
-names(threshold_col) <- unique(results_use$threshold)
-
-# Reorder traits by total DEG hits for improved visualization order
-results_use$trait <- factor(results_use$trait, levels = results_use %>%
-                              group_by(trait) %>%
-                              summarise(total_hits = sum(proportion_DEG)) %>%
-                              arrange(total_hits) %>%
-                              pull(trait))
-
-# Add dashed lines indicating background proportion by threshold
-vline_data <- results_use %>%
-  group_by(threshold) %>%
-  summarise(yintercept = unique(porpotion_background))
-
-# Generate bar plot with DEG proportions by trait and threshold (Figure S13a)
-ggplot(results_use, aes(x = trait, y = proportion_DEG, fill = threshold, label = label)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  scale_fill_manual(values = threshold_col) +
-  geom_text(aes(x = trait, y = proportion_DEG, hjust = 0), position = position_dodge(0.9), size = 3) +
-  labs(x = "Trait", y = "DEG Proportion", fill = "DEG Threshold") +
-  scale_y_continuous(limits = c(0, 0.85)) +
-  theme(
-    legend.text = element_text(size = 8),
-    legend.title = element_text(size = 10),
-    axis.text.y = element_text(colour = 'black'),
-    axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black')
-  ) +
-  coord_flip() +
-  facet_wrap(~threshold, scale = "free_x", nrow = 1) +
-  geom_hline(data = vline_data, aes(yintercept = yintercept), linetype = "dashed", color = "grey")
-
-
-
-
-# Filter results for specific threshold (p.adj < 0.05 & |log2(FC)| > 0.25)
-results_threshold <- results_use[results_use$threshold == "p.adj < 0.05 &\n|log2(FC)| > 0.25", ]
-results_threshold$trait <- factor(results_threshold$trait, levels = results_threshold %>%
-                                    group_by(trait) %>%
-                                    summarise(total_hits = sum(proportion_SNP)) %>%
-                                    arrange(total_hits) %>%
-                                    pull(trait))
-
-# Prepare background line data for this threshold subset
-vline_data <- results_threshold %>%
-  group_by(threshold) %>%
-  summarise(yintercept = unique(porpotion_background))
-
-# Generate line plot with SNP-related gene and SNP proportions by trait
-p <- ggplot(results_threshold) +
+p = ggplot(results_use) +
   geom_segment(aes(x = trait, xend = trait, y = proportion_DEG, yend = proportion_SNP), color = "gray", size = 1) +
   geom_point(aes(x = trait, y = proportion_DEG, label = DEGs, color = "SNP-related genes"), size = 3) +
   geom_point(aes(x = trait, y = proportion_SNP, label = DEG_SNPS, color = "SNPs"), size = 3) +
-  geom_text(aes(x = trait, y = proportion_DEG - 0.12, label = DEGs), color = "cadetblue4", size = 3) +
-  geom_text(aes(x = trait, y = proportion_SNP + 0.12, label = DEG_SNPS), color = "chocolate4", size = 3) +
+  geom_text(aes(x = trait, y = proportion_DEG-0.12, label = DEGs), color = "cadetblue4", size = 3) +
+  geom_text(aes(x = trait, y = proportion_SNP+0.12, label = DEG_SNPS), color = "chocolate4", size = 3) +
   scale_color_manual(name = "", values = c("SNP-related genes" = "cadetblue4", "SNPs" = "chocolate4")) +
-  scale_y_continuous(limits = c(0.05, 0.85)) +
-  labs(x = "Trait", y = "Proportion Hit by DEGs") +
+  scale_y_continuous(limits = c(0.2, 1.1), breaks = c(0.25, 0.5, 0.75, 1)) +
+  labs(x = "Trait", y = "Proportion hit by DEGs") +
+  theme_classic(base_family = "Arial") +
   theme(
+    # legend.position = "top",
     legend.text = element_text(size = 8),
     legend.title = element_text(size = 10),
     axis.text.y = element_text(colour = 'black'),
@@ -204,8 +111,8 @@ p <- ggplot(results_threshold) +
   ) +
   coord_flip()
 
-# Save the plot
 print(p)
+
 ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig4b.deg_snp_number.png", width = 460 / 96, height = 178 / 96, dpi = 300)
 
 
@@ -218,83 +125,55 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig4b.deg_snp
 ################################################################################
 setwd("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data")
 
-gwas_merge <- read.table("gwas_catalog_bp_relevant.snp_gene.txt", header = TRUE, sep = '\t', quote = "")
-proximal_merge <- read.table("gwas_snp_gene_merged.txt", header = TRUE, sep = '\t')
-eqtl_merge <- read.table("eqtl_merged.txt", header = TRUE, sep = '\t')
-e2g_merge <- read.table("e2g_merged.txt", header = TRUE, sep = '\t')
-deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep = '\t', header = TRUE)
+gwas_merge = read.table("gwas_merged.txt", header=T, sep='\t', quote = "")
+snp_gene_df = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/gwas_snp_gene.summary.out", header = T, sep = "\t")
 
-fisher_test_df <- data.frame()
-num_permutations <- 1000
+deg_merged = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.L1.all.out", header=T)
 
-# Perform analysis for each trait
-for (trait in unique(gwas_merge$trait)) {
+fisher_test_df = c()
+num_permutations = 1000
+logFC_threshold = 0.25
+outfile = "/xdisk/mliang1/qqiu/project/multiomics-hypertension/GWAS/trait.snp_gene.L1.fc_0.25.permut.out"
+
+for(trait in unique(gwas_merge$trait)){
   
-  # Filter SNPs for the current trait
-  SNPS <- unique(gwas_merge[gwas_merge$trait == trait, ]$SNPS)
+  SNPS = unique(gsub(" ", "", gwas_merge[gwas_merge$trait==trait, ]$SNPS))
+  snp_gene_use = snp_gene_df[snp_gene_df$SNP %in% SNPS, ] %>%
+    filter(!(is.na(Gene_symbol_Mouse_Rat) | Gene_symbol_Mouse_Rat=="")) %>%
+    separate_longer_delim(
+      col = Gene_symbol_Mouse_Rat,
+      delim = ";"
+    )
   
-  # Subset merged data based on selected SNPs
-  eqtl_merge_use <- eqtl_merge[eqtl_merge$SNP %in% SNPS, ]
-  e2g_merge_use <- e2g_merge[e2g_merge$SNP %in% SNPS, ]
-  proximal_merge_use <- proximal_merge[proximal_merge$SNP %in% SNPS, ]
-  
-  # Combine SNP-gene mappings
-  snp_gene_prox <- data.frame(SNP = proximal_merge_use$SNP, gene = proximal_merge_use$Gene_ID)
-  snp_gene_eqtl <- data.frame(SNP = eqtl_merge_use$SNP, gene = eqtl_merge_use$gene_id_mod)
-  snp_gene_e2g <- data.frame(SNP = e2g_merge_use$SNP, gene = e2g_merge_use$gene)
-  snp_gene_df <- unique(rbind(snp_gene_prox, snp_gene_eqtl, snp_gene_e2g))
-  # snp_gene_df$pair <- paste(snp_gene_df$SNP, snp_gene_df$gene, sep = "-")
-  
-  # Merge gene names with SNP-gene pairs
-  snp_gene_df <- base::merge(snp_gene_df, ensembl[snp_gene_df$gene, c("Gene.stable.ID", "Gene.name")], by.x = "gene", by.y = "Gene.stable.ID", all.x = TRUE)
-  snp_gene_df$pair <- ifelse(snp_gene_df$Gene.name=="", paste(snp_gene_df$SNP, snp_gene_df$gene, sep = "-"), paste(snp_gene_df$SNP, snp_gene_df$Gene.name, sep = "-"))
-  snp_gene_df <- base::merge(snp_gene_df, r2h[r2h$gene_id %in% snp_gene_df$gene, ], by.x = "gene", by.y = "gene_id", all.x = TRUE)
-  snp_gene_df <- base::merge(snp_gene_df, m2h[m2h$gene_id %in% snp_gene_df$gene, ], by.x = "gene", by.y = "gene_id", all.x = TRUE)
-  snp_gene_df[snp_gene_df$gene_name_rat == "" & !is.na(snp_gene_df$gene_name_rat), ]$gene_name_rat <- snp_gene_df[snp_gene_df$gene_name_rat == "" & !is.na(snp_gene_df$gene_name_rat), ]$gene_id_rat
-  snp_gene_df[snp_gene_df$gene_name_mouse == "" & !is.na(snp_gene_df$gene_name_mouse), ]$gene_name_mouse <- snp_gene_df[snp_gene_df$gene_name_mouse == "" & !is.na(snp_gene_df$gene_name_mouse), ]$gene_id_mouse
-  
-  for (strain in c("C57BL/6", "SHR", "SS")) {
-    treatment_list <- unique(deg_merged[deg_merged$strain == strain, ]$treatment)
-    
-    for (treatment in treatment_list) {
-      tissue_list <- unique(deg_merged[deg_merged$strain == strain & deg_merged$treatment == treatment, ]$tissue)
-      
-      for (tissue in tissue_list) {
-        cell_list <- unique(deg_merged[deg_merged$strain == strain & deg_merged$treatment == treatment & deg_merged$tissue == tissue, ]$cell_type)
-        
-        for (cell_type in cell_list) {
-          deg_merged_use <- deg_merged[deg_merged$strain == strain & deg_merged$treatment == treatment & deg_merged$tissue == tissue & deg_merged$cell_type == cell_type, ]
-          deg_list <- unique(deg_merged_use[deg_merged_use$p_val_adj < 0.05 & abs(deg_merged_use$avg_log2FC) > 0.25, ]$gene_name)
+  for(si in c("C57BL/6", "SHR", "SS")){
+    treatment_list = unique(deg_merged[deg_merged$strain==si, ]$treatment)
+    for(ti in treatment_list){
+      tissue_list = unique(deg_merged[deg_merged$strain==si & deg_merged$treatment==ti, ]$tissue)
+      for(tissue in tissue_list){
+        cell_list = unique(deg_merged[deg_merged$strain==si & deg_merged$treatment==ti & deg_merged$tissue==tissue, ]$cell_type)
+        for(ci in cell_list){
+          deg_merged_use = deg_merged[deg_merged$strain==si & deg_merged$treatment==ti & deg_merged$tissue==tissue & deg_merged$cell_type==ci, ]
+          expr_gene_list = unique(deg_merged_use$gene_name)
+          deg_list = unique(deg_merged_use[deg_merged_use$p_val_adj<0.05 & abs(deg_merged_use$avg_log2FC)>logFC_threshold, ]$gene_name)
           
-          # # Define SNP-related and all genes based on strain
-          # if (strain == "C57BL/6") {
-          #   snp_gene_list <- unique(snp_gene_df[!is.na(snp_gene_df$gene_name_mouse), ]$gene_name_mouse)
-          #   all_gene_list <- unique(c(m2h[m2h$gene_id != "", ]$gene_name_mouse, unique(deg_merged_use$gene_name)))
-          # } else {
-          #   snp_gene_list <- unique(snp_gene_df[!is.na(snp_gene_df$gene_name_rat), ]$gene_name_rat)
-          #   all_gene_list <- unique(c(r2h[r2h$gene_id != "", ]$gene_name_rat, unique(deg_merged_use$gene_name)))
-          # }
-          # 
-          if (strain == "C57BL/6") {
-            snp_gene_list <- unique(snp_gene_df[!is.na(snp_gene_df$gene_name_mouse), ]$gene_name_mouse)
-            all_gene_list <- unique(c(m2h[m2h$gene_id != "", ]$gene_name_mouse, unique(deg_merged_use$gene_short_name)))
-            snp_covered_list <- paste(unique(snp_gene_df[!is.na(snp_gene_df$gene_name_mouse) & snp_gene_df$gene_name_mouse %in% deg_list, ]$pair), collapse = ",")
-          } else {
-            snp_gene_list <- unique(snp_gene_df[!is.na(snp_gene_df$gene_name_rat), ]$gene_name_rat)
-            all_gene_list <- unique(c(r2h[r2h$gene_id != "", ]$gene_name_rat, unique(deg_merged_use$gene_short_name)))
-            snp_covered_list <- paste(unique(snp_gene_df[!is.na(snp_gene_df$gene_name_rat) & snp_gene_df$gene_name_rat %in% deg_list, ]$pair), collapse = ",")
+          # if(length(deg_list)>10){
+          if(si=="C57BL/6"){
+            snp_gene_list = unique(snp_gene_use$Gene_symbol_Mouse_Rat)
+            all_gene_list = unique(c(m2h[m2h$gene_id!="",]$gene_name_mouse, expr_gene_list))
+          }else{
+            snp_gene_list = unique(snp_gene_use$Gene_symbol_Mouse_Rat)
+            all_gene_list = unique(c(r2h[r2h$gene_id!="",]$gene_name_rat, expr_gene_list))
           }
           
-          gene_covered_list = paste0(intersect(snp_gene_list, deg_list), collapse = ", ")
+          overlap_genes = intersect(snp_gene_list, deg_list)
+          a <- length(overlap_genes)  # SNP-related genes that are DEGs
+          b <- length(setdiff(snp_gene_list, deg_list))    # SNP-related genes that are not DEGs
+          c <- length(setdiff(deg_list, snp_gene_list))    # DEGs that are not SNP-related
+          d <- length(setdiff(all_gene_list, union(snp_gene_list, deg_list)))  # Genes that are neither
           
-          # Prepare contingency table for Fisher's exact test
-          a <- length(intersect(snp_gene_list, deg_list))
-          b <- length(setdiff(snp_gene_list, deg_list))
-          c <- length(setdiff(deg_list, snp_gene_list))
-          d <- length(setdiff(all_gene_list, union(snp_gene_list, deg_list)))
-          
-          contingency_table <- matrix(c(a, b, c, d), nrow = 2, byrow = TRUE, 
-                                      dimnames = list(c("SNP-related", "Not SNP-related"), c("DEG", "Not DEG")))
+          contingency_table <- matrix(c(a, b, c, d), nrow = 2, byrow = TRUE,
+                                      dimnames = list(c("SNP-related", "Not SNP-related"),
+                                                      c("DEG", "Not DEG")))
           
           fisher_test_result <- fisher.test(contingency_table, alternative = "greater")
           observed_log_p_value <- -log10(fisher_test_result$p.value)
@@ -303,38 +182,41 @@ for (trait in unique(gwas_merge$trait)) {
           permutation_log_p_values <- numeric(num_permutations)
           for (i in 1:num_permutations) {
             permuted_snp_list <- sample(all_gene_list, length(snp_gene_list))
-            permuted_overlap_genes <- intersect(permuted_snp_list, deg_list)
+            permuted_overlap_genes = intersect(permuted_snp_list, deg_list)
             a_perm <- length(permuted_overlap_genes)
             b_perm <- length(setdiff(permuted_snp_list, deg_list))
             c_perm <- length(setdiff(deg_list, permuted_snp_list))
             d_perm <- length(setdiff(all_gene_list, union(permuted_snp_list, deg_list)))
             
             perm_contingency_table <- matrix(c(a_perm, b_perm, c_perm, d_perm), nrow = 2, byrow = TRUE,
-                                             dimnames = list(c("SNP-related", "Not SNP-related"), c("DEG", "Not DEG")))
+                                             dimnames = list(c("SNP-related", "Not SNP-related"),
+                                                             c("DEG", "Not DEG")))
             
             perm_fisher_test_result <- fisher.test(perm_contingency_table, alternative = "greater")
             permutation_log_p_values[i] <- -log10(perm_fisher_test_result$p.value)
           }
           
-          # Calculate normalized enrichment score (NES)
-          mean_permutation_log_p_value <- mean(permutation_log_p_values)
+          mean_permutation_log_p_value <- mean(permutation_log_p_values, )
           NES <- observed_log_p_value / mean_permutation_log_p_value
           
-          # Append results to the dataframe
-          fisher_test_df <- rbind(fisher_test_df, 
-                                  data.frame(trait = trait, strain = strain, treatment = treatment, tissue = tissue, cell_type = cell_type, 
-                                             SNP_genes = length(snp_gene_list), DEG = length(deg_list), expr_genes = length(unique(deg_merged_use$gene_name)), 
-                                             SNP_DEG = a, SNP_not_DEG = b, DEG_not_SNP = c, neither = d, 
-                                             p_value = fisher_test_result$p.value, gene_covered = gene_covered_list, SNP_covered = snp_covered_list, NES = NES))
+          fisher_test_df = rbind(fisher_test_df,
+                                 c(trait, si, ti, tissue, ci, length(snp_gene_list), length(deg_list), length(expr_gene_list), 
+                                   a, b, c, d, fisher_test_result$p.value, paste0(overlap_genes, collapse = ", "), NES))
+          
+          
+          # }
         }
       }
     }
   }
+  
 }
 
-# Adjust p-values for multiple testing and write results to file
-fisher_test_df$p.adj <- p.adjust(fisher_test_df$p_value, method = "BH")
-write.table(fisher_test_df, "trait.fisher.snp_gene.enrichment_results.w_SNP.out", col.names = TRUE, row.names = FALSE, sep = "\t", quote = FALSE)
+fisher_test_df = as.data.frame(fisher_test_df)
+colnames(fisher_test_df) = c("trait", "strain", "treatment", "tissue", "cell_type", "#SNP genes", "#DEG", "expr genes", 
+                             "#SNP-DEG", "#SNP-not-DEG", "#DEG-not-SNP", "#neither", "p.value", "gene_list", "NES")
+fisher_test_df$p.adj = p.adjust(fisher_test_df$p.value, method = "BH")
+write.table(fisher_test_df, outfile, col.names = T, row.names = F, sep = "\t", quote=F)
 
 
 
@@ -345,7 +227,7 @@ write.table(fisher_test_df, "trait.fisher.snp_gene.enrichment_results.w_SNP.out"
 ################################################################################
 
 # Load the Fisher test results
-fisher_test_df <- read.table("trait.fisher.snp_gene.enrichment_results.out", header = TRUE, sep = "\t", comment.char = "")
+fisher_test_df <- read.table("trait.snp_gene.L1.fc_0.25.permut.out", header = TRUE, sep = "\t", comment.char = "")
 
 # Set factor levels for tissue, strain, cell_type, and trait
 fisher_test_df$tissue <- factor(fisher_test_df$tissue, levels = tissue_order)
@@ -399,117 +281,247 @@ ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig4e.cell_ty
 
 
 
+
 ################################################################################
-### Nominating SNP-Gene Pairs in Trait Associated-Cell Types (Figure 4f and S14a)
+### identify cell community based on DE SNP-gene (Figure 4f-g)
 ################################################################################
-snp_gene_df <- read.table("snp_gene.evi_org.out", header = T, sep = "\t", comment.char = "")
-gwas_merge <- read.table("gwas_catalog_bp_relevant.snp_gene.txt", header = TRUE, sep = '\t', quote = "")
-deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.all.out", sep = '\t', header = TRUE)
+fisher_test_df = read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/tmp/trait.snp_gene.L1.fc_0.25.permut.out", header = T, sep = "\t", comment.char = "")
+fisher_test_df <- fisher_test_df[fisher_test_df$strain %in% c("C57BL/6", "SHR", "SS"), ]
+fisher_test_df <- fisher_test_df[!(fisher_test_df$tissue == "MCA" & fisher_test_df$strain %in% c("C57BL/6", "SS")), ]
+fisher_test_df <- fisher_test_df %>% mutate(cell_group = paste(strain, treatment, tissue, cell_type, sep = "_"))
 
-deg_merged <- deg_merged[deg_merged$strain %in% c("C57BL/6", "SHR", "SS"), ]
-deg_filtered = deg_merged %>% filter(p_val_adj < 0.05 & abs(avg_log2FC)>0.25)
-
-gwas_merge_use <- gwas_merge[gwas_merge$trait %in% trait, ] %>%
-  filter(grepl("rs", SNPS)) %>%
-  group_by(SNPS, trait) %>%
-  arrange(P.VALUE) %>%
-  slice_head(n = 1) %>%
-  select(SNPS, trait, P.VALUE)
-
-generate_dotplot <- function(trait_var, cell_type_var, tissue_var, gwas_data, snp_gene_data, deg_data) {
-  
-  gwas_filtered <- gwas_data %>%
-    filter(trait %in% trait) %>%
-    group_by(SNPS) %>%
-    summarise(cumulative_significance = -sum(log10(P.VALUE)))
-  
-  gene_snp_significance <- snp_gene_data %>%
-    separate_rows(combined_gene_name, sep = ";") %>%
-    inner_join(gwas_filtered, by = c("SNP" = "SNPS")) %>%
-    group_by(gene, Gene.name, combined_gene_name) %>%
-    summarise(cumulative_significance = sum(cumulative_significance))
-  
-  deg_filtered <- deg_data %>%
-    filter(cell_type == cell_type_var & tissue == tissue_var) %>%
-    mutate(weight = -log10(p_val_adj)) %>%
-    group_by(gene_name) %>%
-    summarise(weighted_log2FC = sum(-avg_log2FC * weight) / sum(weight))
-  
-  final_data <- gene_snp_significance %>%
-    inner_join(deg_filtered, by = c("combined_gene_name" = "gene_name"))
-  
-  top_genes <- final_data[order(final_data$cumulative_significance, decreasing = T),][1:10,]
-  
-  p <- ggplot(final_data, aes(x = weighted_log2FC, y = cumulative_significance)) +
-    geom_vline(xintercept = 0, color="darkgrey") +
-    geom_hline(yintercept = 0, color="darkgrey") +
-    geom_point(aes(color = weighted_log2FC), size = 3) +
-    geom_point(data = top_genes, color = "black", size = 5, shape = 21) +
-    scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-    labs(x = "Weighted log2FC\n(hypertension vs. normotension)", y = "Cumulative significance of related SNPs",
-         title = paste0(tissue_var, " - ", cell_type_var, "\n(", paste(trait_var, collapse = "/"), ")")) +
-    theme_minimal() +
-    theme(legend.position = "none") +
-    geom_text_repel(data = top_genes, aes(label = combined_gene_name), 
-                    nudge_y = 0.05, nudge_x = 0.05, 
-                    box.padding = 0.35, point.padding = 0.3, 
-                    segment.color = 'grey50')
-  
-  print(p)
-}
-
-generate_dotplot(
-  trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"),
-  cell_type_var = "EC",
-  tissue_var = "HYP",
-  gwas_data = gwas_merge_use,
-  snp_gene_data = snp_gene_df,
-  deg_data = deg_filtered
-)
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/fig4f.hyp_ec.npr3.png", width=400/96, height=329/96, dpi=300)
-
-
-
-combinations <- list(
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "Astrocyte", tissue_var = "HYP"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "Myelinating OL", tissue_var = "HYP"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "Microglia", tissue_var = "HYP"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "CM", tissue_var = "LV"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure", "CAD"), cell_type_var = "Fibroblast", tissue_var = "LV"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "EC", tissue_var = "LK"),
-  list(trait_var = c("BUN"), cell_type_var = "TAL", tissue_var = "LK"),
-  list(trait_var = c("diastolic_bp", "systolic_bp", "pulse_pressure"), cell_type_var = "VSMC", tissue_var = "MSA")
-)
-
-plots <- list()
-
-# Iterate through each combination
-for (i in seq_along(combinations)) {
-  comb <- combinations[[i]]
-  
-  plot <- generate_dotplot(
-    trait = comb$trait_var,
-    cell_type_var = comb$cell_type_var,
-    tissue_var = comb$tissue_var,
-    gwas_data = gwas_merge_use,
-    snp_gene_data = snp_gene_df,
-    deg_data = deg_filtered
+snp_gene_df <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/data/gwas_snp_gene.summary.out", sep = "\t", header = T)
+snp_gene_df_mod <- snp_gene_df %>%
+  separate_longer_delim(
+    col = Gene_symbol_Mouse_Rat,
+    delim = ";"
   )
-  
-  plots[[paste(comb$cell_type_var, comb$tissue_var, paste(comb$trait_var, collapse = "_"), sep = "_")]] <- plot
+
+### process expr data
+deg_merged <- read.table("/xdisk/mliang1/qqiu/project/multiomics-hypertension/DEG/DEG.L1.all.out", header = TRUE)
+deg_merged <- deg_merged[deg_merged$strain %in% c("C57BL/6", "SHR", "SS"), ]
+deg_filtered = deg_merged %>% filter(p_val_adj < 0.05 & abs(avg_log2FC) >= 0.25)
+deg_use = deg_use = deg_filtered[deg_filtered$gene_name %in% snp_gene_df_mod$Gene_symbol_Mouse_Rat, ]
+
+binary_matrix <- deg_use %>%
+  mutate(condition = paste(strain, treatment, tissue, cell_type, sep = "_"),
+         weight = sign(avg_log2FC) * -log10(p_val_adj)) %>%
+  dplyr::select(gene_name, condition, weight) %>%
+  dplyr::group_by(gene_name, condition) %>%
+  dplyr::summarise(
+    value = mean(weight, na.rm = TRUE),  # or sum(), max()
+    .groups = "drop"
+  ) %>%
+  tidyr::pivot_wider(
+    names_from  = condition,
+    values_from = value,
+    values_fill = 0
+  ) %>%
+  as.data.frame()
+
+row.names(binary_matrix) <- binary_matrix$gene_name
+binary_matrix <- binary_matrix %>% dplyr::select(-gene_name) %>% as.matrix()
+
+X <- t(as.matrix(binary_matrix))
+sim <- proxy::simil(X, method = "cosine")
+similarity_matrix <- as.matrix(sim)
+similarity_matrix[is.na(similarity_matrix)] <- 0
+similarity_matrix <- pmax(pmin(similarity_matrix, 1), 0)
+
+use_knn <- TRUE
+k <- 20
+
+if (use_knn) {
+  n <- nrow(similarity_matrix)
+  knn_mask <- matrix(0, n, n)
+  for (i in seq_len(n)) {
+    ord <- order(similarity_matrix[i, ], decreasing = TRUE)
+    ord <- ord[ord != i]
+    keep <- head(ord, k)
+    knn_mask[i, keep] <- 1
+  }
+  knn_mask <- (knn_mask + t(knn_mask)) > 0
+  similarity_matrix <- similarity_matrix * knn_mask
 }
 
-# Combine all plots into a single layout
-combined_plot <- wrap_plots(plots, ncol = 3) 
+diag(similarity_matrix) <- 0  # remove self-loops
 
+similarity_graph <- graph_from_adjacency_matrix(as.matrix(similarity_matrix), mode = "undirected", weighted = TRUE)
+
+### consensus clustering
+n_runs <- 1000
+all_clusterings <- matrix(0, nrow = length(V(similarity_graph)), ncol = n_runs)
+
+for (i in 1:n_runs) {
+  all_clusterings[, i] <- leiden(similarity_graph, resolution_parameter = 1)
+}
+
+consensus_matrix <- matrix(0, nrow = length(V(similarity_graph)), ncol = length(V(similarity_graph)))
+for (i in 1:n_runs) {
+  clustering <- all_clusterings[, i]
+  for (j in 1:length(clustering)) {
+    for (k in j:length(clustering)) {
+      if (clustering[j] == clustering[k]) {
+        consensus_matrix[j, k] <- consensus_matrix[j, k] + 1
+        consensus_matrix[k, j] <- consensus_matrix[k, j] + 1
+      }
+    }
+  }
+}
+consensus_matrix <- consensus_matrix / n_runs
+hclust_result <- hclust(as.dist(1 - consensus_matrix), method = "ward.D2")
+consensus_clusters <- cutree(hclust_result, k = 6) 
+names(consensus_clusters) = colnames(binary_matrix)
+
+fisher_test_df <- fisher_test_df %>%
+  mutate(cell_group = paste(strain, treatment, tissue, cell_type, sep = "_")) %>%
+  filter(cell_group %in% names(consensus_clusters)) %>%
+  mutate(consensus_cluster = consensus_clusters[cell_group])
+
+write.table(fisher_test_df, "trait.fisher.cluster.out", col.names = T, row.names = F, sep = "\t", quote=F)
+
+
+
+
+
+# Summarize the NES scores for each community-trait combination
+fisher_test_df = read.table("trait.fisher.cluster.out", sep="\t", header=T)
+
+trait_order = c("systolic_bp", "diastolic_bp", "pulse_pressure", "essential_hypertension", "stroke", "CAD", "eGFR", "BUN", "albuminuria")
+
+fisher_test_df = fisher_test_df %>%
+  mutate(cluster_use = consensus_cluster)
+
+nes_summary <- fisher_test_df %>%
+  group_by(cluster_use, trait) %>%
+  summarise(average_NES = mean(NES, na.rm = TRUE), 
+            community_size = n(),
+            NES_values = list(NES), .groups = 'drop') %>%
+  ungroup()
+
+nes_summary <- nes_summary %>%
+  rowwise() %>%
+  mutate(
+    p_value = {
+      community_nes <- unlist(NES_values)
+      current_trait <- trait
+      current_community <- cluster_use
+      other_nes <- fisher_test_df %>%
+        filter(trait == current_trait, cluster_use != current_community) %>%
+        pull(NES)
+      
+      if (length(community_nes) > 1 && length(other_nes) > 1) {
+        wilcox.test(community_nes, other_nes, alternative = "greater")$p.value
+      } else if (length(community_nes) > 1 && length(other_nes) == 0) {
+        NA  
+      } else {
+        1  
+      }
+    }
+  ) %>%
+  ungroup() %>%
+  mutate(p_adj = p.adjust(p_value, method = "BH"))
+
+nes_summary <- nes_summary %>%
+  mutate(significant = ifelse(p_adj < 0.05, "*", ""),
+         community = cluster_use,
+         trait = factor(trait, levels = rev(trait_order)))
+
+p1 <- ggplot(nes_summary, aes(x = trait, y = factor(community), size = community_size, fill = average_NES)) +
+  geom_point(shape = 21, stroke = 0) +
+  geom_point(data = nes_summary[nes_summary$p_adj < 0.05, ],
+             aes(x = trait, y = factor(community), size = community_size, fill = average_NES),
+             shape = 21, stroke = 1, color = "black") +
+  scale_size_continuous(range = c(2, 6), breaks = c(10, 30, 50)) +
+  scale_fill_gradient2(low = "lightblue", mid = "white", high = "red", midpoint = 2.5, name = "Average NES") +
+  labs(title = " ",
+       x = "Trait",
+       y = "",
+       size = "Cluster size",
+       fill = "Average NES") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(colour = 'black'),
+        # axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+        axis.text.x = element_blank()
+  ) +
+  coord_flip()
+print(p1)
+
+
+
+
+
+df_strain_prop <- fisher_test_df %>%
+  count(consensus_cluster, strain, name = "n") %>%
+  group_by(consensus_cluster) %>%
+  mutate(
+    prop = n / sum(n)
+  ) %>%
+  ungroup()
+
+df_tissue_prop <- fisher_test_df %>%
+  count(consensus_cluster, tissue, name = "n") %>%
+  group_by(consensus_cluster) %>%
+  mutate(
+    prop = n / sum(n)
+  ) %>%
+  ungroup()
+
+p_strain <- ggplot(df_strain_prop, aes(x = factor(consensus_cluster), y = prop, fill = strain)) +
+  geom_col(width = 0.8) +
+  labs(x = "", y = "Proportion", fill = "Strain") +
+  theme_classic() + 
+  scale_fill_manual(values = strain_col) +
+  theme(axis.text.x = element_blank())
+
+p_tissue <- ggplot(df_tissue_prop, aes(x = factor(consensus_cluster), y = prop, fill = tissue)) +
+  geom_col(width = 0.8) +
+  labs(x = "", y = "Proportion", fill = "Tissue") +
+  theme_classic() + 
+  scale_fill_manual(values = tissue_col) +
+  theme(axis.text.x = element_blank())
+
+p_strain
+p_tissue
+
+
+
+merge_all = read.table("metascape.clusters.out", sep='\t', header=T, quote = "", check.names = F)
+top_list = merge_all %>%
+  filter(`Log(q-value)` < log10(0.05)) %>%
+  group_by(Description) %>%
+  mutate(pathway_count = n_distinct(cluster),
+         gene_count = gsub("/.*", "", InTerm_InList)) %>%
+  filter(pathway_count<3) %>% ungroup() %>%
+  filter(grepl("Summary", GroupID)) %>%
+  group_by(cluster) %>% arrange(`Log(q-value)`) %>%
+  slice_head(n=5)
+merge_use = merge_all[merge_all$Description %in% top_list$Description & 
+                        merge_all$`Log(q-value)` < log10(0.05) &
+                        grepl("Member", merge_all$GroupID), c("pathway", "cluster", "Log(q-value)")]
+sorted_df <- merge_use[order(merge_use$cluster, merge_use$pathway), ]
+sorted_df$pathway <- factor(sorted_df$pathway, levels = unique(sorted_df$pathway))
+
+p2 = ggplot(sorted_df, aes(y = pathway, x = cluster, fill = -1*`Log(q-value)`)) +
+  geom_tile(color="black") + 
+  scale_fill_gradient(low="white", high="purple") +
+  theme_classic() +
+  theme(axis.text.y = element_text(colour = 'black'),
+        axis.text.x = element_text(angle = 45, hjust = 1, colour = 'black'),
+        legend.text = element_text(colour = 'black', size=10)) +
+  labs(x="", y="Pathway", fill="-log(q-value)")
+
+
+design = "A
+          B
+          C
+          D"
+combined_plot <- (p_strain + p_tissue + p1 + p2) + 
+  plot_layout(design = design, guides = 'collect', 
+              heights = c(0.05, 0.05, 0.12, 0.3)) &
+  theme(legend.position = 'right', 
+        legend.box = 'vertical',
+        plot.margin = margin(t = 10, r = 0, b = -10, l = 10, unit = "pt"),
+        text = element_text(family = "Arial"))
 print(combined_plot)
-ggsave("/xdisk/mliang1/qqiu/project/multiomics-hypertension/figure/figs14a.trait_cell_type.top10.png", width=1400/96, height=1200/96, dpi=300)
-
-
-
-
-
-
-
-
-
+ggsave("cell_cluster.asso.png", width=600/96, height=800/96, dpi=300)

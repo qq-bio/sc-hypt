@@ -1,0 +1,151 @@
+dataset	resolution	cluster	markers_curated	note
+mouse.LK.EC	wsnn_res.1	0		
+mouse.LK.EC	wsnn_res.1	1		
+mouse.LK.EC	wsnn_res.1	2		
+mouse.LK.EC	wsnn_res.1	3		
+mouse.LK.EC	wsnn_res.1	4		
+mouse.LK.EC	wsnn_res.1	5		
+mouse.LK.EC	wsnn_res.1	6		
+mouse.LK.EC	wsnn_res.1	7	Lrp2, Slc34a1	remove
+mouse.LK.EC	wsnn_res.1	8		
+mouse.LK.EC	wsnn_res.1	9	Slc12a1	remove
+mouse.LK.EC	wsnn_res.1	10		
+mouse.LK.EC	wsnn_res.1	11		
+mouse.LK.EC	wsnn_res.1	12		
+mouse.LK.EC	wsnn_res.1	13		
+mouse.LK.EC	wsnn_res.1	14	Aqp1	remove
+mouse.LK.EC	wsnn_res.1	15		
+mouse.LK.EC	wsnn_res.1	16		
+mouse.LK.EC	wsnn_res.1	17		
+mouse.LK.EC	wsnn_res.1	18	Lrp2	remove
+mouse.LK.EC	wsnn_res.1	19		
+mouse.LK.EC	wsnn_res.1	20		
+mouse.LK.EC	wsnn_res.1	21		
+mouse.LK.EC	wsnn_res.1	22		
+mouse.LK.EC	wsnn_res.1	23		
+mouse.LK.EC	wsnn_res.1	24		
+mouse.LK.EC	wsnn_res.1	25		
+rat.ss.LK.EC	wsnn_res.1	0		
+rat.ss.LK.EC	wsnn_res.1	1	Lrp2, Slc34a1	remove
+rat.ss.LK.EC	wsnn_res.1	2		
+rat.ss.LK.EC	wsnn_res.1	3		
+rat.ss.LK.EC	wsnn_res.1	4	Lrp2, Slc34a1	remove
+rat.ss.LK.EC	wsnn_res.1	5	Slc12a1	remove
+rat.ss.LK.EC	wsnn_res.1	6	Ptprc	remove
+rat.ss.LK.EC	wsnn_res.1	7		
+rat.ss.LK.EC	wsnn_res.1	8		
+rat.ss.LK.EC	wsnn_res.1	9		
+rat.ss.LK.EC	wsnn_res.1	10		
+rat.ss.LK.EC	wsnn_res.1	11	Ptprc	remove
+rat.ss.LK.EC	wsnn_res.1	12		
+rat.ss.LK.EC	wsnn_res.1	13	Lrp2, Slc34a1	remove
+rat.ss.LK.EC	wsnn_res.1	14		
+rat.ss.LK.EC	wsnn_res.1	15		
+rat.ss.LK.EC	wsnn_res.1	16		
+rat.ss.LK.EC	wsnn_res.1	17	Lrp2, Slc34a1	remove
+rat.sp.LK.EC	wsnn_res.1	0		
+rat.sp.LK.EC	wsnn_res.1	1	Lrp2, Slc34a1	remove
+rat.sp.LK.EC	wsnn_res.1	2		
+rat.sp.LK.EC	wsnn_res.1	3	Lrp2, Slc34a1	remove
+rat.sp.LK.EC	wsnn_res.1	4		
+rat.sp.LK.EC	wsnn_res.1	5	Slc12a3	remove
+rat.sp.LK.EC	wsnn_res.1	6	Slc12a1	remove
+rat.sp.LK.EC	wsnn_res.1	7		
+rat.sp.LK.EC	wsnn_res.1	8	Atp6v0d2	remove
+rat.sp.LK.EC	wsnn_res.1	9	Atp6v0d2	remove
+rat.sp.LK.EC	wsnn_res.1	10	Lrp2, Slc34a1	remove
+rat.sp.LK.EC	wsnn_res.1	11		
+rat.sp.LK.EC	wsnn_res.1	12		
+rat.sp.LK.EC	wsnn_res.1	13	Slc8a1	remove
+rat.sp.LK.EC	wsnn_res.1	14		
+rat.sp.LK.EC	wsnn_res.1	15	Lrp2, Slc34a1	remove
+rat.sp.LK.EC	wsnn_res.1	16	Aqp1	remove
+mouse.LV.EC	RNA_snn_res.1.5	0		
+mouse.LV.EC	RNA_snn_res.1.5	1		
+mouse.LV.EC	RNA_snn_res.1.5	2	Myl2, Mb, Tnnt2	remove
+mouse.LV.EC	RNA_snn_res.1.5	3		
+mouse.LV.EC	RNA_snn_res.1.5	4		
+mouse.LV.EC	RNA_snn_res.1.5	5		
+mouse.LV.EC	RNA_snn_res.1.5	6		
+mouse.LV.EC	RNA_snn_res.1.5	7		
+mouse.LV.EC	RNA_snn_res.1.5	8		
+mouse.LV.EC	RNA_snn_res.1.5	9		
+mouse.LV.EC	RNA_snn_res.1.5	10		
+mouse.LV.EC	RNA_snn_res.1.5	11		
+mouse.LV.EC	RNA_snn_res.1.5	12		
+mouse.LV.EC	RNA_snn_res.1.5	13		
+mouse.LV.EC	RNA_snn_res.1.5	14		
+mouse.LV.EC	RNA_snn_res.1.5	15	Dcn	remove
+mouse.LV.EC	RNA_snn_res.1.5	16	Myl2, Mb, Tnnt2	remove
+mouse.LV.EC	RNA_snn_res.1.5	17	Myl2, Mb, Tnnt2	remove
+mouse.LV.EC	RNA_snn_res.1.5	18	Myl2, Mb, Tnnt2	remove
+rat.ss.LV.EC	RNA_snn_res.1	0		
+rat.ss.LV.EC	RNA_snn_res.1	1		
+rat.ss.LV.EC	RNA_snn_res.1	2		
+rat.ss.LV.EC	RNA_snn_res.1	3		
+rat.ss.LV.EC	RNA_snn_res.1	4		
+rat.ss.LV.EC	RNA_snn_res.1	5		
+rat.ss.LV.EC	RNA_snn_res.1	6		
+rat.ss.LV.EC	RNA_snn_res.1	7		
+rat.ss.LV.EC	RNA_snn_res.1	8		
+rat.ss.LV.EC	RNA_snn_res.1	9		
+rat.ss.LV.EC	RNA_snn_res.1	10		
+rat.ss.LV.EC	RNA_snn_res.1	11		
+rat.ss.LV.EC	RNA_snn_res.1	12		
+rat.ss.LV.EC	RNA_snn_res.1	13		
+rat.ss.LV.EC	RNA_snn_res.1	14	Col1a1, Dcn	remove
+rat.ss.LV.EC	RNA_snn_res.1	15	Ptprc	remove
+rat.ss.LV.EC	RNA_snn_res.1	16	Rgs5	remove
+rat.sp.LV.EC	RNA_snn_res.1	0		
+rat.sp.LV.EC	RNA_snn_res.1	1		
+rat.sp.LV.EC	RNA_snn_res.1	2		
+rat.sp.LV.EC	RNA_snn_res.1	3		
+rat.sp.LV.EC	RNA_snn_res.1	4		
+rat.sp.LV.EC	RNA_snn_res.1	5		
+rat.sp.LV.EC	RNA_snn_res.1	6	Myl2, Mb, Tnnt2	remove
+rat.sp.LV.EC	RNA_snn_res.1	7	Myl2, Mb, Tnnt2	remove
+rat.sp.LV.EC	RNA_snn_res.1	8		
+rat.sp.LV.EC	RNA_snn_res.1	9		
+rat.sp.LV.EC	RNA_snn_res.1	10	Col1a1, Dcn	remove
+rat.sp.LV.EC	RNA_snn_res.1	11		
+rat.sp.LV.EC	RNA_snn_res.1	12		
+rat.sp.LV.EC	RNA_snn_res.1	13	Rgs5	remove
+rat.sp.LV.EC	RNA_snn_res.1	14	Ptprc	remove
+mouse.HYP.EC	RNA_snn_res.0.1	0		
+mouse.HYP.EC	RNA_snn_res.0.1	1	Tgfbr1	remove
+mouse.HYP.EC	RNA_snn_res.0.1	2	Slc1a2	remove
+mouse.HYP.EC	RNA_snn_res.0.1	3	Syt1	remove
+mouse.HYP.EC	RNA_snn_res.0.1	4	Mbp, St18	remove
+rat.ss.HYP.EC	RNA_snn_res.0.3	0	Syt1	remove
+rat.ss.HYP.EC	RNA_snn_res.0.3	1		remove
+rat.ss.HYP.EC	RNA_snn_res.0.3	2	Cga	remove
+rat.ss.HYP.EC	RNA_snn_res.0.3	3	Tgfbr1	remove
+rat.ss.HYP.EC	RNA_snn_res.0.3	4		
+rat.sp.HYP.EC	RNA_snn_res.1	0		
+rat.sp.HYP.EC	RNA_snn_res.1	1		
+rat.sp.HYP.EC	RNA_snn_res.1	2		
+rat.sp.HYP.EC	RNA_snn_res.1	3	Syt1, Rbfox3	remove
+rat.sp.HYP.EC	RNA_snn_res.1	4	Cx3cr1, Pdgfrb, Rgs5	remove
+rat.sp.HYP.EC	RNA_snn_res.1	5	Mbp	remove
+rat.sp.MCA.EC	RNA_snn_res.0.5	0	Ptgds	remove
+rat.sp.MCA.EC	RNA_snn_res.0.5	1		
+rat.sp.MCA.EC	RNA_snn_res.0.5	2		
+rat.sp.MCA.EC	RNA_snn_res.0.5	3		
+rat.sp.MCA.EC	RNA_snn_res.0.5	4		
+rat.sp.MCA.EC	RNA_snn_res.0.5	5	Gja1	remove
+rat.ss.MSA.EC	RNA_snn_res.1	0		
+rat.ss.MSA.EC	RNA_snn_res.1	1		
+rat.ss.MSA.EC	RNA_snn_res.1	2		
+rat.ss.MSA.EC	RNA_snn_res.1	3		
+rat.ss.MSA.EC	RNA_snn_res.1	4		
+rat.ss.MSA.EC	RNA_snn_res.1	5		
+rat.ss.MSA.EC	RNA_snn_res.1	6		
+rat.sp.MSA.EC	RNA_snn_res.0.5	0		
+rat.sp.MSA.EC	RNA_snn_res.0.5	1		
+rat.sp.MSA.EC	RNA_snn_res.0.5	2		
+rat.sp.MSA.EC	RNA_snn_res.0.5	3		
+rat.sp.MSA.EC	RNA_snn_res.0.5	4		
+rat.sp.MSA.EC	RNA_snn_res.0.5	5		
+rat.sp.MSA.EC	RNA_snn_res.0.5	6		
+rat.sp.MSA.EC	RNA_snn_res.0.5	7	Col1a1, Dcn	remove
+rat.sp.MSA.EC	RNA_snn_res.0.5	8		
